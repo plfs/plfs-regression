@@ -1,0 +1,170 @@
+A list of the tests to run is in test_list.txt
+
+A test consists of a directory with the following files:
+1) reg_test.py: A script that will set up and start a test. It must have a
+   main method.
+2) check_results.py: This is a script that will be run after all jobs complete
+   to determine if the test passed or not. Must have a main method.
+3) README: while not necessary at run-time, this file must be present to
+   communicate the purpose of the test and how this purpose is accomplished.
+   There will be more than one developer working through tests, and having
+   this file will make it much easier to troubleshoot issues.
+Any number of other files may be present to support the running of the test,
+but the above files are the only required files.
+
+Test writing guidelines/invariants
+- A main method in reg_test.py will be called by submit_tests.py to run the
+  test. What this script actually does is up to the writer, but the main 
+  method is required. Some ideas include calling experiment management
+  directly with the --dispatch option (see write_read_no_error for an example)
+  or using experiment management to create a submission script file that
+  reg_test.py submits directly to the queue (see adio_write_read for an
+  example).
+- Reg_test.py must return a list of job id's that the regression suite should
+  be mindful of. If submitted jobs are chained together 
+  (experiment_management's --chain parameter), only the last job id is
+  necessary to pass back to submit_tests.py. These job ids will be written to a
+  file so that the regression suite will be able to track them and know when
+  all jobs complete.
+- Reg_test.py must report a problem with submitting by returning -1 in the 
+  list that it returns. The -1 can be the only element in the list. By
+  returning -1, the regression suite is told not to check the results of the
+  test. -1 should only be returned when it will not be possible to check
+  the results of a test (i.e. unable to write log files, the queueing system
+  is not functioning properly, etc.). The regression suite will not call a
+  test's check_results.py and the summary email will say only "Not submitted"
+  for the status of the test.
+- If submitting jobs is not necessary to complete the test, reg_test.py may
+  return a list with the number 0 as the only element. This will let the
+  regression suite know that it can check the results of the test. 0 
+  contained in a list that is more than one element is ignored. However, this
+  will cause check_tests.py to fail when it checks for job with id 0. Of
+  course, this condition happens anytime a number is passed back from
+  reg_test.py that can not be used as a job id.
+- A main method in check_results.py will be called by check_tests.py. As with
+  reg_test.py, this script may do what it needs to figure out the PASS/FAIL
+  status of a test.
+- Check_results.py must return a list where the first element is either
+  'PASSED' or 'FAILED'. Additional fields are permissable and what happens
+  with them is covered below.
+- When a test passes, the first field in the returned list is 'PASSED'. More
+  elements can be passed in the list as extra information. Check_tests.py will
+  print these extra fields in it's output.
+- When a test fails, the first field in the returned list is 'FAILED' and the
+  list must be at least 2 elements long. The second field is expected to be a
+  log a log file that is to be shown in check_tests.py's report. As with
+  tests that pass, elements beyond these two elements can be included and will
+  be used as extra information in reporting results. Please see adio_write_read
+  as an example.
+- In check_results.py for tests that fail, it is ok to return an empty string
+  as the second element in the return list. However, if this is done, a non-
+  empty third field must be used to provide information in the report. For
+  instance, if no applicable log files are found, an empty second field is
+  expected and the third field could contain a string such as "No log file
+  found." Please see the main method in write_read_no_error for an example.
+- Reg_test.py and check_results.py will always be called from within the test
+  directory. This can be used in determining where the rest of the regression
+  suite is located.
+- Before tests are submitted, the regression suite will set up the applicable
+  environment variables to use the regression suite's version of executables
+  and libraries. Tests should be able to call on those executables
+  without having to put full paths for the purposes of submitting tests.
+- Tests should be written such that they can be run on their own outside of
+  the regression suite. This helps in developing and testing of the tests.
+  This requirement applies to both reg_test.py and check_results.py. That is,
+  each of these scripts should be able to be run in the test's directory and
+  produce satisfactory results (reg_test.py submits the needed jobs and
+  check_results.py reports the success/failure of the test).
+- Do not use sys.exit() calls in reg_test.py or check_results.py. This will
+  kill the calling function, i.e. submit_tests.py or check_tests.py because
+  of the way those scripts call the scripts within the test directory.
+  Please use return statements instead.
+- Output files should be placed in a directory named "output". This is to allow
+  the regression suite's check_tests.py to remove successful tests. Within this
+  directory, a scheme should be followed that will allow easy identification
+  of when a test was run. For example, experiment_managment uses output/<date>
+  to put output files into.
+- Individual tests are expected to be able to find the correct output file.
+  For instance, if it takes some time to get to checking results,
+  check_results.py should still be able to find the needed output file.
+- Users should have their experiment_management rc file set msub to have at
+  least "-j oe". This means that there should only be one output file
+  associated with a job submitted through experiment_management.
+- Helper scripts are available in the utils directory. These scripts contain
+  functions/routines for tasks that are quite common. These include getting
+  the right environment on a compute node such that the regression suite's
+  binaries are properly used, adding paths to experiment_management's modules
+  to python's sys.path, and mounting fuse mountpoints (although not limited
+  to just these tasks). The use of these functions is highly encouraged to
+  keep a consistent method of doing these tasks. When designing tests, please
+  use them and even write new scripts/functions to add new functionality.
+  Having routines that are utilized often in a central place makes updating
+  and troubleshooting much easier. It also helps in not having to copy and
+  paste.
+- Environmental problems are common, especially when running tests on compute
+  nodes. Utils/rs_env_init.sh was created in an attempt to help set up an
+  environment on the compute nodes that will use the regression suite's
+  executables and libraries. It does not catch everything, however. For
+  specific commands that aren't applicable to be used in general, a user can
+  create utils/env_customize.sh to further customize the environment set up
+  by utils/rs_env_init.sh. Rs_env_init.sh will source env_customize.sh if it
+  exists. Env_customize.sh must be written in bash or sh.
+  For example, a library is found by default on a machine's frontend, but not
+  on the compute nodes. Env_customize.sh could modify LD_LIBRARY_PATH such
+  that the library will be found when it comes time to run binaries on the
+  compute nodes.
+- Some of the scripts in utils will source optional customization files. For
+  example, rs_env_init.sh will source env_customize.sh if it exists. This
+  allows for the separation of user-specific environment setup from the more
+  general regression suite environment setup.
+- When using files to write and read from, carefully consider a name for the
+  target. That is, consider that more than one instance of the regression
+  suite may be running at the same time which means more than one instance of
+  a test may be running at the same time. When machines share the same
+  directory space, tests may be writing to the same location. Make sure the
+  targets are unique to the machine and test. Please see write_read_no_error
+  as an example.
+- Targets should be constructed with the following convention:
+  <plfs mount point>/<user>/<test output file>
+  <plfs mount point> should be obtained by calling plfs_check_config, <user>
+  is the current username (do not hardcode), and <test output file> is the
+  output file(s) used by the test. <test output file> could be a directory
+  path relative to <plfs mount  point>/<user>.
+- If a test needs supporting scripts within the test directory, please do not
+  use python's import built-in function. It is ok to use it to import python 
+  built-in modules, experiment_management and modules in the regression suite's
+  utils directory, but it is not ok to import local module files. This is
+  because python, when using the built-in import function, does not reparse a
+  module's file if it has already imported a module of the same name. This
+  happens even if the module is removed by the del command. Instead, please
+  use the imp module. An example can be found in the test named
+  write_read_error. This is to allow different tests to use the files with the
+  same names but different contents.
+- Binaries should always be expected to exist in <Regression base dir>/inst.
+  PLFS will be installed to <Regression base dir>/inst/plfs, fs_test binaries
+  will be copied in to <Regression base dir>/inst/test_fs, and mpi will be
+  located in <Regression base dir>/inst/mpi.
+- Tests that pass will have their output files removed by default. Tests that
+  fail will have their output files saved for troubleshooting purposes. This
+  decision is not done by the test scripts; it is done by the regression
+  suite's check_tests.py script.
+
+Some useful features of check_results.py that aren't absolutely necessary but
+may help in copying from other tests and troubleshooting:
+- It is definitely useful to go over how other tests utilize their 
+  check_results.py file. Much of the tasks such as finding log files will be
+  easily transferable to new tests. It is really only necessary to customize
+  the method and conditions of PASSED/FAILED determination.
+- Write_read_no_error's check_results.py can look for any arbitrary number of
+  output files. This is given by the variable num_outfiles_req which should
+  be located at the top of the file. If copying this file, just set that to
+  the number of output files that a test needs to check.
+- The use of a --files command switch is quite useful for checking non-default
+  output files (such as yesterday's output). Write_read_no_error has this
+  functionality. When --files is not used, check_results looks for the same
+  default output directory that experiment_management creates. That is: 
+  ./expr_mgmt.system_default("outdir")/date
+  where date is in the format yyyy-mm-dd. ./ is not assumed to be the
+  directory checkresults.py is actually located in, but the directory
+  that checkresults.py is invoked from. If --files is not used, it is assumed
+  that checkresults.py is invoked from the test directory.

@@ -1,0 +1,187 @@
+
+This is the regression test suite for PLFS.
+
+Description:
+The regression suite will pull in needed sources into its environment and
+run a series of tests on that configuration. It is designed to be self-
+reliant; it should not call on anything outside its directory structure to
+accomplish anything when running tests. This way the regression
+environment is easily considered by looking at what is currently in the 
+regression directory structure and log files.
+
+Information on writing tests for the regression suite is located in:
+tests/README.
+
+Dependencies:
+- What ever compiler that is desired should be setup either through login
+  scripts or in the regression suite's config file (see below).
+- The following packages/programs will be needed: plfs, open mpi, fs_test,
+  pexec, and experiment_management.
+- In regards to experiment_management, an rc file must be present and define
+  runcommand, ppn, and outdir as individual tests may not pass these on the
+  command line when invoking experiment_management. In addition, msub should
+  be defined to include "-j oe" as many of the tests expect to look for only
+  one output file.
+- Python >= 2.5
+- A config file in the Regression directory. A sample is provided as
+  config.sample. Copy this file as config (in the same directory) and edit
+  config accordingly. All information related to specifying where to find
+  dependencies will be entered in that file. It is heavily commented in an
+  attempt to explain all the different options available.
+- MY_MPI_HOST environment variable set as in the experiment_management
+  framework.
+- Define MPI_CC environment variable as the command to compile parallel
+  programs. For example, set it to mpicc (generic mpi implementation) or cc
+  (cray implementation).
+- A working ~/.plfsrc file. Tests of type 2 and 3 will use the last 
+  mount_point entry in that file for fs_test.x targets. Using /etc/plfsrc
+  should not be done as those mount points are already mounted with a version
+  of plfs that is not what we want to test in the regression suite.
+  In addition to this requirement, inside the mount point it is expected that
+  the regression suite will find a directory with the name of the user's
+  username: <mount_point>/<username>
+- The proper version of autotools for compiling plfs should be available.
+  Either those programs should already be in a user's path or how to find
+  them should be specified in the config file.
+
+Usage:
+./run_plfs_regression.sh [OPTIONS ...]
+
+Running run_plfs_regression.sh without options will start a regression run
+with a configuration consistent with what is set up in the config file and
+default values. Please see config.sample for descptions of all of the options.
+Use run_plfs_regression.sh's '-h|--help' switch to list the options that can be
+used and their effect on the parameters in the config file. Parameters set on
+the command line over-ride those set in the config file.
+
+Quick Start/Sanity Check:
+1) Start run_plfs_regression.sh with the --notests command line switch after
+   setting up the config file. Deal with any issues in building. Logs are
+   located in the logs directory.
+2) Run a simple test: tests/write_read_no_error or tests/adio_write_read.
+   Both of these tests are simple write and read tests.
+   Change directory into either of the above and run ./reg_test.py. A single
+   job should be submitted. When the job has finished, run ./check_results.py.
+   Deal with any issues in getting the test to run; this may require doing
+   step 1 again.
+   If there are environment issues on the compute nodes, consider using
+   tests/utils/env_customize.sh to deal with them. Details about this file are
+   in tests/README.
+3) If the above worked, it should be ok to run the whole regression suite
+   (e.g. run_plfs_regression.sh --nobuild --testtypes=2,3)
+
+Files and directories in the regression suite:
+- There should only ever be two entry points into the regression suite:
+  run_plfs_regression.sh and check_tests.py. As such, there are only two exit
+  points for the regression suite: from those same files. However, it should be
+  noted that the regression scripts have been built with the idea of modularity
+  in mind. That is, it should be possible to run each script separately if need
+  be.
+- config.sample: sample config file for configuration. A similar file should be
+  in the Regression directory named config.
+- run_plfs_regression.sh: The main regression script. Will build the
+  needed source code or link to already existing binaries and libraries. If
+  there are any issues with these steps, run_plfs_regression.sh will exit the
+  regression run and send an email notification to addresses specified in the
+  config file. If all needed packages are present, this script will passe
+  control to check_tests.py.
+- plfs_build.sh: build plfs and install it into the installation directory (given
+  in config file). It will make sure the correct version of the autotools can be
+  used. If they are not found, it exits and the regression suite will exit.
+- openmpi_build.sh: build openmpi and install it. This script does not check
+  for the correct version of autotools (at this time). Since plfs_build.sh runs
+  first and it checks for the correct version of autotools, it is assumed that
+  if plfs_build.sh completed successfully, then it is ok for openmpi_build.sh
+  to assume that the correct version of the autotools is in use.
+- fs_test_build.sh: builds fs_test source.
+- src_cp.sh: copy source from one location into anther. This script can be used
+  to copy any set of code into the regression environment (plfs, fs_test, etc).
+- submit_tests.py: python script that will submit tests that are located in the
+  tests directory. It will use a control file to know which tests to submit.
+  Submit_tests.py file is where we specify how many different types of tests can
+  be run. To add more types of tests, edit this file in the main and parse_args
+  methods.
+- check_tests.py: python script that waits for tests to finish and then report
+  on results. It is designed to be run on it's own. That is,
+  run_plfs_regression.sh passes control to check_tests.py and then exits.
+  Check_tests.py expects to finish up the regression on its own. It can also
+  be started at any time to re-check tests. It can be instructed to wait for
+  jobs to complete or immediately check the results of tests. At this time,
+  check_tests.py requires a file that lists what tests were submitted. See
+  below for more information.
+- restart_check_tests.sh: Script that can be run through cron to find out if
+  check_tests.py should be restarted. Since check_tests.py is suppose to wait
+  for tests to complete, but there is no process to report to 
+  (run_plfs_regression.sh has already exited), it is possible that the
+  check_tests.py process dies before the whole regression run is complete.
+  This script is to make sure check_tests.py finishes at some point and sends
+  a report.
+- src: Directory that will contain all source needed by the regression suite.
+  All code will be copied into this directory in it's own directory. The
+  directory names will be hardcoded into run_plfs_regression.sh so that it can
+  always expect to find code in certain places.
+- inst: Directory that will be used to install packages to. Each package will
+  install to its own directory within inst. This is where tests should expect
+  to find all binaries and libraries that the regression suite provides.
+  NOTE: if already existing executables and libraries are given to the
+  regression suite, then this directory or its sub-directories will contain
+  symbolic links to the locations given in the configuration. This is to
+  ensure that tests always know where to find dependencies.
+- logs: Directory that will be used to hold log files.
+- tests: Directory that will contain individual test directories. Each
+  directory is considered a test. Lists of tests to run are kept in text
+  files in the tests directory.
+- A lock file will be created by run_plfs_regression.sh and can be removed by
+  run_plfs_regression.sh and check_results.py. It will also house job ids for
+  submitted jobs that can be checked by check_results.py. The actual file name
+  is set in the config file.
+  NOTE: submit_tests.py will also create this file if it doesn't exist, but
+  this functionality is there only to allow submit_tests.py to be run on its
+  own outside of the other regression scripts. A message is printed out if
+  submit_tests.py creates the file so that the behaviour can be tracked.
+- Check_tests.py requires the use of a file that contains a python dictionary
+  detailing what tests were submitted by submit_tests.py. The name of this
+  file can be specified in the config file. This dictionary will have
+  information on tests that were successfully submitted as well as tests that
+  were not successfully submitted. All of this information is necessary in
+  order for check_tests.py to create a suitable summary.
+
+Notes
+- The regression suite needs to figure out the mpi library name. Unlike mpi.h,
+  there is no standard for naming the library. Mpich and mvapich name it
+  libmpich* while open mpi names it libmpi*. Knowing the library name is
+  necessary in setting MPI_LD in compiling a parallel program so that the
+  right -l parameter is used. Currently the regression suite looks for the mpi
+  library by searching these names in order: libmpich*, libmpi.
+- For fs_test compilation, the regression suite will over-write MPI_LD and
+  MPI_INC to have the proper flags to compile fs_test against the regression
+  suite's plfs and mpi. This change is not permanent to the user's
+  environment, just the environment set up by the regression suite. These
+  environment variables should be available if individual tests need to
+  compile supporting programs.
+
+Issues/To do:
+- Tests of type 4 have not been built into the regression framework.
+- In order to start plfs on compute nodes, PBS_NODEFILE is currently used to
+  get a list of nodes to deal with. This will not work on a Cray machine as
+  that file will contain only the internal login node, not the actual back
+  ends that are associated with the job. A more general approach is needed
+  to determine what nodes are associated with a running job.
+- Check_tests.py for now requires a file that contains a python dictionary of
+  the tests that submit_tests.py submitted. This was done so that information
+  that submit_tests.py finds in submitting tests can be passed to
+  check_tests.py (basically submitted vs. unable to submit at this time).
+  However, this means that it is not quite simple to just rerun
+  check_tests.py after a regression run is completed since the dictionary file
+  is removed. Is this important? Maybe could have submit_tests.py leave
+  that additional information in a file inside the test's directory, but the
+  test does nothing with it (it would be a regression suite file, not a test
+  file). This way, check_tests.py could go through the same control file that
+  submit_tests.py went through to figure out what tests to check, and look
+  for that file and act accordingly. However, what if the control file
+  changes? This is probably the original reason why the dictionary file method
+  is used.
+  Maybe add an option to check_tests.py to not remove the dictionary file? Or
+  better yet, to not remove it at all from check_tests.py and have
+  submit_tests.py rewrite it each regression instance. Will this bring about
+  confusion about what regression instance spawned the file?

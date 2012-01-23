@@ -1,0 +1,30 @@
+This test will write out an fs_test target, change a random character in the
+target, and then read it in. There should be a single ERROR upon reading the
+target.
+
+Files:
+- reg_test.py: entry point for the test. Creates reg_test.sh which will be
+  the actual program that will be run to do the steps in this test.
+- input_write.py: experiment_management input file to generate the mpi
+  command that will write out the fs_test target.
+- input_read.py: experiment_management input file to generate the mpi command
+  that will read in the fs_test target.
+- common.py: file containing shared variables and functions for use in
+  creating a consistent submittal of reg_test.sh.
+- replace_char.c: C code that will be compiled by reg_test.py. This program
+  will choose a line in the fs_test target to change a single character.
+  Each line has an equal probability of being chosen.
+- input_script.py: experiment_management input file that will be used to run
+  reg_test.sh, the generated script.
+
+The test proceeds as follows:
+- reg_test.py compiles replace_char.c
+- reg_test.py creates reg_test.sh
+- reg_test.py calls experiment_management with input_write.py as input. The
+  output is put into reg_test.sh.
+- reg_test.py puts into reg_test.sh a command to swithc a character in the
+  target.
+- reg_test.py calls experiment_management with input_read.py as input. The
+  output is put into reg_test.sh.
+- reg_test.py calls experiment_management with input_script.py as input
+  to submit reg_test.sh as a job.

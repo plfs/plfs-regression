@@ -1,0 +1,2 @@
+00 1 * * * /users/${USER}/Regression/run_plfs_regression >> /dev/null
+*/30 * * * * /users/${USER}/Regression/restart_check_tests.sh >> /dev/null

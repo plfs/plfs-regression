@@ -1,0 +1,19 @@
+This test is intended to verify that the trucation of a file in plfs is 
+successful.  The sequence of operations is as follows:
+
+1)  PLFS is mounted via FUSE as defined in user's .plfsrc
+2)  A file is opened and the letter "a" is written across the entire file
+3)  The write operation is verified by reading the pattern written in 2.
+4)  The file is truncated in half.
+5)  The data pattern is verified with a read of the file
+6)  1/10 of the file is written with the letter "b".  The write is centered
+    in the middle of the file.
+7)  The data pattern is verified with a read of the file
+8)  The file is truncated in half.
+9)  The data pattern is verified with a read of the file
+10) The file is removed
+11) PLFS is unmounted
+
+If the truncation and data verification is successful, the test result is
+"PASSED", otherwise a "FAILED" test.
+ 

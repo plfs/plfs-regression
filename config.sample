@@ -1,0 +1,202 @@
+#!/bin/bash
+#
+# This file is the configuration file for the regression suite.
+# Note that full paths should be used as the regression suite
+# is designed to be used via cron and it is just easier to have
+# full paths.
+
+##---------------------------------------------------------------------------
+## Basic variables
+##
+
+# Once the regression suite is set up, it should not be necessary to change
+# these variables between regression runs.
+
+# Base of the regression directory
+basedir=/path/to/Regression
+
+# Recipients of the generated regression email
+addr="${USER}@lanl.gov"
+
+# Load the right set of autotools here. This config file is sourced rather
+# than run so commands like the following should work:
+# export PATH=/path/to/autotools/bin:$PATH
+# export LD_LIBRARY_PATH=/path/to/autotools/lib:$LD_LIBRARY_PATH
+
+##---------------------------------------------------------------------------
+## Variables for a particular regression run
+##
+
+# The following variables specify parameters for a particular regression run.
+# They only affect how run_plfs_regression.sh runs. Set source locations and
+# what to do in a single regression run here.
+#
+# Some these variables can be over-ridden by passing parameters
+# to run_plfs_regression.sh. Please see run_plfs_regression.sh's help (-h or
+# --help) for those options and what they set.
+
+# What to do about PLFS. Compile it or use an already in place version. Either
+# plfs_source_directory or plfs_bin_directory, plfs_sbin_directory,
+# plfs_lib_directory, and plfs_include_directory must be specified.
+
+# PLFS source. Pull the PLFS source from the following directory in order to
+# build it. This directory will be copied into the Regression suite's src dir
+# and be named "plfs". PLFS will be built based on this source and installed
+# into the regression suite's installation directory in a directory named
+# "plfs".
+#plfs_source_directory=/path/to/plfs/directory
+
+# Alternatively, specify a location of an already working version of PLFS.
+# These locations will be symbolicly linked inside the regression suite's
+# installation directory in a directory named plfs.
+# Setting the next three values will be ignored if plfs_source_directory is
+# set.
+# The directory where the PLFS user binaries are located.
+#plfs_bin_directory=/path/to/plfs/bin
+# The directory where the PLFS admin binaries are located.
+#plfs_sbin_directory=/path/to/plfs/sbin
+# The directory where the PLFS libraries are located.
+#plfs_lib_directory=/path/to/plfs/lib
+# The directory where the PLFS headers are located.
+#plfs_include_directory=/path/to/plfs/include
+
+# What to do about mpi. Either open_mpi_tarball or mpi_bin_directory,
+# mpi_lib_directory, and mpi_include_directory must be specified.
+
+# Open mpi tarball location. This tarball will be used to create an openmpi
+# source directory inside the regression suite's src directory. Open mpi will
+# then be built based on this source and installed into the regression suite's
+# installatino directory in a directory named "mpi". The regression suite
+# expects the tarball to be in bzip format.
+#open_mpi_tarball=/path/to/openmpi-tarball
+
+# Alternatively, provide a location of an already patched version of open mpi.
+# These locations will be symbolically linked inside the regression suite's
+# installation directory in a directory named "mpi".
+# Setting the next three values will be ignored if open_mpi_tarball is set.
+# The directory where the mpi binaries are located.
+#mpi_bin_directory=/path/to/mpi/bin/
+# The directory where the mpi libraries are located.
+#mpi_lib_directory=/path/to/mpi/lib
+# The directory where the mpi header files are located.
+#mpi_include_directory=/path/to/mpi/include
+
+# What to do about fs_test. Either fs_test_source_directory or fs_test_location
+# must be specified.
+
+# fs_test source location. This directory will be copied into the
+# Regression suite's src directory and be named "test_fs". The directory
+# specified here should have a directory tree exactly like the one present in
+# the repository version of fs_test. Then fs_test will be built based on that
+# source and the resulting binary will be copied into the regression suite's
+# installation directory in a directory named "test_fs".
+#fs_test_source_directory=/path/to/test_fs
+
+# Alternatively, provide a path to an already compiled fs_test binary. This
+# binary will be symbolically linked into the regression suite's installation
+# directory in a directory named "test_fs" with a name of fs_test.MY_MPI_HOST.x.
+#fs_test_location=/path/to/fs_test-binary
+
+# What to do about pexec. Either pexec_source_directory or pexec_location must
+# be specified.
+
+# Specify source code for pexec. The directory specified by the following will be
+# copied into the regression suite's installation directory and be named "pexec". The
+# regression suite will check to make sure a valid pexec executable is available.
+#pexec_source_directory=/path/to/pexec/directory
+
+# Alternatively, specify the following to use pexec from an external location.
+# A symbolic link to the executable will be created in the regression suite's
+# installation directory in a directory named "pexec" as "pexec" (pexec/pexec).
+#pexec_location=/path/to/pexec
+
+# Experiment management framework. Either experiment_management_source or
+# experiment_management_directory must be specified.
+
+# This directory will be copied into the regression suite's installation
+# directory with the name of "experiment_management". This directory should
+# have a directory tree exactly like the one present in the repository version
+# of experiment_management.
+#experiment_management_source=/path/to/experiment_management
+
+# Alternatively, specify a path to a working version of experiment_management.
+# This directory will be symbolically linked as "experiment_management" inside
+# the regression suite's installation directory.
+#experiment_management_directory=/path/to/experiment_management/
+
+# Types of tests to run. The possible types are 1, 2, 3, and 4. 
+#  Type 1: Tests on the filesystem; no plfs used
+#  Type 2: Tests use plfs mount points mounted through fuse
+#  Type 3: Tests use ADIO (patched mpi)
+#  Type 4: Test use API interface
+# A comma-separated list can be used of any of these digits: 1 or 1,2
+# or 1,2,4.
+# Default is 1,2.
+test_types="1,2"
+
+# Specify whether or not to skip the build step of the regression suite. If
+# building is skipped, then these steps will have had to have been done
+# previously in order for tests to run successfully.
+# Set to True or False. Default is True.
+do_building=True
+
+# Specify whether or not to skip submitting and checking tests.
+# Set to True or False. Default is True.
+do_tests=True
+
+# Specify whether or not to delete output from tests that pass.
+# Set to either True or False. Default is True.
+delete_passing_test_output=True
+
+# Specify whether or not to send an email.
+# Set to True or False. Default is True.
+send_email=True
+
+# What control file to use in the tests directory. Don't include full path,
+# just the file name.
+control_file=test_list.txt
+
+##---------------------------------------------------------------------------
+## Files related to both run_plfs_regression.sh and check_tests.py
+##
+
+# This section of variables will be those that must be shared between
+# run_plfs_regression.sh and restart_check_tests.sh. restart_check_tests.sh
+# must be able to start check_tests.py in the same way run_plfs_regression.sh
+# did.
+
+# Where to store a python dictionary of submitted jobs so that it is
+# easy to check only those jobs submitted.
+dict_file=${basedir}/.dict_file
+
+# Where to store job ids for checking on later. This file is very important
+# as it serves a lock file for the regression. If this file is present, it
+# implies that a set of tests are already running.
+id_file=${basedir}/id_file
+
+# File that will contain information from run_plfs_regression that needs
+# to be included in the generated email that will be sent by check_tests.py.
+# It will contain information about obtaining and building the various sources
+# that are required for running regression tests as well as information
+# about submitting jobs.
+email_message=${basedir}/.run_plfs_reg_summary.txt
+
+# Since check_tests.py is going to be run in the background, it needs
+# a standard place to put its output. This file is that place.
+check_tests_log=${basedir}/logs/check_tests.log
+
+# Lock file for run_plfs_regression.sh. This is to help the restart script
+# function to determine if it needs to restart check_tests.py.
+run_plfs_regression_lock=${basedir}/.run_plfs_regression.lock
+
+##---------------------------------------------------------------------------
+## Variables related to the regression suite's source 
+## and installation locations
+##
+
+# Where to put the source code. All source code will be placed
+# in its own directory within this directory (plfs, fs_test, etc.)
+srcdir=${basedir}/src
+
+# Where to put the executables and libraries that tests may use
+instdir=${basedir}/inst
