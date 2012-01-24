@@ -28,11 +28,11 @@ function Usage {
 }
     
 # Get the location of the base regression directory
-basedir=`echo $script_dir | sed 's|Regression/tests.*|Regression|'`
+basedir=`echo $script_dir | sed 's|tests/utils.*||'`
 
 if [ "$basedir" == "" ]; then
     echo "$script_name: Error: Unable to determine the base directory to the regression suite."
-    echo "This script should be located somewhere below the Regression/tests directory."
+    echo "This script should be located somewhere below the regression/tests directory."
     exit 1
 fi
 

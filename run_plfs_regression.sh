@@ -342,6 +342,15 @@ fi
 if [ -n "$open_mpi_tarball" ]; then
     if [ -f "$open_mpi_tarball" ]; then
         openmpi_tarball="$open_mpi_tarball"
+        # Check the platform file
+        if [ -f "$basedir/openmpi_platform_file" ]; then
+            ompi_platform_file=$basedir/openmpi_platform_file
+        elif [ -f "$basedir/openmpi_platform_file.sample" ]; then
+            ompi_platform_file=$basedir/openmpi_platform_file.sample
+        else
+            echo "$0: neither openmpi_platform_file or openmpi_platform_file.sample are present for correctly building openmpi."
+            exit 1
+        fi
     else
         echo "$0: $open_mpi_tarball is not a valid file."
         exit 1
@@ -510,6 +519,7 @@ if [ "$openmpi_tarball" == "None" ]; then
     echo "MPI headers: $mpi_inc_dir"
 else
     echo "Open MPI source: $openmpi_tarball"
+    echo "Open MPI platform file: $ompi_platform_file"
 fi
 if [ "$fs_test_src_from" == "None" ]; then
     echo "fs_test binary: $fs_test_loc"
@@ -792,7 +802,8 @@ if [ "$build" == "True" ]; then
             echo "Building and installing openmpi." | tee $mpi_build_log
             # Compile openmpi from a tarball
             ${basedir}/openmpi_build.sh $openmpi_tarball $srcdir $instdir/mpi \
-            ${srcdir}/plfs ${instdir}/plfs >> $mpi_build_log 2>&1
+            ${srcdir}/plfs ${instdir}/plfs ${ompi_platform_file} \
+            >> $mpi_build_log 2>&1
             if [[ $? == 0 ]]; then
                 mpi_stat="Successfully built and installed"
                 mpi_ok="PASS"

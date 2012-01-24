@@ -9,7 +9,7 @@ user = getpass.getuser()
 
 # Figure out the base directory of the regression suite
 curr_dir = os.getcwd()
-basedir = re.sub('Regression/tests.*', 'Regression/', curr_dir)
+basedir = re.sub('tests/rename.*', '', curr_dir)
 
 # Add the directory that contains the helper scripts
 utils_dir = basedir + "tests/utils"

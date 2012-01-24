@@ -15,9 +15,9 @@ curr_dir = os.getcwd()
 #
 # This method of the "Regular Expression" (re) class returns
 # the part of "curr_dir" up to the character just before
-# "Regression/".
+# "regression/".
 #
-basedir = re.sub('Regression/tests.*', 'Regression/', curr_dir)
+basedir = re.sub('tests/chown.*', '', curr_dir)
 
 #
 # Add the directory that contains the helper scripts. We'll need

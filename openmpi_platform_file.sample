@@ -1,0 +1,10 @@
+# These following lines must be present when building a patched open mpi
+# implementation. Do not change or remove the REPLACE_PLFS_* characters.
+# These will be replaced with the paths to PLFS when open mpi is actually
+# patched. Feel free to add to these lines as needed for a particular
+# configuration.
+with_io_romio_flags=--with-file-system=plfs
+LDFLAGS="-LREPLACE_PLFS_LIB -lplfs -lstdc++ -lpthread"
+CFLAGS="-IREPLACE_PLFS_INC"
+CXXFLAGS="-IREPLACE_PLFS_INC"
+CCASFLAGS="-IREPLACE_PLFS_INC"

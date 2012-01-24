@@ -2,7 +2,7 @@
 #
 # Submit the script just created.
 
-# Figure out that base directory of the Regression suite
+# Figure out that base directory of the regression suite
 import imp,os
 (fp, path, desc) = imp.find_module('common', [os.getcwd()])
 common = imp.load_module('common', fp, path, desc)

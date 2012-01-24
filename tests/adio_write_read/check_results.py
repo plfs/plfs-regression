@@ -2,7 +2,7 @@
 
 import os,re,sys
 curr_dir = os.getcwd()
-basedir = re.sub('Regression/tests.*', 'Regression', curr_dir)
+basedir = re.sub('tests/adio_write_read.*', '', curr_dir)
 
 # Add the directory that contains helper modules
 utils_dir = basedir + "/tests/utils"

@@ -16,7 +16,9 @@ Dependencies:
 - What ever compiler that is desired should be setup either through login
   scripts or in the regression suite's config file (see below).
 - The following packages/programs will be needed: plfs, open mpi, fs_test,
-  pexec, and experiment_management.
+  pexec, and experiment_management. In addition, these system services are
+  needed: /bin/mail (to send email) and MOAB (for submitting and tracking
+  parallel tests).
 - In regards to experiment_management, an rc file must be present and define
   runcommand, ppn, and outdir as individual tests may not pass these on the
   command line when invoking experiment_management. In addition, msub should
@@ -28,6 +30,17 @@ Dependencies:
   config accordingly. All information related to specifying where to find
   dependencies will be entered in that file. It is heavily commented in an
   attempt to explain all the different options available.
+- If open mpi is to be built by the regression suite, a platform file must
+  be used when compiling open mpi to make it aware of the locations of the
+  PLFS library. A sample platform file is provided as
+  openmpi_platform_file.sample. It contains the minimum settings necessary
+  to make open mpi aware of the PLFS library. It can be copied to
+  openmpi_platform_file and modified, but the REPLACE_PLFS_* characters must
+  remain so that the regression suite can accurately generate a usable
+  platform file. The regression suite will first check for the existance of
+  openmpi_platform_file. If it is not present, the regression suite will
+  check for openmpi_platform_file.sample. This way, if a custom platform file
+  is not needed, users can do nothing and the sample will be used.
 - MY_MPI_HOST environment variable set as in the experiment_management
   framework.
 - Define MPI_CC environment variable as the command to compile parallel

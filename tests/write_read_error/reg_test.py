@@ -88,9 +88,21 @@ def main(argv=None):
         # Generate the write command
         os.system(str(common.em_p.get_expr_mgmt_dir(common.basedir))
             + "/run_expr.py ./input_write.py >> " + str(script))
+        # Put in a check of the previous command
+        f = open(script, 'a')
+        f.write("ret=$?\n")
+        f.write("if [ \"$ret\" == 0 ]; then\n")
+        f.write("    echo \"Write successful\"\n")
+        f.write("else\n")
+        f.write("    echo \"Something wrong with writing.\"\n")
+        f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
+        f.write("        echo \"Running " + str(postscript) + "\"\n")
+        f.write("        " + str(postscript) + "\n")
+        f.write("    fi\n")
+        f.write("    exit 1\n")
+        f.write("fi\n")
         # Now need to write the command that will change the target so that 
         # reading causes a single error.
-        f = open(script, 'a')
         f.write(str(common.curr_dir) + '/replace_char ' + str(target) + ' 0\n')
         f.close()
         # Generate the read command
@@ -101,7 +113,6 @@ def main(argv=None):
             + str(target) + "; fi\" >> " + str(script))
         # Write into the script the script that will unmount plfs
         f = open(script, 'a')
-        f.write("echo \"Running " + str(postscript) + "\"\n")
         f.write("if [ \"$need_to_umount\" == \"True\" ]; then\n")
         f.write("    echo \"Running " + str(postscript) + "\"\n")
         f.write("    " + str(postscript) + "\n")

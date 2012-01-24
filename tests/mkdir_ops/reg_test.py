@@ -15,9 +15,9 @@ curr_dir = os.getcwd()
 #
 # This method of the "Regular Expression" (re) class returns
 # the part of "curr_dir" up to the character just before
-# "Regression/".
+# "regression/".
 #
-basedir = re.sub('Regression/tests.*', 'Regression/', curr_dir)
+basedir = re.sub('tests/mkdir_ops.*', '', curr_dir)
 
 #
 # I don't think I'll need this. The mkdir_ops.tcsh script itself

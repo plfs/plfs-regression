@@ -5,7 +5,7 @@
 import os,sys,re,getpass
 
 curr_dir = os.getcwd()
-basedir = re.sub('Regression/tests.*', 'Regression/', curr_dir)
+basedir = re.sub('tests/write_read_error.*', '', curr_dir)
 
 # Get the username to inject into the output target's filename
 user = getpass.getuser()

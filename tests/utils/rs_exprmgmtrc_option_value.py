@@ -34,8 +34,8 @@ os.chdir(save_dir)
 if ab_script_dir not in sys.path:
     sys.path += [ ab_script_dir]
 
-# Figure out the Regression suite's base directory from ab_script_dir
-basedir = re.sub('Regression/tests.*', 'Regression/', ab_script_dir)
+# Figure out the regression suite's base directory from ab_script_dir
+basedir = re.sub('tests/utils.*', '', ab_script_dir)
 
 # Import the module for dealing with experiment_managment paths
 import rs_exprmgmt_paths_add as emp
