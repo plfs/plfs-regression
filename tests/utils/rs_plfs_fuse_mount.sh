@@ -99,30 +99,31 @@ if [ "$serial" == "True" ]; then #Serial
         fi
     fi
 else #parallel
-    # get a list of nodes
-    nodes=`uniq $PBS_NODEFILE | tr '\n' ','`
-    # Define the pexec command
-    pexec="${basedir}/inst/pexec/pexec -pP 32 -m $nodes --all --ssh"
-    # Need to check to see if it is mounted already
-    eval ${pexec} \"$test_cmd\"
-    if [ $? == 0 ]; then # all nodes have the mount point already mounted
-        echo "$script_name: Mount point $mount_point already mounted on all nodes."
+    # Just run rs_computenodes_plfs_launch. It will first check if the
+    # mount point is already mounted. If it is, it will return with an
+    # exit status of 2. Otherwise, it will try to unmount the mount
+    # point, then make sure the mount point exists as a directory, and
+    # then try to mount. It will return a 0 if the mount point is 
+    # successfully mounted, 1 otherwise.
+    echo "$script_name: Executing ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh"
+    ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh --plfs=${basedir}/inst/plfs/sbin/plfs --pexec=${basedir}/inst/pexec/pexec --mntpt=$mount_point --plfslib=${basedir}/inst/plfs/lib
+    ret=$?
+    if [ $ret == 0 ]; then
+        # The mount point is successfully mounted
+        mount_status="ok"
+        need_to_mount="True"
+    elif [ $ret == 1 ]; then
+        # The mount point is not mounted; there was some problem
+        mount_status="bad"
+        need_to_mount="True"
+    elif [ $ret == 2 ]; then
+        # The mount point was already mounted
         mount_status="ok"
         need_to_mount="False"
-    else # some or all do not have the mount point already mounted.
-        # Just run rs_computenodes_plfs_launch. It will first try to unmount the mount
-        # point, then make sure the mount point exists as a directory, and
-        # then try to mount
-        echo "$script_name: Attempting to mount $mount_point on all nodes"
-        need_to_mount="True"
-        ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh --plfs=${basedir}/inst/plfs/sbin/plfs --pexec=${basedir}/inst/pexec/pexec --mntpt=$mount_point --plfslib=${basedir}/inst/plfs/lib
-        if [ $? == 0 ]; then
-            # The mount point is successfully mounted
-            mount_status="ok"
-        else
-            # At least one of the nodes was not able to successfully mount plfs
-            mount_status="bad"
-        fi
+    else
+        # Unknown exit value
+        echo "$script_name: Error: rs_computenodes_plfs_launch.csh returned an unknown exit value of $ret"
+        mount_status="bad"
     fi
 fi
     

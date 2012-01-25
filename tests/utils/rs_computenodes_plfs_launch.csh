@@ -1,4 +1,12 @@
 #! /bin/tcsh
+#
+# Input values:
+# Please see the output of -h or --help.
+#
+# Exit Values:
+# 0: Successfully mounted or unmounted
+# 1: Mounting/unmounting unsuccessful
+# 2: Mount point is already mounted on all nodes when trying to mount
 
 # Defaults
 set plfs   = "" 
@@ -6,6 +14,7 @@ set pexec  = ""
 set mnt_pt  = ""
 set umount = 0
 set plfs_lib = ""
+set force_remount = 0
 
 set script_name = `basename $0`
 
@@ -30,6 +39,9 @@ foreach i ($argv)
     case --plfslib=*:
       set plfs_lib = `echo $i | sed 's/[-a-zA-Z0-9]*=//'`
       echo "Using $plfs_lib"
+      breaksw
+    case --force-remount:
+      set force_remount = 1
       breaksw
     case -h:
     case --help:
@@ -58,6 +70,10 @@ foreach i ($argv)
       echo "\t\ta script must be created to properly set LD_LIBRARY_PATH and"
       echo "\t\tthen call plfs. This script must be copied to all nodes (done"
       echo "\t\twith pexec --scp) and then executed via pexec."
+      echo "\t--force-remount"
+      echo "\t\tThe default behavior if all nodes already have the mount point"
+      echo "\t\tmounted is to not do anything. Setting this option forces this"
+      echo "\t\tscript to attempt to unmount and then remount the mount point."
       echo "\tumount"
       echo "\t\tUnmount the plfs mount points"
       echo "\t-h|--help"
@@ -161,26 +177,47 @@ if ( -x "$pexec" ) then
     echo "# plfs : $plfs"
     echo "# mount : $mount"
     echo "# nodes : $nodes"
-    # always try to unmount first
-    echo "# unmount any existing mount points"
-    $pexec fusermount -u $mnt_pt |& grep -vi tput
+    # If we're mounting, need to check if it is already mounted. If all nodes
+    # already have it mounted, just exit unless we are forcing a remount.
     if ( $umount == 0 ) then
-      $pexec mkdir -p $mnt_pt |& grep -vi tput 
-      echo "# mounting plfs"
-      if ( "$plfs_lib" != "" ) then
-        # Need to modify LD_LIBRARY_PATH before calling the mount command, but
-        # both commands have to be done in the same subshell. Also need to use
-        # a specific shell as the syntax to change an environment variable is
-        # not shared across shells.
-        $pexec '/bin/bash -c "export LD_LIBRARY_PATH='${plfs_lib}':$LD_LIBRARY_PATH; '${mount}'"' |& grep -vi tput
-      else
-        $pexec $mount |& grep -vi tput
-      endif
+        $pexec grep -a Uptime $mnt_pt/.plfsdebug >>& /dev/null
+        if ( $status == 0 ) then
+            echo "# Mount point $mnt_pt already mounted on all nodes."
+            if ( $force_remount == 0 ) then
+                exit 2
+            endif
+        endif
+    endif
+    # At least one of the nodes doesn't have the mount point mounted or
+    # we're unmounting
+    echo "# unmount any existing mount points"
+    $pexec "fusermount -u $mnt_pt |& grep -vi tput"
+    # Now mount if we need to.
+    if ( $umount == 0 ) then
+        $pexec "mkdir -p $mnt_pt |& grep -vi tput" 
+        echo "# mounting plfs"
+        if ( "$plfs_lib" != "" ) then
+            # Need to modify LD_LIBRARY_PATH before calling the mount command, but
+            # both commands have to be done in the same subshell. Also need to use
+            # a specific shell as the syntax to change an environment variable is
+            # not shared across shells.
+            $pexec '/bin/bash -c "export LD_LIBRARY_PATH='${plfs_lib}':$LD_LIBRARY_PATH; '${mount}'"' |& grep -vi tput
+        else
+            $pexec $mount |& grep -vi tput
+        endif
     endif
     echo "# checking plfs"
-    $pexec grep -a Uptime $mnt_pt/.plfsdebug | grep -vi Tput
-    if (( $status != 0 ) && ( $umount == 0 )) then
-      exit 1
+    if ( $umount == 0 ) then
+        # Check that everything is mounted since we're mounting.
+        $pexec "grep -a Uptime $mnt_pt/.plfsdebug | grep -vi Tput"
+        set ret = $status
+    else
+        # We're unmounting. Check that nothing is mounted.
+        $pexec 'cat '$mnt_pt'/.plfsdebug |& grep "No such file or directory"'
+        set ret = $status
+    endif
+    if ( $ret != 0 ) then
+        exit 1
     endif
 else 
     echo "$pexec is not a valid executable. Exiting."

@@ -71,11 +71,9 @@ if [ "$serial" == "True" ]; then #Serial
 else # parallel
     echo "$script_name: Attempting to unmount $mount_point on all nodes"
     ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh --plfs=${basedir}/inst/plfs/sbin/plfs --pexec=${basedir}/inst/pexec/pexec --mntpt=$mount_point --plfslib=${basedir}/inst/plfs/lib umount
-    # check to make sure all nodes have it unmounted
-    nodes=`uniq $PBS_NODEFILE | tr '\n' ','`
-    pexec="${basedir}/inst/pexec/pexec -pP 32 -m $nodes --all --ssh"
-    eval ${pexec} \"$test_cmd\"
-    if [ $? != 0 ]; then
+    ret=$?
+    echo $ret
+    if [ $ret == 0 ]; then
         successfully_unmounted="True"
     else
         successfully_unmounted="False"

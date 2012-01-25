@@ -53,6 +53,12 @@ Dependencies:
   In addition to this requirement, inside the mount point it is expected that
   the regression suite will find a directory with the name of the user's
   username: <mount_point>/<username>
+- Fuse tests that run on compute nodes will make sure the mount_point
+  specified in the plfsrc is present. This way it is possible to use a
+  location such as /var/tmp, but users will not have to log in to each compute
+  node individually to make sure the mount point exists. This checking for the
+  mount_point's existance is actually done on any fuse test regardless of
+  where the test runs if the test was written correctly.
 - The proper version of autotools for compiling plfs should be available.
   Either those programs should already be in a user's path or how to find
   them should be specified in the config file.
