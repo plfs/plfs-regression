@@ -2,8 +2,10 @@
 # implementation. Do not change or remove the REPLACE_PLFS_* characters.
 # These will be replaced with the paths to PLFS when open mpi is actually
 # patched. Feel free to add to these lines as needed for a particular
-# configuration.
-with_io_romio_flags=--with-file-system=plfs
+# configuration. Ufs has to be present in the --with-file-system parameter;
+# otherwise parallel programs seem to have trouble with files.
+#
+with_io_romio_flags=--with-file-system=ufs+nfs+plfs
 LDFLAGS="-LREPLACE_PLFS_LIB -lplfs -lstdc++ -lpthread"
 CFLAGS="-IREPLACE_PLFS_INC"
 CXXFLAGS="-IREPLACE_PLFS_INC"
