@@ -72,7 +72,6 @@ else # parallel
     echo "$script_name: Attempting to unmount $mount_point on all nodes"
     ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh --plfs=${basedir}/inst/plfs/sbin/plfs --pexec=${basedir}/inst/pexec/pexec --mntpt=$mount_point --plfslib=${basedir}/inst/plfs/lib umount
     ret=$?
-    echo $ret
     if [ $ret == 0 ]; then
         successfully_unmounted="True"
     else
