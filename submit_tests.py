@@ -93,14 +93,6 @@ def submit_tests(options, types_table):
     0, {non-empty} - At least one test successfully submitted.
     """
 
-#    sys.path += [ reg_base_dir + '/src/experiment_management/', './' ]
-#    try:
-#        import run_expr
-#    except ImportError:
-#        print ("Error: Unable to import run_expr from experiment_management. "
-#            "Exiting...")
-#        return 1, {}
-
     test_info = {}
 
     # Test to make sure the id file exits. If it doesn't, let the user know
@@ -232,7 +224,6 @@ def submit_tests(options, types_table):
     f_cont.close()
     f_sub.close()
     print "Entering " + str(reg_base_dir)
-    sys.path.remove('./')
     os.chdir(reg_base_dir)
     return succ_submitted, test_info
 
