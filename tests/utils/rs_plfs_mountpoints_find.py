@@ -2,7 +2,7 @@
 #
 # Common functions related to mount points
 
-import subprocess
+import subprocess,re
 
 def get_mountpoints():
     """Determine plfs mount points by calling plfs_check_config.
@@ -24,10 +24,13 @@ def get_mountpoints():
         stdout = output[0].split('\n')
         for line in stdout:
             if ("Mount Point" in line):
+                # Remove the trailing ':'
+                mp = re.sub(':[\s]*$', '', line)
                 # The path to the mount point should be the last element on the line
-                mp = (line.split())[-1]
-                # Remove the trailing ':' and append to the mount points list
-                mount_points.append(mp[:-1])
+                mp = (mp.split())[-1]
+                # If mp isn't empty, then we got at least a non-empty string
+                if mp != '':
+                    mount_points.append(mp)
 
     if len(mount_points) == 0:
         print ("Error: no mount points will be passed back. Either the rc "

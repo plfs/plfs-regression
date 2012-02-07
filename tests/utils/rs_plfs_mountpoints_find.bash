@@ -39,16 +39,13 @@ while read line
 do    
 
 #
-# Here we'll pull-out the <path> part of the Mount Point line along with
-# the colon (":") at the end.
+# Remove the trailing colon (":")
 #
-    mp="`echo $line | awk '{print $3}'`"
+    mline=`echo $line | sed 's/:\s*$//'`
 #
-# We don't want the colon (":") at the end, so we'll find out how long
-# the <path>: string is and take all, but the last character, the ":".
+# Here we'll pull-out the <path> part of the Mount Point line
 #
-    len_mp=${#mp}
-    mp=${mp:0:$len_mp-1}
+    mp="`echo $mline | awk '{print $3}'`"
 #    echo "$mp"    
 
 #
