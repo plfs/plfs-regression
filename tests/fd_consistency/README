@@ -1,0 +1,16 @@
+A test to build plfs multiple times and look for fd leaks.
+
+Files:
+- reg_test.py: Main test script
+- intput_test.py: input script for experiment_management to run the generated
+  reg_test.sh script.
+- test_common.py: python file with common variables and functions to ensure a
+  consistent set of parameters between reg_test.py, and input_test.py.
+- fd_test.sh:  bash script used to build plfs and look for fd leaks.
+
+Flow of the test:
+- reg_test.py creates reg_test.sh. reg_test.py reads in the standalone bash 
+  shell fd_test.sh which is responsible for a bulk of this test.  It redirects 
+  the read of fd_test.sh to reg_test.sh
+- reg_test.py calls experiment_management with input_test.py as input. This
+  submits reg_test.sh as a job.
