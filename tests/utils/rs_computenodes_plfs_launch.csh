@@ -191,10 +191,10 @@ if ( -x "$pexec" ) then
     # At least one of the nodes doesn't have the mount point mounted or
     # we're unmounting
     echo "# unmount any existing mount points"
-    $pexec "fusermount -u $mnt_pt |& grep -vi tput"
+    $pexec fusermount -u $mnt_pt |& grep -vi tput
     # Now mount if we need to.
     if ( $umount == 0 ) then
-        $pexec "mkdir -p $mnt_pt |& grep -vi tput" 
+        $pexec mkdir -p $mnt_pt |& grep -vi tput 
         echo "# mounting plfs"
         if ( "$plfs_lib" != "" ) then
             # Need to modify LD_LIBRARY_PATH before calling the mount command, but
@@ -213,7 +213,7 @@ if ( -x "$pexec" ) then
         set ret = $status
     else
         # We're unmounting. Check that nothing is mounted.
-        $pexec 'cat '$mnt_pt'/.plfsdebug |& grep "No such file or directory"'
+        $pexec '/bin/bash -c "cat '$mnt_pt'/.plfsdebug 2>&1 | grep \"No such file or directory\""'
         set ret = $status
     endif
     if ( $ret != 0 ) then
