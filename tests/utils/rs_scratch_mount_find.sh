@@ -9,7 +9,8 @@ if [ "$scratch_mount" == "" ]; then
    scratch_mount="None"
 else 
    if [ ! -e $scratch_mount/$USER ]; then
-       scratch_mount="`find /panfs -maxdepth 3 -name $USER | head -1`"
+       scratch_dir="`find /panfs -maxdepth 3 -name $USER | head -1`"
+       scratch_mount="`dirname $scratch_dir`" 
    fi
 fi
 
