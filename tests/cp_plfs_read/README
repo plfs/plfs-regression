@@ -1,0 +1,26 @@
+This test will use fs_test to create an N-1 strided, 16MB file in a non-plfs 
+directory.  The file will then be copied to plfs mount point and fs_test 
+will be used to read the plfs placed file and verify data correctness.
+
+Files:
+- reg_test.py: entry point for the test. Creates reg_test.sh which will be
+  the actual program that will be run to do the steps in this test.
+- input_write.py: experiment_management input file to generate the mpi
+  command that will write out the fs_test target (non-plfs).
+- input_read.py: experiment_management input file to generate the mpi command
+  that will read in the fs_test target (plfs).
+- common.py: file containing shared variables and functions for use in
+  creating a consistent submittal of reg_test.sh.
+- input_script.py: experiment_management input file that will be used to run
+  reg_test.sh, the generated script.
+
+The test proceeds as follows:
+- reg_test.py creates reg_test.sh
+- reg_test.py calls experiment_management with input_write.py as input. The
+  output is put into reg_test.sh.
+- reg_test.py places a cp command in reg_test.sh to copy the target file
+  to plfs mounted space
+- reg_test.py calls experiment_management with input_read.py as input. The
+  output is put into reg_test.sh.
+- reg_test.py calls experiment_management with input_script.py as input
+  to submit reg_test.sh as a job.
