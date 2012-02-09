@@ -4,7 +4,7 @@
 
 import os,re,sys,getpass
 
-file = os.getenv("MY_MPI_HOST") +".write_read_no_error.out"
+file = os.getenv("MY_MPI_HOST") +".posix_nto1_strided.out"
 
 # Get the username to inject into the output target's filename
 user = getpass.getuser()
