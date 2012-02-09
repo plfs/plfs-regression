@@ -180,7 +180,7 @@ if ( -x "$pexec" ) then
     # If we're mounting, need to check if it is already mounted. If all nodes
     # already have it mounted, just exit unless we are forcing a remount.
     if ( $umount == 0 ) then
-        $pexec grep -a Uptime $mnt_pt/.plfsdebug >>& /dev/null
+        $pexec '/bin/bash -c "/usr/bin/test -e '$mnt_pt'/.plfsdebug && exit 0; exit 1"'
         if ( $status == 0 ) then
             echo "# Mount point $mnt_pt already mounted on all nodes."
             if ( $force_remount == 0 ) then
@@ -209,11 +209,11 @@ if ( -x "$pexec" ) then
     echo "# checking plfs"
     if ( $umount == 0 ) then
         # Check that everything is mounted since we're mounting.
-        $pexec "grep -a Uptime $mnt_pt/.plfsdebug | grep -vi Tput"
+        $pexec '/bin/bash -c "/usr/bin/test -e '$mnt_pt'/.plfsdebug && exit 0; exit 1"'
         set ret = $status
     else
         # We're unmounting. Check that nothing is mounted.
-        $pexec '/bin/bash -c "cat '$mnt_pt'/.plfsdebug 2>&1 | grep \"No such file or directory\""'
+        $pexec '/bin/bash -c "/usr/bin/test -e '$mnt_pt'/.plfsdebug && exit 1; exit 0"'
         set ret = $status
     endif
     if ( $ret != 0 ) then
