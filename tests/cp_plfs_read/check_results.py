@@ -2,7 +2,7 @@
 
 import os,re,sys
 curr_dir = os.getcwd()
-basedir = re.sub('tests/write_read_no_error.*', '', curr_dir)
+basedir = re.sub('tests/cp_plfs_read.*', '', curr_dir)
 
 # Add the directory that contains helper modules
 utils_dir = basedir + "/tests/utils"
@@ -60,7 +60,7 @@ def check(output_file):
         bad = "error"
         ok1 = "^#"
         ok2 = "Errors and warnings written to \(-errout\): stderr"
-        ok3 = "^Data written to target file.*write_read_no_error"
+        ok3 = "^Data written to target file.*cp_plfs_read"
         ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3)
         st2 = os.system('cat ' + str(output_file) + ' | egrep -v "' 
                 + str(ok) + '" | egrep -qi ' + str(bad))
