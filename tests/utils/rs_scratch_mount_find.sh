@@ -8,7 +8,7 @@ if [ "$scratch_mount" == "" ]; then
    echo "Error:  Unable to find panfs scratch space."
    scratch_mount="None"
 else 
-   if [ ! -e $scratch_mount/$USER ]; then
+   if [ ! -e /$scratch_mount/$USER ]; then
        scratch_dir="`find /panfs -maxdepth 3 -name $USER | head -1`"
        scratch_mount="`dirname $scratch_dir`" 
    fi
