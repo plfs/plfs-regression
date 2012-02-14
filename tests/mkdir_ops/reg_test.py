@@ -119,4 +119,7 @@ def main(argv=None):
 #            return [ 0 ]
 
 if __name__ == "__main__":
-    sys.exit(main())
+    ret = main()
+    # ret is a list, so we don't want to just return it. At this point, we just
+    # return a 0.
+    sys.exit(0)

@@ -20,12 +20,12 @@ import fs_test
 import expr_mgmt
 
 # Import the module with functions for finding mount points and targets
-import rs_plfs_mountpoints_find
+import rs_plfs_config_query
 
 # Get a target to use for this test.
 file = os.getenv("MY_MPI_HOST") + ".adio_write_read.out"
 user = getpass.getuser()
-mount_points = rs_plfs_mountpoints_find.get_mountpoints()
+mount_points = rs_plfs_config_query.get_mountpoints()
 mount_point = mount_points[-1]
 target = str(mount_point) + "/" + str(user) + "/" + str(file)
 

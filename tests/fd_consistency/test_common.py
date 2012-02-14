@@ -30,10 +30,10 @@ ppn = expr_mgmt.config_option_value("ppn")
 nprocs = 2 * int(ppn)
 
 # Import the module with functions for finding mount points.
-import rs_plfs_mountpoints_find
+import rs_plfs_config_query
 
 def get_mountpoint():
-    mount_points = rs_plfs_mountpoints_find.get_mountpoints()
+    mount_points = rs_plfs_config_query.get_mountpoints()
     if len(mount_points) > 0:
         mount_point = mount_points[-1]
     else:

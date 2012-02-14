@@ -1,14 +1,14 @@
 #!/bin/bash
-source /users/atorrez/Testing/regression//tests/utils/rs_env_init.sh
-mount_points=`/users/atorrez/Testing/regression//tests/utils/rs_plfs_mountpoints_find.bash`
+source /users/dshrader/plfs/regression_area/rrz/regression//tests/utils/rs_env_init.sh
+mount_points=`/users/dshrader/plfs/regression_area/rrz/regression//tests/utils/rs_plfs_config_query.py -m`
 ret=$?
 if [  "$ret" != 0 ]; then
-    echo "Failure:  Error finding the PLFS mount points with rs_plfs_mountpoints_find.bash"
+    echo "Failure:  Error finding the PLFS mount points with rs_plfs_config_query.py"
     exit 1
 fi
-echo "Running /users/atorrez/Testing/regression//tests/utils/rs_plfs_fuse_mount.sh /var/tmp/plfs2.atorrez serial"
+echo "Running /users/dshrader/plfs/regression_area/rrz/regression//tests/utils/rs_plfs_fuse_mount.sh /var/tmp/plfs.dshrader serial"
 need_to_umount="True"
-/users/atorrez/Testing/regression//tests/utils/rs_plfs_fuse_mount.sh /var/tmp/plfs2.atorrez serial
+/users/dshrader/plfs/regression_area/rrz/regression//tests/utils/rs_plfs_fuse_mount.sh /var/tmp/plfs.dshrader serial
 ret=$?
 if [  "$ret" == 0 ]; then
     echo "Mounting successful"
@@ -103,6 +103,6 @@ done
 echo "Completed fd checks."
 cd
 if [ "$need_to_umount" == "True" ]; then
-    echo "Running /users/atorrez/Testing/regression//tests/utils/rs_plfs_fuse_umount.sh /var/tmp/plfs2.atorrez serial"
-    /users/atorrez/Testing/regression//tests/utils/rs_plfs_fuse_umount.sh /var/tmp/plfs2.atorrez serial
+    echo "Running /users/dshrader/plfs/regression_area/rrz/regression//tests/utils/rs_plfs_fuse_umount.sh /var/tmp/plfs.dshrader serial"
+    /users/dshrader/plfs/regression_area/rrz/regression//tests/utils/rs_plfs_fuse_umount.sh /var/tmp/plfs.dshrader serial
 fi

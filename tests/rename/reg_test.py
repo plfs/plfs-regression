@@ -17,7 +17,7 @@ if utils_dir not in sys.path:
     sys.path += [ utils_dir ]
 
 # Add the module that will help get plfs mount points
-import rs_plfs_mountpoints_find as mpf
+import rs_plfs_config_query as pcq
 
 # Set up the right environment
 import rs_env_init
@@ -68,7 +68,7 @@ def main(argv=None):
 
     try:
         # Get a mount point
-        mount_points = mpf.get_mountpoints()
+        mount_points = pcq.get_mountpoints()
         if len(mount_points) > 0:
             mount_point = mount_points[-1]
         else:

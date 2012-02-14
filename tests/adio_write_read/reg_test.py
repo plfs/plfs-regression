@@ -13,7 +13,7 @@ utils_dir = basedir + "tests/utils"
 if utils_dir not in sys.path:
     sys.path += [ utils_dir ]
 
-import rs_plfs_mountpoints_find
+import rs_plfs_config_query
 
 # Add the experiment_management locations to sys.path
 import rs_exprmgmt_paths_add as emp
@@ -41,8 +41,12 @@ def main(argv=None):
     ppn = expr_mgmt.config_option_value("ppn")
     nprocs = 2 * int(ppn)
 
-    # Make sure we can get a valid mount_point
-    mount_points = rs_plfs_mountpoints_find.get_mountpoints()
+    # Make sure we can get a valid mount_point. The variable mount_points is
+    # not used again, but this code is valuable because where we do use it
+    # in one of the other scripts, there is no error checking to make sure we
+    # got a valid mount point and target. So the following is just for
+    # error checking.
+    mount_points = rs_plfs_config_query.get_mountpoints()
     if len(mount_points) == 0:
         print ("Error getting a valid mount point.")
         return [-1]

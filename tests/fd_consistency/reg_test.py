@@ -46,7 +46,7 @@ def main(argv=None):
         + str(mnt_pt) + " serial")
     postscript = (tc.basedir + "/tests/utils/rs_plfs_fuse_umount.sh "
         + str(mnt_pt) + " serial")
-    find_mnt_pts = (tc.basedir + "/tests/utils/rs_plfs_mountpoints_find.bash")
+    find_mnt_pts = (tc.basedir + "/tests/utils/rs_plfs_config_query.py -m")
 
     # Create the script
     try:
@@ -58,10 +58,10 @@ def main(argv=None):
         f.write("mount_points=" + "`" + str(find_mnt_pts) + "`" + "\n")
         f.write("ret=$?\n")
         f.write("if [  \"$ret\" != 0 ]; then\n")
-        f.write("    echo \"Failure:  Error finding the PLFS mount points with rs_plfs_mountpoints_find.bash\"\n")
+        f.write("    echo \"Failure:  Error finding the PLFS mount points with rs_plfs_config_query.py\"\n")
         f.write("    exit 1\n")
 #        f.write("else\n")
-#        f.write("    echo \"Failure:  The script, ../utils/rs_plfs_mountpoints_find.bash, is not executable and must be\"\n")
+#        f.write("    echo \"Failure:  The script, ../utils/rs_plfs_config_query.py, is not executable and must be\"\n")
 #        f.write("    exit 1\n")
         f.write("fi\n")
 

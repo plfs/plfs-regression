@@ -7,13 +7,13 @@
 # Make sure the script that parses out the PLFS mount points is there and that
 # it is executable.
 #
-if ( -x ../utils/rs_plfs_mountpoints_find.bash ) then
-  set mount_points = `../utils/rs_plfs_mountpoints_find.bash`
+if ( -x ../utils/rs_plfs_config_query.py ) then
+  set mount_points = `../utils/rs_plfs_config_query.py -m`
 #
 # If the script fails, note that and return a non-zero value.
 #
   if ( $? != 0 ) then
-    echo "Failure: Error finding the PLFS mount points with rs_plfs_mountpoints_find.bash"
+    echo "Failure: Error finding the PLFS mount points with rs_plfs_config_query.py"
     exit 1
   endif
 #
@@ -24,7 +24,7 @@ if ( -x ../utils/rs_plfs_mountpoints_find.bash ) then
 # The script was not found or is not executable.
 #
 else
-  echo "Failure: The script, ../utils/rs_plfs_mountpoints_find.bash, is not executable and must be"
+  echo "Failure: The script, ../utils/rs_plfs_config_query.py, is not executable and must be"
   exit 1
 endif
 #
