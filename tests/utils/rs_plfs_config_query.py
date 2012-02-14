@@ -28,17 +28,29 @@ def strip_trailing_slashes(path):
     """
     return re.sub('/*$', '', path)
 
-def call_plfs_check_config():
+def call_plfs_check_config(ignore_errors=False):
     """Calls and captures the output of plfs_check_config
 
+    Input:
+        ignore_erros: flag to ignore exit status and errors returned by
+            plfs_check_config.
     Output:
         Either an empty list if there was a problem running plfs_check_config
         or a list formated just as subprocess.communicate() returns
     """
-    ps = subprocess.Popen(['plfs_check_config'], stdin=None, 
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    if ignore_errors == False:
+        ps = subprocess.Popen(['plfs_check_config'], stdin=None, 
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    else:
+        # plfs_check_config will report a single error for every directory
+        # that does not exist. This breaks up the flow of the output that
+        # we want to parse. Remove them so that we get what we expect to be
+        # able to parse.
+        ps = subprocess.Popen(['plfs_check_config | grep -v Error'],
+            stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            shell=True)
     output = ps.communicate()
-    if ps.returncode != 0:
+    if ps.returncode != 0 and ignore_errors == False:
         print ("Error: plfs_check_config returned with exit code " 
             + str(ps.returncode))
         print ("Standard output from plfs_check_config:")
@@ -49,14 +61,16 @@ def call_plfs_check_config():
     else:
         return output
 
-def get_mountpoints():
+def get_mountpoints(ignore_errors=False):
     """Determine plfs mount points by calling plfs_check_config.
 
+    Input:
+        ignore_errors: flag to ignore errors from plfs_check_config
     Output:
         a python list containing a string for each mount point found
     """
     mount_points = []
-    output = call_plfs_check_config()
+    output = call_plfs_check_config(ignore_errors=ignore_errors)
     if output != []:
         # Split stdout into lines and loop over them, looking for lines
         # with mount points in them.
@@ -76,18 +90,19 @@ def get_mountpoints():
 
     return mount_points
 
-def get_backends(mount_point):
+def get_backends(mount_point, ignore_errors=False):
     """Determine a list of backends associated with a plfs mount point
 
     Input:
         mount_point: the mount point to find backends for
+        ignore_errors: flag to ignore errors from plfs_check_config
     Output:
         a python list containing a string for each backend
     """
     mount_point = strip_trailing_slashes(mount_point)
     backends = []
     mp = ""
-    output = call_plfs_check_config()
+    output = call_plfs_check_config(ignore_errors=ignore_errors)
     if output != []:
         # Split stdout into lines and loop over them, looking for lines
         # with mount points and backends in them.
@@ -126,19 +141,24 @@ def get_backends(mount_point):
 def parse_args(argv):
     """Parse command line arguments if this module is called from the shell
     """
-    usage = "\n %prog -m \n %prog -b mount_point"
-    description = ("This script queries a plfs configuration and returns a "
-        + "space-separated list of the requested parameter. Either -m or -b "
+    usage = "\n %prog -m [-i]\n %prog -b [-i] mount_point"
+    description = ("This script queries a PLFS configuration and returns a "
+        + "space-separated list of the requested parameter. It uses PLFS's "
+        + "plfs_check_config to parse the PLFS config files. Either -m or -b "
         + "must be specified, but not both.")
     parser = OptionParser(usage=usage, description=description)
 
     parser.add_option("-m", "--get-mountpoints", action="store_true",
-        dest="get_mountpoints", help="Request a list of the plfs mount points "
-        + "from the plfs configuration.", default=False)
+        dest="get_mountpoints", help="Request a list of the PLFS mount points "
+        + "from the PLFS configuration.", default=False)
     parser.add_option("-b", "--get-backends", action="store_true",
-        dest="get_backends", help="Request a list of the plfs backends "
-        + "associated with the specified plfs mount point. The mount point "
+        dest="get_backends", help="Request a list of the PLFS backends "
+        + "associated with the specified PLFS mount point. The mount point "
         + "must be given on the command line.", default=False)
+    parser.add_option("-i", "--ignore-errors", action="store_true",
+        dest="ignore_errors", help="Ignore errors and exit status of "
+        + "plfs_check_config. Userful for just finding the names of the "
+        + "needed PLFS directories.", default=False)
 
     (options, args) = parser.parse_args()
     if options.get_mountpoints == False and options.get_backends == False:
@@ -176,9 +196,10 @@ def main(argv=None):
         argv = sys.argv
     options,args = parse_args(argv)
     if options.get_mountpoints == True:
-        ret_list = get_mountpoints()
+        ret_list = get_mountpoints(ignore_errors=options.ignore_errors)
     if options.get_backends == True:
-        ret_list = get_backends(args[0])
+        ret_list = get_backends(ignore_errors=options.ignore_errors, 
+            mount_point=args[0])
     if len(ret_list) == 0:
         return 1
     else:

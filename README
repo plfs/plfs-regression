@@ -46,13 +46,19 @@ Dependencies:
 - Define MPI_CC environment variable as the command to compile parallel
   programs. For example, set it to mpicc (generic mpi implementation) or cc
   (cray implementation).
-- A working ~/.plfsrc file. Tests of type 2 and 3 will use the last 
-  mount_point entry in that file for fs_test.x targets. Using /etc/plfsrc
-  should not be done as those mount points are already mounted with a version
-  of plfs that is not what we want to test in the regression suite.
-  In addition to this requirement, inside the mount point it is expected that
-  the regression suite will find a directory with the name of the user's
-  username: <mount_point>/<username>
+- A working ~/.plfsrc file. It is not necessary that all of the directories
+  for the PLFS mount points and backends exist. The regression suite will
+  ensure that these directories exist and will attempt to create them if they
+  are missing. The backends should be located on a file system space that will
+  be shared between all nodes (compute nodes as well as the node that will be
+  running run_plfs_regression.sh). Make sure that the user has write
+  permissions for all paths. Using mount_points and backends that the user
+  does not have permissions to create but does have write permissions on is
+  permissible only if all of the required directories are already created. In
+  this way, a system configuration of PLFS can be tested. It should be noted
+  that inside the mount point it is expected that the regression suite will
+  find a directory with the name of the user's username:
+  <mount_point>/<username>
 - Fuse tests that run on compute nodes will make sure the mount_point
   specified in the plfsrc is present. This way it is possible to use a
   location such as /var/tmp, but users will not have to log in to each compute

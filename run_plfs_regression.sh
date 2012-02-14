@@ -665,11 +665,11 @@ if [ "$build" == "True" ]; then
         echo "Building plfs..." | tee $plfs_build_log
         # Copy the src from plfs_src_from
         ${basedir}/src_cp.sh $plfs_src_from ${srcdir}/plfs >> $plfs_build_log 2>&1
-        #grep -q processor /proc/cpuinfo
+#        grep -q processor /proc/cpuinfo
         if [[ $? == 0 ]]; then
             # Build the plfs source
             ${basedir}/plfs_build.sh ${srcdir}/plfs $instdir/plfs >> $plfs_build_log 2>&1
-            #grep -q processor /proc/cpuinfo
+#            grep -q processor /proc/cpuinfo
 
             # Find out if the build was successful
             if [[ $? == 0 ]]; then
@@ -703,7 +703,7 @@ if [ "$build" == "True" ]; then
         plfs_ok="FAIL"
     fi
     if [ ! -d "${instdir}/plfs/include" ]; then
-        echo "ERROR: ${instdir}/plfs/includeis is not avaliable.." 2>&1
+        echo "ERROR: ${instdir}/plfs/include is not avaliable.." 2>&1
         plfs_ok="FAIL"
     fi
 
@@ -715,6 +715,60 @@ if [ "$build" == "True" ]; then
     # Set up the environment to use the regression suite's plfs. This will
     # redefine plfs_bin_dir, plfs_lib_dir and plfs_inc_dir.
     setup_rs_env_plfs
+
+    # Make sure all plfs directories are available.
+    # Get the mount points from the plfs config, ignoring errors since the
+    # directories may not exist yet.
+    query_script=${basedir}/tests/utils/rs_plfs_config_query.py
+    mount_points=`${query_script} -m -i`
+    if [ $? != 0 ]; then
+        echo "ERROR: Unable to get PLFS mount point(s) using ${query_script}"
+        script_exit 1
+    fi
+
+    for mount_point in $mount_points; do
+        # Check that the mount point directory is created
+        if [ ! -d $mount_point ]; then
+            echo "Attempting to create directory $mount_point..."
+            mkdir -p $mount_point
+            if [ $? != 0 ]; then
+                echo "ERROR: Problem creating directory $mount_point"
+                script_exit 1
+            else
+                echo "Successfully created"
+            fi
+        fi
+        # Now get the backends for this mount point, ignoring errors
+        backends=`$query_script -b -i $mount_point`
+        if [ $? != 0 ]; then
+            echo "ERROR: Unable to get PLFS backends using ${query_script}"
+            script_exit 1
+        fi
+        for backend in $backends; do
+            # Check that the backend directory is there; create if not there
+            if [ ! -d $backend ]; then
+                echo "Attempting to create directory $backend..."
+                mkdir -p $backend
+                if [ $? != 0 ]; then
+                    echo "ERROR: Problem creating directory $backend"
+                    script_exit 1
+                else
+                    echo "Successfully created"
+                fi
+            fi
+            # Check that the needed subdirectory is there in the backend
+            if [ ! -d $backend/${USER} ]; then
+                echo "Attempting to create directory $backend/${USER}..."
+                mkdir -p $backend/${USER}
+                if [ $? != 0 ]; then
+                    echo "ERROR: Problem creating directory $backend/$USER"
+                    script_exit 1
+                else
+                    echo "Successfully created"
+                fi
+            fi
+        done
+    done
 
     #MPI
     echo "Checking mpi. Please see $mpi_build_log."
