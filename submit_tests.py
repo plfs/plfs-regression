@@ -13,7 +13,7 @@ def parse_args(num_required, num_test_types):
     which tests in the control file to run.
     """
 
-    usage = "Usage: %prog [options]"
+    usage = "\n %prog [options]"
     description = ("This script will submit tests within the tests directory.")
     parser = OptionParser(usage=usage, description=description)
     parser.set_defaults(types="1,2", basedir=".", control_file=None, 

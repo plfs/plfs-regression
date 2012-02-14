@@ -23,7 +23,7 @@ def parse_args(num_required):
     arguments.
     """
 
-    usage = "Usage: %prog [options]"
+    usage = "\n %prog [options]"
     description = ("This script will check tests that are running within the "
                    "tests directory.")
     parser = OptionParser(usage=usage, description=description)
