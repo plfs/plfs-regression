@@ -8,7 +8,7 @@ import sys,os
 def add_plfs_paths(dir=None):
     print "rs_env_init.py: Using " + str(dir) + " as base directory for regression suite."
 
-    # Append the regression suite's plfs install directories to PATH an LD_LIBRARY_PATH
+    # Append the regression suite's plfs install directories to PATH
     # PLFS bin
     plfs_inst_bin = dir + "/inst/plfs/bin"
     try:
@@ -27,21 +27,8 @@ def add_plfs_paths(dir=None):
         # PATH is not in the dictionary of env variables yet.
         os.environ["PATH"] = plfs_inst_sbin
 
-    # PLFS libary
-    plfs_inst_lib = dir + "/inst/plfs/lib"
-    try:
-        if plfs_inst_lib not in os.environ["LD_LIBRARY_PATH"]:
-            os.environ["LD_LIBRARY_PATH"] = plfs_inst_lib + ":" + os.environ["LD_LIBRARY_PATH"]
-    except KeyError:
-        # LD_LIBRARY_PATH is not in the dictionary of env variables yet.
-        os.environ["LD_LIBRARY_PATH"] = plfs_inst_lib
-
     # MPI bin
     mpi_inst_bin = dir + "/inst/mpi/bin"
     if mpi_inst_bin not in os.environ["PATH"]:
         os.environ["PATH"] = mpi_inst_bin + ":" + os.environ["PATH"]
 
-    # MPI library
-    mpi_inst_lib = dir + "/inst/mpi/lib"
-    if mpi_inst_lib not in os.environ["LD_LIBRARY_PATH"]:
-        os.environ["LD_LIBRARY_PATH"] = mpi_inst_lib + ":" + os.environ["LD_LIBRARY_PATH"]

@@ -12,11 +12,6 @@
 # to run the compilation process directly in the path given by the
 # first command line parameter.
 
-#autotools_bin=/users/ben/autotools/bin
-#autotools_lib=/users/ben/autotools/lib
-#export PATH=${autotools_bin}:$PATH
-#export LD_LIBRARY_PATH=${autotools_lib}:$LD_LIBRARY_PATH
-
 req_m4_version="1.4.14"
 req_autoconf_version="2.65"
 req_automake_version="1.11.1"
@@ -77,9 +72,9 @@ fi
 
 echo "Running configure script"
 if [ $instdir == "" ]; then
-  ./configure --enable-all-debug-flags
+  ./configure --enable-all-debug-flags --disable-silent-rules
 else
-  ./configure --prefix=$instdir --enable-all-debug-flags
+  ./configure --prefix=$instdir --enable-all-debug-flags --disable-silent-rules
 fi
 check_exit $? "Configure process"
 

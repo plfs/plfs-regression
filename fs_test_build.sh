@@ -37,6 +37,10 @@ function check_exit {
   fi
 }
 
+# Grab the linking flags that we need
+export MPI_LD=$RS_LDFLAGS
+export MPI_INC=$RS_CFLAGS
+
 # Echo the values of the needed environment variables
 echo "The following are the values of the needed environment variables:"
 echo "MY_MPI_HOST: $MY_MPI_HOST"

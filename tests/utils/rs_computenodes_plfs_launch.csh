@@ -66,10 +66,6 @@ foreach i ($argv)
       echo "\t--plfslib=DIRECTORY"
       echo "\t\tSet the location of the plfs library. Use to make sure a"
       echo "\t\tconsistent set of plfs binary and library are used together."
-      echo "\t\tWhen this option is used, due to limitations of shell scripting,"
-      echo "\t\ta script must be created to properly set LD_LIBRARY_PATH and"
-      echo "\t\tthen call plfs. This script must be copied to all nodes (done"
-      echo "\t\twith pexec --scp) and then executed via pexec."
       echo "\t--force-remount"
       echo "\t\tThe default behavior if all nodes already have the mount point"
       echo "\t\tmounted is to not do anything. Setting this option forces this"
@@ -201,6 +197,8 @@ if ( -x "$pexec" ) then
             # both commands have to be done in the same subshell. Also need to use
             # a specific shell as the syntax to change an environment variable is
             # not shared across shells.
+            # TODO I am not sure this is necessary as the plfs executable has
+            # an rpath in it that gets it the right library.
             $pexec '/bin/bash -c "export LD_LIBRARY_PATH='${plfs_lib}':$LD_LIBRARY_PATH; '${mount}'"' |& grep -vi tput
         else
             $pexec $mount |& grep -vi tput

@@ -195,11 +195,6 @@ function setup_rs_env_plfs {
     plfs_sbin_dir=${instdir}/plfs/sbin
     plfs_lib_dir=${instdir}/plfs/lib
     plfs_inc_dir=${instdir}/plfs/include
-    old_LD=`echo $LD_LIBRARY_PATH`
-    LD_LIBRARY_PATH="${plfs_lib_dir}:$LD_LIBRARY_PATH"
-    #echo "Old LD_LIBRARY_PATH: $old_LD"
-    #echo "New LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH
     old_PATH=`echo $PATH`
     PATH="${plfs_sbin_dir}:${plfs_bin_dir}:$PATH"
     #echo "Old PATH: $old_PATH"
@@ -214,11 +209,6 @@ function setup_rs_env_mpi {
     mpi_bin_dir=${instdir}/mpi/bin
     mpi_lib_dir=${instdir}/mpi/lib
     mpi_inc_dir=${instdir}/mpi/include
-    old_LD=`echo $LD_LIBRARY_PATH`
-    LD_LIBRARY_PATH="${mpi_lib_dir}:$LD_LIBRARY_PATH"
-    #echo "Old LD_LIBRARY_PATH: $old_LD"
-    #echo "New LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-    export LD_LIBRARY_PATH
     old_PATH=`echo $PATH`
     PATH="${mpi_bin_dir}:$PATH"
     #echo "Old PATH: $old_PATH"
@@ -226,13 +216,11 @@ function setup_rs_env_mpi {
     export PATH
 }
 
-# Function that will set up MPI_LD and MPI_INC
+# Function that will set up env variables for compiling and linking against
+# the regression suite's plfs and mpi
 function setup_rs_env_flags {
-    #TODO need to do something about libtorque
-    old_MPI_LD=`echo $MPI_LD`
-    export MPI_LD="-L$plfs_lib_dir -Wl,-rpath=$plfs_lib_dir -Wl,--whole-archive -lplfs -Wl,--no-whole-archive -lz -lstdc++ -L$mpi_lib_dir -l$mpi_lib_name -lm"
-    old_MPI_INC=`echo $MPI_INC`
-    export MPI_INC="-I$plfs_inc_dir -I$mpi_inc_dir"
+    export RS_LDFLAGS="-L$plfs_lib_dir -Wl,-rpath=$plfs_lib_dir -Wl,--whole-archive -lplfs -Wl,--no-whole-archive -lz -lstdc++ -L$mpi_lib_dir -Wl,-rpath=$mpi_lib_dir -l$mpi_lib_name -lm"
+    export RS_CFLAGS="-I$plfs_inc_dir -I$mpi_inc_dir"
 }
 
 # Default values for command line parameters

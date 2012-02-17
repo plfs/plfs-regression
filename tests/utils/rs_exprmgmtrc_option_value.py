@@ -44,6 +44,13 @@ emp.add_exprmgmt_paths(basedir)
 import expr_mgmt
 
 def main(argv=None):
+    if len(argv) != 2:
+        print "Usage:"
+        print "rs_exprmgmtrc_option_value.py OPTION\n"
+        print ("where OPTION is the value to search for in "
+            + "experiment_management's rc file.\n")
+        return 1
+
     value = expr_mgmt.config_option_value(str(argv[1]))
     if value == None:
         return 1

@@ -69,6 +69,15 @@ Test writing guidelines/invariants
   environment variables to use the regression suite's version of executables
   and libraries. Tests should be able to call on those executables
   without having to put full paths for the purposes of submitting tests.
+  LD_LIBRARY_PATH is not modified; instead, all binaries that the regression
+  suite provides should have rpath's in them to find the right libraries. If
+  a test needs to compile something against the plfs or mpi libraries, two
+  environment variables are defined which will have the proper linking and
+  include statements. These variables are RS_LDFLAGS and RS_CFLAGS. The
+  RS_LDFLAGS environment variable will have the necessary parameters to put
+  the plfs and mpi library directories in the compiled binary's rpath so there
+  should be no need to modify LD_LIBRARY_PATH to get a test's compiled
+  binaries to work with the regression suite's plfs and mpi libraries.
 - Tests should be written such that they can be run on their own outside of
   the regression suite. This helps in developing and testing of the tests.
   This requirement applies to both reg_test.py and check_results.py. That is,

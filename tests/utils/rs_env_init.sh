@@ -34,11 +34,8 @@ else
     echo "$script_name: Using $basedir as the base directory for the regression suite."
 fi
 
-# Append the regression suite's install directories to PATH and LD_LIBRARY_PATH
 PATH=$basedir/inst/plfs/sbin:$basedir/inst/plfs/bin:$basedir/inst/mpi/bin:$PATH
-LD_LIBRARY_PATH=$basedir/inst/plfs/lib:$basedir/inst/mpi/lib:$LD_LIBRARY_PATH
 export PATH
-export LD_LIBRARY_PATH
 
 # Get the tests/utils directory
 utils_dir="$basedir/tests/utils"
