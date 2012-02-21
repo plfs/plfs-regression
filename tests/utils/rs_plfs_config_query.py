@@ -38,17 +38,8 @@ def call_plfs_check_config(ignore_errors=False):
         Either an empty list if there was a problem running plfs_check_config
         or a list formated just as subprocess.communicate() returns
     """
-    if ignore_errors == False:
-        ps = subprocess.Popen(['plfs_check_config'], stdin=None, 
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    else:
-        # plfs_check_config will report a single error for every directory
-        # that does not exist. This breaks up the flow of the output that
-        # we want to parse. Remove them so that we get what we expect to be
-        # able to parse.
-        ps = subprocess.Popen(['plfs_check_config | grep -v Error'],
-            stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            shell=True)
+    ps = subprocess.Popen(['plfs_check_config'], stdin=None, 
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output = ps.communicate()
     if ps.returncode != 0 and ignore_errors == False:
         print ("Error: plfs_check_config returned with exit code " 
@@ -111,26 +102,27 @@ def get_backends(mount_point, ignore_errors=False):
             # Watch for each mount point section and keep track of the
             # current section
             if ("Mount Point" in line):
-                # Remove a trailing ':'
+                # Get the mount point's name
                 mp = get_mountpoint_name(line)
                 #print mp
             # If Backend: is in the line, see if we're in the right mount
             # mount point section
             elif ("Backend:" in line):
                 if mp == mount_point:
+                    # Append the mount point to the list.
                     # The path of the backend is the last element on the line
                     be = (line.split())[-1]
                     if be != '':
                         backends.append(be)
-            # We've hit a line that has neither Mount Point or Backend in it.
-            # If we already found the mount point in question and got to
-            # another line after the "Backend:" lines, then we're done.
-            # Otherwise, we need to keep parsing.
-            else:
+            elif ("Checksum:" in line):
+                # We've reached the end of a mount point's section
                 if mp == mount_point:
+                    # We've reached the end of the mount point we are
+                    # looking for
                     break
-                else:
-                    continue
+            else:
+                # A line that has no information that we need to find backends
+                continue
     if len(backends) == 0:
         print ("Error: no backends will be passed back. Either the rc "
             + "files had no mount points in them or there was a problem "

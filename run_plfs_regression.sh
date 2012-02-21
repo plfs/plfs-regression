@@ -729,7 +729,7 @@ if [ "$build" == "True" ]; then
         # Now get the backends for this mount point, ignoring errors
         backends=`$query_script -b -i $mount_point`
         if [ $? != 0 ]; then
-            echo "ERROR: Unable to get PLFS backends using ${query_script}"
+            echo "ERROR: Unable to get PLFS backends for $mount_point using ${query_script}"
             script_exit 1
         fi
         for backend in $backends; do
