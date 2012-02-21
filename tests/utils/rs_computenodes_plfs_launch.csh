@@ -13,7 +13,6 @@ set plfs   = ""
 set pexec  = ""
 set mnt_pt  = ""
 set umount = 0
-set plfs_lib = ""
 set force_remount = 0
 
 set script_name = `basename $0`
@@ -35,10 +34,6 @@ foreach i ($argv)
       breaksw
     case umount:
       set umount = 1
-      breaksw
-    case --plfslib=*:
-      set plfs_lib = `echo $i | sed 's/[-a-zA-Z0-9]*=//'`
-      echo "Using $plfs_lib"
       breaksw
     case --force-remount:
       set force_remount = 1
@@ -63,9 +58,6 @@ foreach i ($argv)
       echo "\t\tSet the location of the mount point to pass to plfs. This script"
       echo "\t\twill try to create DIRECTORY if it does not exist."
       echo "OPTIONS"
-      echo "\t--plfslib=DIRECTORY"
-      echo "\t\tSet the location of the plfs library. Use to make sure a"
-      echo "\t\tconsistent set of plfs binary and library are used together."
       echo "\t--force-remount"
       echo "\t\tThe default behavior if all nodes already have the mount point"
       echo "\t\tmounted is to not do anything. Setting this option forces this"
@@ -103,12 +95,6 @@ else
   exit 1
 endif
 
-if ( "$plfs_lib" != "" ) then
-  if ( ! -d "$plfs_lib" ) then
-    echo "$plfs_lib is not a valid directory. Exiting."
-    exit 1
-  endif
-endif
 
 set mount  = "$plfs $mnt_pt -o direct_io" 
 
@@ -192,17 +178,7 @@ if ( -x "$pexec" ) then
     if ( $umount == 0 ) then
         $pexec mkdir -p $mnt_pt |& grep -vi tput 
         echo "# mounting plfs"
-        if ( "$plfs_lib" != "" ) then
-            # Need to modify LD_LIBRARY_PATH before calling the mount command, but
-            # both commands have to be done in the same subshell. Also need to use
-            # a specific shell as the syntax to change an environment variable is
-            # not shared across shells.
-            # TODO I am not sure this is necessary as the plfs executable has
-            # an rpath in it that gets it the right library.
-            $pexec '/bin/bash -c "export LD_LIBRARY_PATH='${plfs_lib}':$LD_LIBRARY_PATH; '${mount}'"' |& grep -vi tput
-        else
-            $pexec $mount |& grep -vi tput
-        endif
+        $pexec $mount |& grep -vi tput
     endif
     echo "# checking plfs"
     if ( $umount == 0 ) then

@@ -106,7 +106,7 @@ else #parallel
     # then try to mount. It will return a 0 if the mount point is 
     # successfully mounted, 1 otherwise.
     echo "$script_name: Executing ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh"
-    ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh --plfs=${basedir}/inst/plfs/sbin/plfs --pexec=${basedir}/inst/pexec/pexec --mntpt=$mount_point --plfslib=${basedir}/inst/plfs/lib
+    ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh --plfs=${basedir}/inst/plfs/sbin/plfs --pexec=${basedir}/inst/pexec/pexec --mntpt=$mount_point
     ret=$?
     if [ $ret == 0 ]; then
         # The mount point is successfully mounted
