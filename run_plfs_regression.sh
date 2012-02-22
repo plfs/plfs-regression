@@ -704,6 +704,66 @@ if [ "$build" == "True" ]; then
     # redefine plfs_bin_dir, plfs_lib_dir and plfs_inc_dir.
     setup_rs_env_plfs
 
+    # experiment_management
+    echo "Checking experiment_management. Please see $expr_mgmt_get_log."
+    expr_dir="${instdir}/experiment_management"
+    # Remove the old inst/experiment_management directory if needed
+    if [ -d "$expr_dir" ]; then
+        echo "Removing $expr_dir" > $expr_mgmt_get_log 2>&1
+        rm -rf $expr_dir >> $expr_mgmt_get_log 2>&1
+        if [ -d "$expr_dir" ]; then
+            echo "Error: Unable to remove $expr_dir" >> $expr_mgmt_get_log 2>&1
+            expr_mgmt_stat="unable to remove old experiment_management installation"
+            expr_mgmt_ok="FAIL"
+        fi
+    fi
+
+    if [ "$expr_mgmt_ok" == "PASS" ]; then
+        if [ "$expr_mgmt_src_from" == "None" ]; then
+            # Use a location elsewhere on the system. Don't copy it.
+            echo "Linking experiment_management..." | tee -a $expr_mgmt_get_log
+            ln -s $expr_mgmt_loc $expr_dir >> $expr_mgmt_get_log 2>&1
+            if [ ! -d "${expr_dir}" ]; then
+                expr_mgmt_stat="unable to link"
+                expr_mgmt_ok="FAIL"
+            else
+                expr_mgmt_stat="successfully linked"
+                expr_mgmt_ok="PASS"
+            fi
+        else
+            # Copy the directory into the regression suite's installation directory
+            echo "Copying experiment_management..." | tee -a $expr_mgmt_get_log
+            ${basedir}/src_cp.sh $expr_mgmt_src_from $expr_dir >> $expr_mgmt_get_log 2>&1
+            if [[ $? == 0 ]]; then
+                expr_mgmt_stat="successfully copied"
+                expr_mgmt_ok="PASS"
+            else
+                expr_mgmt_stat="unable to copy"
+                expr_mgmt_ok="FAIL"
+            fi
+        fi
+
+        # Now check that we have a valid experiment_management framework if
+        # everything has gone well up to this point.
+        if [ "$expr_mgmt_ok" == "PASS" ]; then
+            if [ ! -e "$expr_dir/run_expr.py" ] || \
+                [ ! -f "$expr_dir/lib/expr_mgmt.py" ] || \
+                [ ! -f "$expr_dir/lib/fs_test.py" ]; then
+                expr_mgmt_stat="$expr_dir is not a valid experiment_management framework."
+                expr_mgmt_ok="FAIL"
+                echo $expr_mgmt_stat >> $expr_mgmt_get_log
+                echo "The following files are expected for a valid framework:" >> $expr_mgmt_get_log
+                echo "experiment_management/run_expr.py (must be executable)" >> $expr_mgmt_get_log
+                echo "experiment_management/lib/expr_mgmt.py" >> $expr_mgmt_get_log
+                echo "experiment_management/lib/fs_test.py" >> $expr_mgmt_get_log
+            fi
+        fi
+    fi
+    echo $expr_mgmt_stat
+    if [ "$expr_mgmt_ok" == "FAIL" ]; then
+        script_exit 1
+    fi
+
     # Make sure all plfs directories are available.
     # Get the mount points from the plfs config, ignoring errors since the
     # directories may not exist yet.
@@ -745,14 +805,20 @@ if [ "$build" == "True" ]; then
                 fi
             fi
             # Check that the needed subdirectory is there in the backend
-            if [ ! -d $backend/${USER} ]; then
-                echo "Attempting to create directory $backend/${USER}..."
-                mkdir -p $backend/${USER}
-                if [ $? != 0 ]; then
-                    echo "ERROR: Problem creating directory $backend/$USER"
-                    script_exit 1
-                else
-                    echo "Successfully created"
+            # First, get the name of the subdirectory, if it exists
+            append_path=`tests/utils/rs_exprmgmtrc_option_value.py \
+                rs_mnt_append_path`
+            if [ "$append_path" != "" ]; then
+                # Check if it is there and create it if it isn't.
+                if [ ! -d $backend/$append_path ]; then
+                    echo "Attempting to create directory $backend/$append_path..."
+                    mkdir -p $backend/$append_path
+                    if [ $? != 0 ]; then
+                        echo "ERROR: Problem creating directory $backend/$append_path"
+                        script_exit 1
+                    else
+                        echo "Successfully created"
+                    fi
                 fi
             fi
         done
@@ -1011,65 +1077,6 @@ if [ "$build" == "True" ]; then
         script_exit 1
     fi
 
-    # experiment_management
-    echo "Checking experiment_management. Please see $expr_mgmt_get_log."
-    expr_dir="${instdir}/experiment_management"
-    # Remove the old inst/experiment_management directory if needed
-    if [ -d "$expr_dir" ]; then
-        echo "Removing $expr_dir" > $expr_mgmt_get_log 2>&1
-        rm -rf $expr_dir >> $expr_mgmt_get_log 2>&1
-        if [ -d "$expr_dir" ]; then
-            echo "Error: Unable to remove $expr_dir" >> $expr_mgmt_get_log 2>&1
-            expr_mgmt_stat="unable to remove old experiment_management installation"
-            expr_mgmt_ok="FAIL"
-        fi
-    fi
-
-    if [ "$expr_mgmt_ok" == "PASS" ]; then
-        if [ "$expr_mgmt_src_from" == "None" ]; then
-            # Use a location elsewhere on the system. Don't copy it.
-            echo "Linking experiment_management..." | tee -a $expr_mgmt_get_log
-            ln -s $expr_mgmt_loc $expr_dir >> $expr_mgmt_get_log 2>&1
-            if [ ! -d "${expr_dir}" ]; then
-                expr_mgmt_stat="unable to link"
-                expr_mgmt_ok="FAIL"
-            else
-                expr_mgmt_stat="successfully linked"
-                expr_mgmt_ok="PASS"
-            fi
-        else
-            # Copy the directory into the regression suite's installation directory
-            echo "Copying experiment_management..." | tee -a $expr_mgmt_get_log
-            ${basedir}/src_cp.sh $expr_mgmt_src_from $expr_dir >> $expr_mgmt_get_log 2>&1
-            if [[ $? == 0 ]]; then
-                expr_mgmt_stat="successfully copied"
-                expr_mgmt_ok="PASS"
-            else
-                expr_mgmt_stat="unable to copy"
-                expr_mgmt_ok="FAIL"
-            fi
-        fi
-
-        # Now check that we have a valid experiment_management framework if
-        # everything has gone well up to this point.
-        if [ "$expr_mgmt_ok" == "PASS" ]; then
-            if [ ! -e "$expr_dir/run_expr.py" ] || \
-                [ ! -f "$expr_dir/lib/expr_mgmt.py" ] || \
-                [ ! -f "$expr_dir/lib/fs_test.py" ]; then
-                expr_mgmt_stat="$expr_dir is not a valid experiment_management framework."
-                expr_mgmt_ok="FAIL"
-                echo $expr_mgmt_stat >> $expr_mgmt_get_log
-                echo "The following files are expected for a valid framework:" >> $expr_mgmt_get_log
-                echo "experiment_management/run_expr.py (must be executable)" >> $expr_mgmt_get_log
-                echo "experiment_management/lib/expr_mgmt.py" >> $expr_mgmt_get_log
-                echo "experiment_management/lib/fs_test.py" >> $expr_mgmt_get_log
-            fi
-        fi
-    fi
-    echo $expr_mgmt_stat
-    if [ "$expr_mgmt_ok" == "FAIL" ]; then
-        script_exit 1
-    fi
 else
     echo "--nobuild used...skipping source retrevial and building and going straight to tests"
     plfs_stat="skipped due to configuration"
