@@ -35,6 +35,7 @@ import rs_exprmgmt_paths_add as emp
 # Add the experiment_management location to sys.path
 emp.add_exprmgmt_paths(basedir)
 import expr_mgmt
+import rs_exprmgmtrc_target_path_append as tpa
 
 class plfsMntError(Exception):
     def __init__(self, msg):
@@ -151,7 +152,9 @@ def main(argv=None):
         try:
             file_base = os.getenv("MY_MPI_HOST") + ".truncate"
             file_size=1048576
-            file1 = str(mount_point) + "/" + str(user) + "/" + str(file_base) + "1"
+            # Check for rs_mnt_append_path in experiment_management
+            top_dir = tpa.append_path([mount_point])[0]
+            file1 = str(top_dir) + "/" + str(file_base) + "1"
             data="a"*file_size
         
             # create the file

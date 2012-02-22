@@ -21,13 +21,17 @@ import expr_mgmt
 
 # Import the module with functions for finding mount points and targets
 import rs_plfs_config_query
+import rs_exprmgmtrc_target_path_append as tpa
 
 # Get a target to use for this test.
 file = os.getenv("MY_MPI_HOST") + ".adio_write_read.out"
 user = getpass.getuser()
 mount_points = rs_plfs_config_query.get_mountpoints()
 mount_point = mount_points[-1]
-target = str(mount_point) + "/" + str(user) + "/" + str(file)
+# Get the optional rs_mnt_append_path. With passing only a single entry,
+# we'll get back a list of only one element.
+top_dir = tpa.append_path([mount_point])[0]
+target = str(top_dir) + "/" + str(file)
 
 # Want enough processes to fill up two nodes
 ppn = expr_mgmt.config_option_value("ppn")

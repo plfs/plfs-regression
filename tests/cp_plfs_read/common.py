@@ -31,6 +31,7 @@ file = os.getenv("MY_MPI_HOST") + ".cp_plfs_read.out"
 
 # Import the module with functions for finding mount points.
 import rs_plfs_config_query
+import rs_exprmgmtrc_target_path_append as tpa
 
 def get_mountpoint():
     mount_points = rs_plfs_config_query.get_mountpoints()
@@ -43,7 +44,8 @@ def get_mountpoint():
 def get_target():
     mount_point = get_mountpoint()
     if mount_point != None:
-        target = str(mount_point) + "/" + str(user) + "/" + str(file)
+        top_dir = tpa.append_path([mount_point])[0]
+        target = str(top_dir) + "/" + str(file)
     else:
         target = None
     return target

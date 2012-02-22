@@ -28,6 +28,14 @@ else
   exit 1
 endif
 #
+# Check to make sure the script that will append experiment_managment's
+# rs_mnt_append_path is available.
+#
+if ( ! -x ../utils/rs_exprmgmtrc_target_path_append.py ) then
+  echo "Failure: ../utils/rs_exprmgmtrc_mnt_append_path_append.py is not executable and must be"
+  exit 1
+endif
+#
 # Loop over each of the PLFS mount points defined in the plfsrc file.
 #
 foreach mnt ( $mount_points )
@@ -52,9 +60,10 @@ foreach mnt ( $mount_points )
 #  endif
 #
 # Set the place where we will create a file to change ownership on, and get the
-# groups to which this user belongs.
+# groups to which this user belongs. Make sure to check for
+# experiment_managmenet's rc_mnt_append_path.
 #
-  set top  = $mnt/$USER
+  set top  = `../utils/rs_exprmgmtrc_target_path_append.py $mnt`
   set ts   = `date +%s`
   set file = $top/foo.$ts
   set user_groups = `groups`

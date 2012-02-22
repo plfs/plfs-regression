@@ -28,6 +28,8 @@ import rs_exprmgmt_paths_add as emp
 emp.add_exprmgmt_paths(basedir)
 import expr_mgmt
 
+import rs_exprmgmtrc_target_path_append as tpa
+
 class plfsMntError(Exception):
     def __init__(self, msg):
         self.msg = msg
@@ -74,10 +76,12 @@ def main(argv=None):
         else:
             raise plfsMntError("unable to get mount point.\n")
 
+        # Check for rs_mnt_append_path in experiment_management
+        top_dir = tpa.append_path([mount_point])[0]
         # Define two targets
         file_base = os.getenv("MY_MPI_HOST") + ".rename"
-        file1 = str(mount_point) + "/" + str(user) + "/" + str(file_base) + "1"
-        file2 = str(mount_point) + "/" + str(user) + "/" + str(file_base) + "2"
+        file1 = str(top_dir) + "/" + str(file_base) + "1"
+        file2 = str(top_dir) + "/" + str(file_base) + "2"
 
         # Define a control line
         cont_line = "Looking for something to read\n"

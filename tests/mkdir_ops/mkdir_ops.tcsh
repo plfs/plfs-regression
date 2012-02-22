@@ -27,6 +27,14 @@ else
   exit 1
 endif
 #
+# Check to make sure the script that will append experiment_managment's
+# rs_mnt_append_path is available.
+#
+if ( ! -x ../utils/rs_exprmgmtrc_target_path_append.py ) then
+  echo "Failure: ../utils/rs_exprmgmtrc_target_path_append.py is not executable and must be"
+  exit 1
+endif
+#
 # Loop over each of the PLFS mount points defined in the plfsrc file.
 #
 foreach mnt ( $mount_points )
@@ -59,7 +67,7 @@ foreach mnt ( $mount_points )
 #
 # Set the place where we will create directories to do the directory operations.
 #
-  set top  = $mnt/$USER
+  set top  = `../utils/rs_exprmgmtrc_target_path_append.py $mnt`
 
   set ts   = `date +%s`
   set dir_a = $top/a-$ts
@@ -202,9 +210,10 @@ foreach mnt ( $mount_points )
 # Loop over each of the mount point backends defined in the plfsrc file.
 #
   foreach backend ( $mount_point_backends )
-    echo "Checking to make sure that $dir_e exists in $backend/$USER..."
-    if ( ! -e $backend/$USER/$dir_e ) then
-      echo "Failure: The directory $USER/$dir_e does not exist on mount point $mnt's backend, $backend, and should"
+    set backend_top_dir = `../utils/rs_exprmgmtrc_target_path_append.py $backend`
+    echo "Checking to make sure that $dir_e exists in $backend_top_dir..."
+    if ( ! -e $backend_top_dir/$dir_e ) then
+      echo "Failure: The directory $dir_e does not exist on mount point $mnt's backend in $backend_top_dir, and should"
       exit 1
     endif
   end
