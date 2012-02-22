@@ -66,8 +66,10 @@ foreach mnt ( $mount_points )
 # endif
 #
 # Set the place where we will create directories to do the directory operations.
+# This includes the using the optional rs_mnt_append_path parameter
 #
   set top  = `../utils/rs_exprmgmtrc_target_path_append.py $mnt`
+  echo "Using $top for directory operations"
 
   set ts   = `date +%s`
   set dir_a = $top/a-$ts
@@ -210,6 +212,7 @@ foreach mnt ( $mount_points )
 # Loop over each of the mount point backends defined in the plfsrc file.
 #
   foreach backend ( $mount_point_backends )
+    # Need to get the optional append path
     set backend_top_dir = `../utils/rs_exprmgmtrc_target_path_append.py $backend`
     echo "Checking to make sure that $dir_e exists in $backend_top_dir..."
     if ( ! -e $backend_top_dir/$dir_e ) then

@@ -20,14 +20,16 @@ curr_dir = os.getcwd()
 basedir = re.sub('tests/mkdir_ops.*', '', curr_dir)
 
 #
-# I don't think I'll need this. The mkdir_ops.tcsh script itself
-# calls a helper script in utils, but does it by referncing the
-# script through a relative reference.
-#
 # Add the directory that contains the helper scripts
-#utils_dir = basedir + "tests/utils"
-#if utils_dir not in sys.path:
-#    sys.path += [ utils_dir ]
+utils_dir = basedir + "tests/utils"
+if utils_dir not in sys.path:
+    sys.path += [ utils_dir ]
+
+# Import the module for dealing with experiment_management paths
+import rs_exprmgmt_paths_add as emp
+# Add the experiment_management location to sys.path
+emp.add_exprmgmt_paths(basedir)
+import expr_mgmt
 
 class mkdir_opsError(Exception):
     def __init__(self, msg):
@@ -45,7 +47,8 @@ def main(argv=None):
     #
     # Where the output of the test will be placed.
     #
-    out_dir = "output/" + str(datetime.date.today())
+    out_dir = (str(expr_mgmt.config_option_value("outdir")) + "/"
+        + str(datetime.date.today()))
     #
     # Create the directory if needed
     #

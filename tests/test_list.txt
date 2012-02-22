@@ -17,3 +17,5 @@
 2 rename
 2 chown
 2 truncate
+2 mkdir_ops
+3 adio_optimization
