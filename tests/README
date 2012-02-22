@@ -88,7 +88,8 @@ Test writing guidelines/invariants
   kill the calling function, i.e. submit_tests.py or check_tests.py because
   of the way those scripts call the scripts within the test directory.
   Please use return statements instead.
-- Output files should be placed in a directory named "output". This is to allow
+- Output files should be placed in a directory whose name is determined by
+  getting experiment_management's "outdir" parameter. This is to allow
   the regression suite's check_tests.py to remove successful tests. Within this
   directory, a scheme should be followed that will allow easy identification
   of when a test was run. For example, experiment_managment uses output/<date>
@@ -134,17 +135,19 @@ Test writing guidelines/invariants
   targets are unique to the machine and test. Please see write_read_no_error
   as an example.
 - Targets should be constructed with the following convention:
-  <plfs mount point>/<user>/<test output file>
-  <plfs mount point> should be obtained by calling plfs_check_config, <user>
-  is the current username (do not hardcode), and <test output file> is the
-  output file(s) used by the test. <test output file> could be a directory
-  path relative to <plfs mount  point>/<user>.
+  <plfs mount point>/<append path>/<test output path>
+  <plfs mount point> should be obtained by calling
+  utils/rs_plfs_config_query.py, <append path> is obtained by getting
+  rs_mnt_append_path from experiment_management's rc file (could be done by
+  calling utils/rs_exprmgmtrc_option_value.py or
+  utils/rs_exprmgmtrc_target_path_append.py), and
+  <test output path> is the output path/file(s) used by the test.
 - If a test needs supporting scripts within the test directory, please do not
   use python's import built-in function. It is ok to use it to import python 
   built-in modules, experiment_management and modules in the regression suite's
-  utils directory, but it is not ok to import local module files. This is
-  because python, when using the built-in import function, does not reparse a
-  module's file if it has already imported a module of the same name. This
+  utils directory, but it is not ok to import test's local module files. This
+  is because python, when using the built-in import function, does not reparse
+  a module's file if it has already imported a module of the same name. This
   happens even if the module is removed by the del command. Instead, please
   use the imp module. An example can be found in the test named
   write_read_error. This is to allow different tests to use the files with the
