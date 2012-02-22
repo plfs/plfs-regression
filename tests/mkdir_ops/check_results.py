@@ -77,7 +77,7 @@ def parse_args(argv):
 def find_outfiles(options):
     """Determine output file absolute locations and return them in a list."""
     if options.files == None:
-        outfiles = lgf.find_newest(curr_dir + "/" + expr_mgmt.system_default("outdir"))
+        outfiles = lgf.find_newest(curr_dir + "/" + expr_mgmt.config_option_value("outdir"))
     else:
         outfiles = lgf.find_given(options.files.split(','))
     return outfiles
