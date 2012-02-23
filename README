@@ -198,14 +198,19 @@ Notes
   environment, just the environment set up by the regression suite. These
   environment variables should be available if individual tests need to
   compile supporting programs.
+- It is possible for the regression suite to get itself into a state where it
+  cannot run. This is usually due to not being able to work with the needed
+  jobs id file and the python dictionary file of what jobs to check. These
+  are specified in the config file as id_file and dict_file, respectively.
+  When these files can not be found when needed or are not usable, the
+  regression suite will create a DO_NOT_RUN_REGRESSION. The presence of this
+  file will keep future instances of the regression suite from running. At the
+  time that this file is created, and error should be printed out as to what
+  went wrong with what file. If email is enabled, an email with the same
+  information should be sent. It is expected that user intervention is
+  required to get the regression suite back into working order.
 
 Issues/To do:
-- Tests of type 4 have not been built into the regression framework.
-- In order to start plfs on compute nodes, PBS_NODEFILE is currently used to
-  get a list of nodes to deal with. This will not work on a Cray machine as
-  that file will contain only the internal login node, not the actual back
-  ends that are associated with the job. A more general approach is needed
-  to determine what nodes are associated with a running job.
 - Check_tests.py for now requires a file that contains a python dictionary of
   the tests that submit_tests.py submitted. This was done so that information
   that submit_tests.py finds in submitting tests can be passed to
