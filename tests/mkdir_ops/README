@@ -1,0 +1,22 @@
+This test is designed to test two directory operations:
+
+1) rmdir on a non-empty directory
+2) making sure that a mkdir on the mount point creates the directory on all
+   backends
+
+For rmdir on the non-empty directory, /etc/passwd is copied into a new
+directory on the mount point, and then the test attempts to remove the
+directory by using rmdir. This removal should fail. The test verifies that the
+copy of passwd in the directory still matches /etc/passwd. The directory is
+then removed using 'rm -rf'.
+
+The mkdir test creates a new directory within the plfs mount point and then
+loops over the backends for that mount point to make sure the directory is
+present.
+
+Files:
+- reg_test.py: It sets up the output directory and calls mkdir_ops.tcsh
+  redirecting the output from mkdir_ops.tcsh to an output file.
+- mkdir_ops.tcsh: the main test script. It carries out both tests outlined
+  above.
+- check_results.py: the script used to check the results of the test.
