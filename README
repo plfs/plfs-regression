@@ -36,7 +36,8 @@ Dependencies:
   regression suite will use these mount points, experiment_management input
   (see below) and run-time information to construct file targets that will be
   used during the test. Without the applicable experiment_management setting,
-  targets will be placed directly into the mount point.
+  targets will be placed directly into the mount point. Some tests use only
+  one backend, others will use all backends found in the plfs rc files.
 - Fuse tests that run on compute nodes will make sure the mount_point
   specified in the plfsrc is present. This way it is possible to use a
   location such as /var/tmp, but users will not have to log in to each compute
