@@ -7,14 +7,19 @@ fd_prev_cnt=4
 cnt=0
 #
 # Number of times to build plfs (loop count)
-cnt_max=1
+cnt_max=10
 #
 build_for_mnt=1
 user=${USER}
-plfs_tarball_path="/usr/projects/plfs/regression_area/src/plfs"
-latest_tarball=`/bin/ls -ltr $plfs_tarball_path/*.gz | /usr/bin/tail -1 | /bin/awk '{print $9}'`
-plfs_tarball=`/bin/basename "$latest_tarball"` 
 
+#plfs_tarball_path=`pwd`
+latest_tarball=`/bin/ls -ltr $plfs_tarball_path/*.gz | /usr/bin/tail -1 | /bin/awk '{print $9}'`
+
+if [ "$latest_tarball" == "" ]; then
+   echo "Error:  No Tarball Found" 
+   exit 1
+fi 
+plfs_tarball=`/bin/basename "$latest_tarball"` 
 # get mount from mount_points 
 for mnt in $mount_points 
 do
@@ -31,30 +36,39 @@ do
     echo $cnt
     if [ $build_for_mnt -eq 1 ]; then
 
-#setup to build plfs from tarball      
+      #setup to build plfs from tarball      
       echo "Copying $plfs_tarball_path/$plfs_tarball to $mnt/$user"
       cp $plfs_tarball_path/$plfs_tarball $mnt/$user/.
-      #cp ../../plfs-2.1.tar.gz $mnt/$user.
+
       cd $mnt/$user 
-# untar and build plfs
+
+      # untar and build plfs
       echo "Untarring plfs"
       tar -xzf $plfs_tarball 
       echo "Done untarring" 
-# figure out plfs directory name
+
+      # figure out plfs directory name
       plfs_dir=`/bin/ls -al | grep drw | grep plfs | awk '{print $9}'`
       echo $plfs_dir
       echo "Changing directory to $plfs_dir" 
       cd $plfs_dir
    
 # make plfs
-      echo "make clean, configure, and make"
+      echo "make distclean"
       make distclean
+      echo "Running configure"
       ./configure
-      pwd
-      make -j
-# and run plfs
-      ./fuse/plfs 
 
+      echo "Running make -j"
+      make -j
+  
+      echo "Done making plfs"
+
+      # and run plfs
+      
+      ./fuse/plfs 
+      echo "Running plfs"
+ 
       echo $mount_points
 # get pid for fuse mount 
       pid=`ps aux | grep $USER | grep $mnt | grep -v grep | awk '{print $2}'`
