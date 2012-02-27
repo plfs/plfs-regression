@@ -4,8 +4,6 @@
 
 import os,re,sys,getpass
 
-file = os.getenv("MY_MPI_HOST") +".write_read_no_error.out"
-
 # Get the username to inject into the output target's filename
 user = getpass.getuser()
 
@@ -40,11 +38,3 @@ def get_mountpoint():
         mount_point = None
     return mount_point
     
-def get_target():
-    mount_point = get_mountpoint()
-    if mount_point != None:
-        target = str(mount_point) + "/" + str(user) + "/" + str(file)
-    else:
-        target = None
-    return target
-
