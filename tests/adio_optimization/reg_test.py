@@ -6,7 +6,7 @@ import os,sys,re
 
 # Figure out the base directory of the regression suite
 curr_dir = os.getcwd()
-basedir = re.sub('tests/adio_hints.*', '', curr_dir)
+basedir = re.sub('tests/adio_optimization.*', '', curr_dir)
 
 # Add the directory that contains the helper scripts
 utils_dir = basedir + "tests/utils"
@@ -74,7 +74,8 @@ def main(argv=None):
     last_id = run_expr.main(['run_expr', str(curr_dir) + "/" + str(input_script),
         '--nprocs=' + str(nprocs), '--walltime=' + str(walltime), 
         '--dispatch=msub'])
-    return [last_id]
+
+    return [0]
 
 if __name__ == "__main__":
     result = main()
