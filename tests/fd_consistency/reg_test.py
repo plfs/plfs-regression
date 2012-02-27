@@ -31,12 +31,6 @@ def main(argv=None):
     # Walltime of the job(s)
     walltime = "60:00"
 
-    # Figure out the target for this test
-    target = tc.get_target()
-    if target == None:
-        print ("Error getting target")
-        return [-1]
-    
     # Get the mount_point. No need to check because if there was a problem,
     # it would have been found in getting the target.
     mnt_pt = tc.get_mountpoint()
@@ -84,6 +78,7 @@ def main(argv=None):
         f.write("    echo \"Something wrong with mounting.\"\n")
         f.write("    exit 1\n")
         f.write("fi\n")
+        f.write("plfs_tarball_path=" + str(os.getcwd()) + "\n")
         f.close()
         os.system(str("cat ") + in_script + " >> " + str(gen_script))
 
