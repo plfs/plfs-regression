@@ -1,0 +1,20 @@
+A simple N-1 strided write and read test through a fuse mount point.
+
+Files:
+- reg_test.py: Main test script
+- input.py: input script for experiment_management to create a command to read
+  and write to a target.
+- intput_test.py: input script for experiment_management to run the generated
+  reg_test.sh script.
+- test_common.py: python file with common variables and functions to ensure a
+  consistent set of parameters between input.py, reg_test.py, and input_test.py.
+
+Flow of the test:
+- reg_test.py creates reg_test.sh. Calls upon helper scripts in the regression
+  environment to put in lines into reg_test.sh that get a proper environment
+  and mount through fuse.
+- reg_test.py calls experiment_management with input.py as input. The output
+  is put in reg_test.sh
+- reg_test.py puts in a line to unmount the mountpoint.
+- reg_test.py calls experiment_management with input_test.py as input. This
+  submits reg_test.sh as a job.
