@@ -20,7 +20,6 @@ if [ "$latest_tarball" == "" ]; then
    exit 1
 fi 
 plfs_tarball=`/bin/basename "$latest_tarball"` 
-
 #
 # Check to make sure the script that will append experiment_managment's
 # rs_mnt_append_path is available.
@@ -80,7 +79,6 @@ do
       
       ./fuse/plfs 
       echo "Running plfs"
- 
       echo $mount_points
 
       # get pid for fuse mount 
@@ -107,7 +105,9 @@ do
     fi
   done
   echo "Removing plfs tarball and directory from $target"
-  rm -rf $target/plfs*
+
+  rm -f $target/plfs.tar.gz
+  rm -rf $target/plfs-*
 done
 echo "Completed fd checks."
 cd
