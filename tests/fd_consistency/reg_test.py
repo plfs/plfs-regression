@@ -49,16 +49,7 @@ def main(argv=None):
         f.write('#!/bin/bash\n')
         # Write a command that will get the proper environment
         f.write('source ' + str(tc.basedir) + '/tests/utils/rs_env_init.sh\n')
-        f.write("mount_points=" + "`" + str(find_mnt_pts) + "`" + "\n")
-        f.write("ret=$?\n")
-        f.write("if [  \"$ret\" != 0 ]; then\n")
-        f.write("    echo \"Failure:  Error finding the PLFS mount points with rs_plfs_config_query.py\"\n")
-        f.write("    exit 1\n")
-#        f.write("else\n")
-#        f.write("    echo \"Failure:  The script, ../utils/rs_plfs_config_query.py, is not executable and must be\"\n")
-#        f.write("    exit 1\n")
-        f.write("fi\n")
-
+        f.write("mount_points=" + "" + str(mnt_pt) + "" + "\n")
 
         # Write into the script the script that will mount plfs
         f.write("echo \"Running " + str(prescript) + "\"\n")
@@ -82,10 +73,6 @@ def main(argv=None):
         f.close()
         os.system(str("cat ") + in_script + " >> " + str(gen_script))
 
-        # Generate the fs_test command through experiment_management
-##        os.system(str(tc.em_p.get_expr_mgmt_dir(tc.basedir))
-##            + "/run_expr.py " + str(input) + " >> " + str(gen_script))
-        # Write into the script the script that will unmount plfs
         f = open(gen_script, 'a')
         f.write("if [ \"$need_to_umount\" == \"True\" ]; then\n")
         f.write("    echo \"Running " + str(postscript) + "\"\n")
