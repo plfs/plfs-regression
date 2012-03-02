@@ -20,6 +20,17 @@ if [ "$latest_tarball" == "" ]; then
    exit 1
 fi 
 plfs_tarball=`/bin/basename "$latest_tarball"` 
+
+#
+# Check to make sure the script that will append experiment_managment's
+# rs_mnt_append_path is available.
+#
+
+if [ ! -x "../utils/rs_exprmgmtrc_target_path_append.py" ]; then
+  echo "Failure: ../utils/rs_exprmgmtrc_mnt_append_path_append.py is not executable and must be"
+  exit 1
+fi
+
 # get mount from mount_points 
 for mnt in $mount_points 
 do
@@ -28,8 +39,9 @@ do
   if [ $the_mp != $mnt ]; then
     build_for_mnt=1
   fi 
+  target=`../utils/rs_exprmgmtrc_target_path_append.py $mnt`
 
-# loop cnt times building of plfs
+  # loop cnt times building of plfs
   while [ $cnt -lt $cnt_max ]
   do
     let "cnt += 1"
@@ -37,10 +49,10 @@ do
     if [ $build_for_mnt -eq 1 ]; then
 
       #setup to build plfs from tarball      
-      echo "Copying $plfs_tarball_path/$plfs_tarball to $mnt/$user"
-      cp $plfs_tarball_path/$plfs_tarball $mnt/$user/.
+      echo "Copying $plfs_tarball_path/$plfs_tarball to $target"
+      cp $plfs_tarball_path/$plfs_tarball $target/.
 
-      cd $mnt/$user 
+      cd $target
 
       # untar and build plfs
       echo "Untarring plfs"
@@ -53,7 +65,7 @@ do
       echo "Changing directory to $plfs_dir" 
       cd $plfs_dir
    
-# make plfs
+      # make plfs
       echo "make distclean"
       make distclean
       echo "Running configure"
@@ -70,11 +82,13 @@ do
       echo "Running plfs"
  
       echo $mount_points
-# get pid for fuse mount 
+
+      # get pid for fuse mount 
       pid=`ps aux | grep $USER | grep $mnt | grep -v grep | awk '{print $2}'`
       echo "PID for fuse mount is $pid"
-# get number of file descriptors for fuse mount
-# and maks sure number has not changed since the last build
+
+      # get number of file descriptors for fuse mount
+      # and maks sure number has not changed since the last build
       proc_cnt=`ls /proc/$pid/fd | wc -l`
       if [ $proc_cnt != $fd_prev_cnt ]; then
         echo "ERROR file_desciptor count mismatch"
@@ -82,7 +96,8 @@ do
         echo "File descriptor count = $proc_cnt"
       fi 
       fd_prev_cnt=$proc_cnt
-# look at OpenFiles from plfsdebug and make sure count has not grown
+
+      # look at OpenFiles from plfsdebug and make sure count has not grown
       cat $mnt/.plfsdebug > /users/$user/tmp_plfsdebug 
       open_files=`strings /users/$user/tmp_plfsdebug | grep OpenFiles | awk '{print $1}'`
       echo ".plfsdebug reports $open_files open files"
@@ -91,6 +106,8 @@ do
       fi 
     fi
   done
+  echo "Removing plfs tarball and directory from $target"
+  rm -rf $target/plfs*
 done
 echo "Completed fd checks."
 cd
