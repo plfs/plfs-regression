@@ -7,7 +7,8 @@ fd_prev_cnt=4
 cnt=0
 #
 # Number of times to build plfs (loop count)
-cnt_max=10
+#
+cnt_max=1
 #
 build_for_mnt=1
 user=${USER}
@@ -107,7 +108,7 @@ do
   echo "Removing plfs tarball and directory from $target"
 
   rm -f $target/plfs.tar.gz
-  rm -rf $target/plfs-*
+  rm -rf $target/plfs-2.1*
 done
 echo "Completed fd checks."
 cd
