@@ -36,19 +36,27 @@ def main(argv=None):
     mnt_pt = tc.get_mountpoint()
     
     # prescript and postscript
-    prescript = (tc.basedir + "/tests/utils/rs_plfs_fuse_mount.sh "
+    prescript = (tc.basedir + "tests/utils/rs_plfs_fuse_mount.sh "
         + str(mnt_pt) + " serial")
-    postscript = (tc.basedir + "/tests/utils/rs_plfs_fuse_umount.sh "
+    postscript = (tc.basedir + "tests/utils/rs_plfs_fuse_umount.sh "
         + str(mnt_pt) + " serial")
-    find_mnt_pts = (tc.basedir + "/tests/utils/rs_plfs_config_query.py -m")
+    find_mnt_pts = (tc.basedir + "tests/utils/rs_plfs_config_query.py -m")
 
     # Create the script
     try:
         f = open(gen_script, 'w')
         # Write the header
         f.write('#!/bin/bash\n')
+        # Write a check about rs_exprmgmtrc_target_path_append.py
+        f.write('if [ ! -x "' + str(tc.basedir)
+            + 'tests/utils/rs_exprmgmtrc_target_path_append.py" ]; then\n')
+        f.write('  echo "Failure: ' + str(tc.basedir)
+            + 'tests/utils/rs_exprmgmtrc_target_path_append.py '
+            + 'is not executable and must be"\n')
+        f.write('  exit 1\n')
+        f.write('fi\n')
         # Write a command that will get the proper environment
-        f.write('source ' + str(tc.basedir) + '/tests/utils/rs_env_init.sh\n')
+        f.write('source ' + str(tc.basedir) + 'tests/utils/rs_env_init.sh\n')
         f.write("mount_points=" + "" + str(mnt_pt) + "" + "\n")
 
         # Write into the script the script that will mount plfs
