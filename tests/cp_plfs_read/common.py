@@ -53,7 +53,7 @@ def get_target():
 # this function returns a panfs scratch space target
 def get_panfs_target():
     scratch_script = utils_dir + "/rs_scratch_mount_find.sh"
-    print "%s\n" % scratch_script
+    #print "%s\n" % scratch_script
     mount_point = commands.getoutput(scratch_script) 
     if mount_point != None:
         target ="/" + str(mount_point) + "/" + str(user) + "/" + str(file)

@@ -70,6 +70,7 @@ def main(argv=None):
         f.write("    echo \"Something wrong with mounting.\"\n")
         f.write("    exit 1\n")
         f.write("fi\n")
+        f.write("echo \"Attempting to write to non-plfs space\"\n")
         f.close()
         # Generate the write command
         os.system(str(common.em_p.get_expr_mgmt_dir(common.basedir))
@@ -90,6 +91,7 @@ def main(argv=None):
         # Copy scratch file to plfs space 
         f.write(" echo \"Copying file from non-plfs to plfs space\"\n")
         f.write("cp " + scratch_target + " " + plfs_target + "\n")
+        f.write("echo \"Attempting to read from plfs space\"\n")
         f.close()
         # Generate the read command
         os.system(str(common.em_p.get_expr_mgmt_dir(common.basedir))
