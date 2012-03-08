@@ -137,7 +137,7 @@ check_exit $? "Configure process"
 
 # Run make
 echo "Running make"
-make -j
+make
 check_exit $? "Make process"
 
 # Run make install

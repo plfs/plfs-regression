@@ -10,3 +10,7 @@ LDFLAGS="-LREPLACE_PLFS_LIB -lplfs -lstdc++ -lpthread"
 CFLAGS="-IREPLACE_PLFS_INC"
 CXXFLAGS="-IREPLACE_PLFS_INC"
 CCASFLAGS="-IREPLACE_PLFS_INC"
+
+# The following are needed to make sure all types of libraries are created.
+enable_shared=yes
+enable_static=yes
