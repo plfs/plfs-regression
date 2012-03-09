@@ -52,11 +52,13 @@ def call_plfs_check_config(ignore_errors=False):
     else:
         return output
 
-def get_mountpoints(ignore_errors=False):
+def get_mountpoints(ignore_errors=False, mp_type=None):
     """Determine plfs mount points by calling plfs_check_config.
 
     Input:
         ignore_errors: flag to ignore errors from plfs_check_config
+        mp_type: the type of mount points to look for. Can be shared_file,
+            n-1, file_per_proc, or n-n.
     Output:
         a python list containing a string for each mount point found
     """
@@ -71,13 +73,37 @@ def get_mountpoints(ignore_errors=False):
                 # Get the mount point's name
                 mp = get_mountpoint_name(line)
                 # If mp isn't empty, then we got at least a non-empty string
-                if mp != '':
+                # We also only append here if we're not checking mount point
+                # types
+                if mp != '' and mp_type == None:
                     mount_points.append(mp)
+            elif ("Expected Workload" in line) and mp_type != None:
+                # This is a line that specifies the type of mount point.
+                # Get the type only if we are checking mount point types. It
+                # should be the second to last element
+                this_mptype = (line.split())[-2]
+                # The types that can be seen from plfs_check_config's output
+                # are only shared_file or file_per_proc. If there is a match,
+                # the last mount_point seen is a mount_point we want to pass
+                # back.
+                if this_mptype == "shared_file":
+                    if mp_type == this_mptype or mp_type == "n-1":
+                        mount_points.append(mp)
+                elif this_mptype == "file_per_proc":
+                    if mp_type == this_mptype or mp_type == "n-n":
+                        mount_points.append(mp)
+                else:
+                    # We got a type that this script doesn't know how to deal
+                    # with yet.
+                    pass
+            else:
+                # This is a line we don't need for figuring out mount points
+                continue
 
     if len(mount_points) == 0:
-        print ("Error: no mount points will be passed back. Either the rc "
-            + "files had no mount points in them or there was a problem "
-            + "parsing them.")
+        print ("Error: no mount points will be passed back. Either there was "
+            + "a problem parsing the rc files or there were no mount points "
+            + "of the requested type.")
 
     return mount_points
 
@@ -124,16 +150,15 @@ def get_backends(mount_point, ignore_errors=False):
                 # A line that has no information that we need to find backends
                 continue
     if len(backends) == 0:
-        print ("Error: no backends will be passed back. Either the rc "
-            + "files had no mount points in them or there was a problem "
-            + "parsing them.")
+        print ("Error: no backends will be passed back. There was a problem "
+            + "parsing the rc files.")
 
     return backends
 
 def parse_args(argv):
     """Parse command line arguments if this module is called from the shell
     """
-    usage = "\n %prog -m [-i]\n %prog -b [-i] mount_point"
+    usage = "\n %prog -m [-i] [-t MP_TYPE]\n %prog -b [-i] mount_point"
     description = ("This script queries a PLFS configuration and returns a "
         + "space-separated list of the requested parameter. It uses PLFS's "
         + "plfs_check_config to parse the PLFS config files. Either -m or -b "
@@ -143,6 +168,10 @@ def parse_args(argv):
     parser.add_option("-m", "--get-mountpoints", action="store_true",
         dest="get_mountpoints", help="Request a list of the PLFS mount points "
         + "from the PLFS configuration.", default=False)
+    parser.add_option("-t", "--mptype", dest="mp_type", help="Request a type "
+        + "of mount point to return. Valid options are shared_file, n-1, "
+        + "file_per_proc, or n-n. Default is to return all mount points, "
+        + "regardless of type.", default=None)
     parser.add_option("-b", "--get-backends", action="store_true",
         dest="get_backends", help="Request a list of the PLFS backends "
         + "associated with the specified PLFS mount point. The mount point "
@@ -188,7 +217,7 @@ def main(argv=None):
         argv = sys.argv
     options,args = parse_args(argv)
     if options.get_mountpoints == True:
-        ret_list = get_mountpoints(ignore_errors=options.ignore_errors)
+        ret_list = get_mountpoints(ignore_errors=options.ignore_errors, mp_type=options.mp_type)
     if options.get_backends == True:
         ret_list = get_backends(ignore_errors=options.ignore_errors, 
             mount_point=args[0])
