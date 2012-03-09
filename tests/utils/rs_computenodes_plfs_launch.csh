@@ -14,29 +14,42 @@ set pexec  = ""
 set mnt_pt  = ""
 set umount = 0
 set force_remount = 0
+set mnt_opts = ""
 
 set script_name = `basename $0`
 
-# Catch whatever command line parameters there may be
-foreach i ($argv)
-  switch ($i)
+set i = 1
+# Catch whatever command line parameters there may be.
+# Can't use a for loop like this "foreach i ($argv)" because it seems that
+# every element in argv is individually broken up by spaces. That is, if there
+# is an option that allows spaces in it, that option will be broken up by the
+# call to foreach. The i variable will end up with only elements that have no
+# spaces in them. Since --mnt_opts is expected to have spaces in it (e.g.
+# -o direct-io), we need to deal directly with the members of argv so that the
+# individual members of argv aren't broken up.
+while ( $i <= $#argv )
+  switch ("$argv[$i]")
     case --plfs=*:
-      set plfs = `echo $i | sed 's/[-a-zA-Z0-9]*=//'`
-      echo "Using $plfs"
+      set plfs = `echo $argv[$i] | sed 's/[-a-zA-Z0-9]*=//'`
+      echo "Using plfs: $plfs"
       breaksw
     case --pexec=*:
-      set pexec = `echo $i | sed 's/[-a-zA-Z0-9]*=//'`
-      echo "Using $pexec"
+      set pexec = `echo $argv[$i] | sed 's/[-a-zA-Z0-9]*=//'`
+      echo "Using pexec: $pexec"
       breaksw
     case --mntpt=*:
-      set mnt_pt = `echo $i | sed 's/[-a-zA-Z0-9]*=//'`
-      echo "Using $mnt_pt"
+      set mnt_pt = `echo $argv[$i] | sed 's/[-a-zA-Z0-9]*=//'`
+      echo "Using mount point: $mnt_pt"
       breaksw
     case umount:
       set umount = 1
       breaksw
     case --force-remount:
       set force_remount = 1
+      breaksw
+    case --mnt_opts=*:
+      set mnt_opts = `echo "$argv[$i]" | sed 's/[-_a-zA-Z0-9]*=//'`
+      echo "Using mount options: $mnt_opts"
       breaksw
     case -h:
     case --help:
@@ -62,6 +75,9 @@ foreach i ($argv)
       echo "\t\tThe default behavior if all nodes already have the mount point"
       echo "\t\tmounted is to not do anything. Setting this option forces this"
       echo "\t\tscript to attempt to unmount and then remount the mount point."
+      echo "\t--mnt_opts=MOUNT_OPTIONS"
+      echo "\t\tMOUNT_OPTIONS will be passed as mounting options when calling"
+      echo "\t\tplfs. Surround in quotes if more than more than one word."
       echo "\tumount"
       echo "\t\tUnmount the plfs mount points"
       echo "\t-h|--help"
@@ -73,6 +89,7 @@ foreach i ($argv)
       exit 1
       breaksw
   endsw
+  @ i = $i + 1
 end
 
 if ( "$plfs" == "" ) then
@@ -96,7 +113,7 @@ else
 endif
 
 
-set mount  = "$plfs $mnt_pt -o direct_io" 
+set mount  = "$plfs $mnt_pt $mnt_opts" 
 
 if ( -x "$pexec" ) then
     # Figure out the number of nodes in the allocation

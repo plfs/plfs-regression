@@ -60,7 +60,16 @@ need_to_mount="False"
 
 # command to check on plfs status (is it mounted or not).
 test_cmd="grep Uptime ${mount_point}/.plfsdebug >> /dev/null 2>&1"
-mnt_cmd="${basedir}/inst/plfs/sbin/plfs $mount_point"
+
+# Need to figure out which version of fuse we've got so that we can pass
+# the right mount options
+fuse_gt_2_8="False"
+fuse_ver=`fusermount -V | awk '{print $3}'`
+fuse_highest=`echo -e "$fuse_ver\n2.8" | sort -n | tail -n 1`
+if [ "$fuse_highest" == "$fuse_ver" ]; then
+    fuse_gt_2_8="True"
+fi
+mopts=""
 
 # Are we mounting plfs in serial or parallel?
 if [ "$serial" == "True" ]; then #Serial
@@ -88,9 +97,18 @@ if [ "$serial" == "True" ]; then #Serial
         fi
     fi
     
+    # If we're using fuse > 2.8, we can use -o big_writes. Otherwise, we won't
+    # pass any mount options.
+    if [ "$fuse_gt_2_8" == "True" ]; then
+        mopts="-o big_writes"
+    fi
+
+    # Generate the mount command
+    mnt_cmd="${basedir}/inst/plfs/sbin/plfs $mount_point $mopts"
     # Mount the plfs mount point if need be
     if [ "$need_to_mount" == "True" ] && [ "$mount_status" == "ok" ]; then
-        echo "$script_name: Attempting to mount $mount_point"
+        echo "$script_name: Attempting to mount plfs with the following command:"
+        echo $mnt_cmd
         eval $mnt_cmd
         if [ $? == 0 ]; then
             mount_status="ok"
@@ -105,8 +123,19 @@ else #parallel
     # point, then make sure the mount point exists as a directory, and
     # then try to mount. It will return a 0 if the mount point is 
     # successfully mounted, 1 otherwise.
+
+    if [ "$fuse_gt_2_8" == "True" ]; then
+        # Fuse version is greater than 2.8
+        mopts="-o big_writes"
+    else
+        # Fuse version is less than 2.8
+        mopts="-o direct_io"
+    fi
     echo "$script_name: Executing ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh"
-    ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh --plfs=${basedir}/inst/plfs/sbin/plfs --pexec=${basedir}/inst/pexec/pexec --mntpt=$mount_point
+    ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh \
+        --plfs=${basedir}/inst/plfs/sbin/plfs \
+        --pexec=${basedir}/inst/pexec/pexec --mntpt=$mount_point \
+        --mnt_opts="$mopts"
     ret=$?
     if [ $ret == 0 ]; then
         # The mount point is successfully mounted
