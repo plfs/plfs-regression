@@ -74,7 +74,7 @@ def main(argv=None):
         f.close()
         # Generate the write command
         os.system(str(common.em_p.get_expr_mgmt_dir(common.basedir))
-            + "/run_expr.py ./input_write.py >> " + str(script))
+            + "/run_expr.py --dispatch=list ./input_write.py >> " + str(script))
         # Put in a check of the previous command
         f = open(script, 'a')
         f.write("ret=$?\n")
@@ -95,7 +95,7 @@ def main(argv=None):
         f.close()
         # Generate the read command
         os.system(str(common.em_p.get_expr_mgmt_dir(common.basedir))
-            + "/run_expr.py ./input_read.py >> " + str(script))
+            + "/run_expr.py --dispatch=list ./input_read.py >> " + str(script))
         # Remove the targets if it is still there
         os.system("echo \"if [ -e " + str(scratch_target) + " ]; then rm " 
           + str(scratch_target) + "; fi\" >> " + str(script))
