@@ -8,7 +8,7 @@ cnt=0
 #
 # Number of times to build plfs (loop count)
 #
-cnt_max=1
+cnt_max=10
 #
 build_for_mnt=1
 user=${USER}
@@ -17,9 +17,9 @@ user=${USER}
 latest_tarball=`/bin/ls -ltr $plfs_tarball_path/*.gz | /usr/bin/tail -1 | /bin/awk '{print $9}'`
 
 if [ "$latest_tarball" == "" ]; then
-   echo "Error:  No Tarball Found" 
+  echo "Error:  No Tarball Found" 
 else 
-plfs_tarball=`/bin/basename "$latest_tarball"` 
+  plfs_tarball=`/bin/basename "$latest_tarball"` 
 #
 # Check to make sure the script that will append experiment_managment's
 # rs_mnt_append_path is available.
@@ -33,7 +33,7 @@ plfs_tarball=`/bin/basename "$latest_tarball"`
     if [ $the_mp != $mnt ]; then
       build_for_mnt=1
     fi 
-    target=`../utils/rs_exprmgmtrc_target_path_append.py $mnt`
+    target=`$base_dir/tests/utils/rs_exprmgmtrc_target_path_append.py $mnt`
 
     # loop cnt times building of plfs
     while [ $cnt -lt $cnt_max ]
@@ -84,7 +84,8 @@ plfs_tarball=`/bin/basename "$latest_tarball"`
         # and maks sure number has not changed since the last build
         proc_cnt=`ls /proc/$pid/fd | wc -l`
         if [ $proc_cnt != $fd_prev_cnt ]; then
-          echo "ERROR file_desciptor count mismatch"
+          echo "ERROR file_desciptor count mismatch current proc_cnt=$proc_cnt"
+          echo "ERROR process count = $proc_cnt previous count = $fd_prev_cnt"
         else 
           echo "File descriptor count = $proc_cnt"
         fi 
