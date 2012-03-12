@@ -62,7 +62,8 @@ def main(argv=None):
         f.write("echo PATH=$PATH\n")
         f.write("echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH\n")
         f.close()
-        os.system(str(basedir) + "/inst/experiment_management/run_expr.py "
+        os.system(str(basedir) 
+            + "/inst/experiment_management/run_expr.py --dispatch=list "
             + "./input.py >> " + str(script))
         os.chmod(script, 0764)
     except (IOError, OSError), detail:
