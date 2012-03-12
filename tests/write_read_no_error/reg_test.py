@@ -74,7 +74,8 @@ def main(argv=None):
         f.close()
         # Generate the fs_test command through experiment_management
         os.system(str(tc.em_p.get_expr_mgmt_dir(tc.basedir))
-            + "/run_expr.py " + str(input) + " >> " + str(gen_script))
+            + "/run_expr.py --dispatch=list " + str(input) + " >> " 
+            + str(gen_script))
         # Write into the script the script that will unmount plfs
         f = open(gen_script, 'a')
         f.write("if [ \"$need_to_umount\" == \"True\" ]; then\n")
