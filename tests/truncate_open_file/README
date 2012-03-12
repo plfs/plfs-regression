@@ -1,0 +1,20 @@
+This test is to make sure PLFS handles truncating an open file correctly. This
+is done by using echo and output redirection statements like the following:
+
+echo "aaa" > foo
+echo "a" > foo
+
+If there is an issue with truncate on an open file, then foo will have extra
+garbage in it instead of just a single "a". The file size as reported by ls -l
+will also not reflect the size of a single character.
+
+This test does not submit a job. It runs the entire test on the node that
+reg_test.py is executed from.
+
+Files:
+- reg_test.py: handles mounting plfs, determining files and calling
+  truncate_open_file.bash
+- truncate_open_file.bash: Performs the echo and output redirection on two
+  files passed to it from reg_test.py, making sure they are the same after
+  the operations
+- check_results.py: checks the newest log file to see if the test passed

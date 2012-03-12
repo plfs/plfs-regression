@@ -19,3 +19,4 @@
 2 truncate
 2 mkdir_ops
 3 adio_optimization
+2 truncate_open_file
