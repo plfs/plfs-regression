@@ -58,6 +58,7 @@ def main(argv=None):
         # Write a command that will get the proper environment
         f.write('source ' + str(tc.basedir) + 'tests/utils/rs_env_init.sh\n')
         f.write("mount_points=" + "" + str(mnt_pt) + "" + "\n")
+        f.write("base_dir=" +"" +str(tc.basedir) + "" + "\n")
 
         # Write into the script the script that will mount plfs
         f.write("echo \"Running " + str(prescript) + "\"\n")
