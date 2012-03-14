@@ -19,15 +19,18 @@ mpi_program = ( str(test_common.basedir) + "inst/test_fs/fs_test."
             + os.getenv("MY_MPI_HOST") + ".x" )
 
 program_options = {
-  "size"       : [ 1048760 ],
-  "deletefile" : [ '' ],
-  "shift"      : [ '' ],
-  "nodb"       : [ ''],
-  "type"     : [ 2 ],
-  "nobj"     : [ 4 ],
-  "strided"  : [ 0 ],
-  "target"   : [ target ],
-  "io"   : [ "posix" ]
+  "size"        : [ '48M' ],
+  "deletefile"  : [ '' ],
+  "shift"       : [ '' ],
+  "nodb"        : [ ''],
+  "type"        : [ 2 ],
+  "nobj"        : [ 4 ],
+  "strided"     : [ 1 ],
+  "target"      : [ target ],
+  "io"          : [ 'posix' ],
+  "sync"        : [ '' ],
+  "barriers"    : [ 'aopen' ],
+  "hints"       : [ 'panfs_concurrent_write=1' ]
 }
 
 # fs_test doesn't need program_arguments

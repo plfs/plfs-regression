@@ -28,7 +28,7 @@ def main(argv=None):
     # generated script
     input_script = "input_test.py"
     # Walltime of the job(s)
-    walltime = "5:00"
+    walltime = "10:00"
 
     # Figure out the target for this test
     target = tc.get_target()
