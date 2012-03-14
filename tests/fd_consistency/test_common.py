@@ -21,10 +21,7 @@ import rs_exprmgmt_paths_add as em_p
 # Add the experiment_management locations to sys.path
 em_p.add_exprmgmt_paths(basedir)
 
-# Import expr_mgmt so that we can make sure we get enough processes. We want
-# enough to cover at least two nodes.
-#import expr_mgmt
-#ppn = expr_mgmt.config_option_value("ppn")
+# Only need 1 proc for this test.
 nprocs = 1
 
 # Import the module with functions for finding mount points.
