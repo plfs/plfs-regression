@@ -60,5 +60,5 @@ def get_commands(expr_mgmt_options):
   global mpi_options, mpi_program, program_options 
   return fs_test.get_commands( mpi_options=mpi_options, 
           mpi_program=mpi_program, program_options=program_options,
-          n1_strided=True, n1_segmented=False, nn=True, auto_cw=True,
+          n1_strided=False, n1_segmented=False, nn=True, auto_cw=True,
           expr_mgmt_options=expr_mgmt_options )
