@@ -35,7 +35,7 @@ def main(argv=None):
     # Script that can be passed to experiment_management that will run the
     # generated script
     input_script = "input_script.py"
-    walltime = "5:00"
+    walltime = "15:00"
     # Make sure this matches what is in input.py for n in mpi_options. Want
     # enough to cover at least two nodes.
     ppn = expr_mgmt.config_option_value("ppn")
@@ -63,6 +63,7 @@ def main(argv=None):
         f.write("echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH\n")
         f.close()
         os.system(str(basedir) + "/inst/experiment_management/run_expr.py "
+            + "--dispatch=list "
             + "./input.py >> " + str(script))
         os.chmod(script, 0764)
     except (IOError, OSError), detail:
