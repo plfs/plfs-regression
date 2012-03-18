@@ -8,7 +8,7 @@ cnt=0
 #
 # Number of times to build plfs (loop count)
 #
-cnt_max=10
+cnt_max=4
 #
 build_for_mnt=1
 user=${USER}
@@ -39,7 +39,9 @@ else
     while [ $cnt -lt $cnt_max ]
     do
       let "cnt += 1"
-      echo $cnt
+      echo "***********************"
+      echo "iteration count = $cnt"
+      echo "***********************"
       if [ $build_for_mnt -eq 1 ]; then
 
         #setup to build plfs from tarball      
@@ -103,7 +105,7 @@ else
     echo "Removing plfs tarball and directory from $target"
 
     rm -f $target/plfs.tar.gz
-    rm -rf $target/plfs-2.1*
+    rm -rf $target/plfs-2*
   done
   echo "Completed fd checks."
   cd
