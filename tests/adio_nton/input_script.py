@@ -5,7 +5,7 @@
 # Figure out that base directory of the regression suite
 import os,sys,re
 curr_dir = os.getcwd()
-basedir = re.sub('tests/fs_test_adio.*', '', curr_dir)
+basedir = re.sub('tests/adio_nton.*', '', curr_dir)
 
 # Add the directory that contains helper modules
 utils_dir = basedir + "tests/utils"
