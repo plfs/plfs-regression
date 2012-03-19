@@ -21,3 +21,5 @@
 3 adio_optimization
 2 truncate_open_file
 3 adio_nto1_strided
+3 adio_nton
+2 posix_nton
