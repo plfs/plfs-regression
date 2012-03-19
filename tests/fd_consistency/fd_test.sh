@@ -8,7 +8,7 @@ cnt=0
 #
 # Number of times to build plfs (loop count)
 #
-cnt_max=4
+cnt_max=10
 #
 build_for_mnt=1
 user=${USER}
