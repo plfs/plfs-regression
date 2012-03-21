@@ -3,7 +3,7 @@
 # look for file descriptor leaks. 
 
 # Initialize variables
-fd_prev_cnt=4
+fd_prev_cnt=10
 cnt=0
 #
 # Number of times to build plfs (loop count)
@@ -84,7 +84,13 @@ else
 
         # get number of file descriptors for fuse mount
         # and maks sure number has not changed since the last build
+
         proc_cnt=`ls /proc/$pid/fd | wc -l`
+        
+        # get initialize process count on 1st iteration
+        if [ $cnt==1 ]; then
+          fd_prev_cnt=$proc_cnt
+        fi
         if [ $proc_cnt != $fd_prev_cnt ]; then
           echo "ERROR file_desciptor count mismatch current proc_cnt=$proc_cnt"
           echo "ERROR process count = $proc_cnt previous count = $fd_prev_cnt"
