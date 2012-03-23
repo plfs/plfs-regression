@@ -72,9 +72,9 @@ fi
 
 echo "Running configure script"
 if [ $instdir == "" ]; then
-  ./configure --enable-all-debug-flags --disable-silent-rules
+  ./configure --disable-silent-rules
 else
-  ./configure --prefix=$instdir --enable-all-debug-flags --disable-silent-rules
+  ./configure --prefix=$instdir --disable-silent-rules
 fi
 check_exit $? "Configure process"
 
