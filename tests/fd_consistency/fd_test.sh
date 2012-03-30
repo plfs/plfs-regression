@@ -144,7 +144,7 @@ else
            echo "Removing plfs tarball and directory from $target"
 
            rm -f $target/plfs.tar.gz
-           rm -rf $target/plfs-2.1*
+           rm -rf $target/plfs-2*
            cd
            if [ "$need_to_umount" == "True" ]; then
              echo "Running $base_dir/tests/utils/rs_plfs_fuse_umount.sh $mnt serial"
