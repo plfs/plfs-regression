@@ -64,7 +64,8 @@ def check(output_file):
 #        ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3)
         ok2 = "checking for strerror... yes"
         ok3 = "reating man3/plfs_serious_error.3 man page..."
-        ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3)
+        ok4 = "ERROR Error: no mount points will be passed back."
+        ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3) + "|" + str(ok4)
         st2 = os.system('cat ' + str(output_file) + ' | egrep -v "' 
                 + str(ok) + '" | egrep -qi ' + str(bad))
 #        st2 = os.system('cat ' + str(output_file) + ' | egrep -qi ' + str(bad)) 
