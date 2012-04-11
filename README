@@ -23,21 +23,22 @@ Dependencies:
   tailored to the system being run on). In addition, these system services are
   needed: /bin/mail (to send email) and MOAB (for submitting and tracking
   parallel tests).
-- A working ~/.plfsrc file. It is not necessary that all of the directories
-  for the PLFS mount points and backends exist. The regression suite will
-  ensure that these directories exist and will attempt to create them if they
-  are missing. The backends should be located on a file system space that will
-  be shared between all nodes (compute nodes as well as the node that will be
-  running run_plfs_regression.sh). Make sure that the user has write
-  permissions for all paths. Using mount_points and backends that the user
-  does not have permissions to create but does have write permissions on is
-  permissible only if all of the required directories are already created. In
-  this way, a system configuration of PLFS can be tested. Tests within the
-  regression suite will use these mount points, experiment_management input
-  (see below) and run-time information to construct file targets that will be
-  used during the test. Without the applicable experiment_management setting,
-  targets will be placed directly into the mount point. Some tests use only
-  one backend, others will use all backends found in the plfs rc files.
+- A working ~/.plfsrc file consistent with the version of plfs that is to be
+  tested. It is not necessary that all of the directories for the PLFS mount
+  points and backends exist. The regression suite will ensure that these
+  directories exist and will attempt to create them if they are missing. The
+  backends should be located on a file system space that will be shared
+  between all nodes (compute nodes as well as the node that will be running
+  run_plfs_regression.sh). Make sure that the user has write permissions for
+  all paths. Using mount_points and backends that the user does not have
+  permissions to create but does have write permissions on is permissible only
+  if all of the required directories are already created. In this way, a
+  system configuration of PLFS can be tested. Tests within the regression suite
+  will use these mount points, experiment_management input (see below) and
+  run-time information to construct file targets that will be used during the
+  test. Without the applicable experiment_management setting, targets will be
+  placed directly into the mount point. Some tests use only one backend, others
+  will use all backends found in the plfs rc files.
 - Fuse tests that run on compute nodes will make sure the mount_point
   specified in the plfsrc is present. This way it is possible to use a
   location such as /var/tmp, but users will not have to log in to each compute

@@ -229,6 +229,7 @@ plfs_bin_dir="None"
 plfs_sbin_dir="None"
 plfs_lib_dir="None"
 plfs_inc_dir="None"
+plfs_src_dir="None"
 openmpi_tarball="None"
 mpi_bin_dir="None"
 mpi_lib_dir="None"
@@ -301,7 +302,7 @@ if [ -n "$plfs_source_directory" ]; then
         echo "$0: $plfs_source_directory is not a valid directory."
         exit 1
     fi
-elif [ -n "$plfs_bin_directory" ] && [ -n "$plfs_sbin_directory" ] && [ -n "$plfs_lib_directory" ] && [ -n "$plfs_include_directory" ]; then
+elif [ -n "$plfs_bin_directory" ] && [ -n "$plfs_sbin_directory" ] && [ -n "$plfs_lib_directory" ] && [ -n "$plfs_include_directory" ] && [ -n "$plfs_src_directory" ]; then
     plfs_bin_dir="$plfs_bin_directory"
     if [ ! -d "$plfs_bin_directory" ]; then
         echo "$0: $plfs_bin_dir is not a valid directory."
@@ -322,8 +323,13 @@ elif [ -n "$plfs_bin_directory" ] && [ -n "$plfs_sbin_directory" ] && [ -n "$plf
         echo "$0: $plfs_inc_dir is not a valid directory."
         exit 1
     fi
+    plfs_src_dir="$plfs_src_directory"
+    if [ ! -d "$plfs_src_dir" ]; then
+        echo "$0: $plfs_src_dir is not a valid directory."
+        exit 1
+    fi
 else
-    echo "$0: either plfs_source_directory or plfs_bin_directory, plfs_sbin_directory, plfs_lib_directory and plfs_include_directory must be specified. Please see the config file."
+    echo "$0: either plfs_source_directory or plfs_bin_directory, plfs_sbin_directory, plfs_lib_directory, plfs_include_directory and plfs_src_directory must be specified. Please see the config file."
     exit 1
 fi
 
@@ -497,6 +503,7 @@ if [ "$plfs_src_from" == "None" ]; then
     echo "PLFS admin binaries: $plfs_sbin_dir"
     echo "PLFS libraries: $plfs_lib_dir"
     echo "PLFS headers: $plfs_inc_dir"
+    echo "PLFS source: $plfs_src_dir"
 else
     echo "PLFS source: $plfs_src_from"
 fi
@@ -548,8 +555,6 @@ pexec_ok="PASS"
 expr_mgmt_stat="Not checked"
 expr_mgmt_ok="PASS"
 submit_test_stat="Not done"
-# only build open mpi if we have the plfs source. This is a flag to track that.
-build_open_mpi_ok="True"
 
 # Log files
 log_dir=$basedir/logs
@@ -575,11 +580,8 @@ if [ "$build" == "True" ]; then
     echo "Checking PLFS. Please see $plfs_build_log."
     if [ "$plfs_src_from" == "None" ]; then
         # Using an already defined plfs installation. plfs_bin_dir,
-        # plfs_lib_dir and plfs_inc_dir will already be defined.
+        # plfs_lib_dir, plfs_inc_dir and plfs_src_dir will already be defined.
 
-        # Since we don't have plfs source, it is not ok to attempt to build
-        # open mpi.
-        build_open_mpi_ok="False"
         echo "Linking plfs..." | tee $plfs_build_log
         # Check for a user binary
         if [ -e "$plfs_bin_dir/plfs_check_config" ]; then
@@ -615,6 +617,14 @@ if [ "$build" == "True" ]; then
             plfs_stat="plfs headers not found"
             plfs_ok="FAIL"
         fi
+        # Check for plfs source
+        if [ -e "$plfs_src_dir/scripts/make_plfs_patch" ]; then
+            echo "Found plfs source in $plfs_src_dir" >> $plfs_build_log
+        else
+            echo "$plfs_src_dir does not contain scripts/make_plfs_patch. It does not appear that $plfs_src_dir contains plfs source files." >> $plfs_build_log
+            plfs_stat="plfs source not found"
+            plfs_ok="FAIL"
+        fi
         if [ "$plfs_ok" == "PASS" ]; then
             # If we're here, plfs has been successfully found. Link it in to
             # the regression suite so tests can know where to always find it.
@@ -626,7 +636,14 @@ if [ "$build" == "True" ]; then
                     plfs_ok="FAIL"
                 fi
             fi
-            if [ ! -d "${instdir}/plfs" ]; then
+            if [ -d "${srcdir}/plfs" ]; then
+                rm -rf "${srcdir}/plfs" >> $plfs_build_log 2>&1
+                if [ -d "${srcdir}/plfs" ]; then
+                    plfs_stat="unable to remove old plfs source directory"
+                    plfs_ok="FAIL"
+                fi
+            fi
+            if [ "$plfs_ok" == "PASS" ]; then
                 mkdir ${instdir}/plfs
                 if [[ $? == 0 ]]; then
                     echo "Linking..." >> $plfs_build_log
@@ -635,13 +652,21 @@ if [ "$build" == "True" ]; then
                         ln -s $plfs_lib_dir ${instdir}/plfs/lib >> $plfs_build_log 2>&1 && \
                         ln -s $plfs_inc_dir ${instdir}/plfs/include >> $plfs_build_log 2>&1
                     if [[ $? == 0 ]]; then
+                        ln -s $plfs_src_dir ${srcdir}/plfs >> $plfs_build_log 2>&1
+                        if [[ $? == 0 ]]; then
+                            plfs_ok="PASS"
+                        else
+                            plfs_ok="FAIL"
+                        fi
+                    else
+                        plfs_ok="FAIL"
+                    fi
+                    if [ "$plfs_ok" == "PASS" ]; then
                         echo "Successfully linked" >> $plfs_build_log
                         plfs_stat="successfully linked"
-                        plfs_ok="PASS"
                     else
                         echo "Unable to link" >> $plfs_build_log
                         plfs_stat="unable to link"
-                        plfs_ok="FAIL"
                     fi
                 else
                     plfs_stat="unable to create new plfs installation"
@@ -666,8 +691,6 @@ if [ "$build" == "True" ]; then
                 plfs_bin_dir="${instdir}/plfs/bin"
                 plfs_lib_dir="${instdir}/plfs/lib"
                 plfs_inc_dir="${instdir}/plfs/include"
-                # It should be ok to build open mpi
-                build_open_mpi_ok="True"
             else
                 plfs_stat="Building failed"
                 plfs_ok="FAIL"
@@ -905,27 +928,20 @@ if [ "$build" == "True" ]; then
             fi
         fi
     else
-        # Build openmpi. First check to make sure we have plfs source to patch open mpi
-        if [ "$build_open_mpi_ok" == "True" ]; then
-            echo "Building and installing openmpi." | tee $mpi_build_log
-            # Compile openmpi from a tarball
-            ${basedir}/openmpi_build.sh $openmpi_tarball $srcdir $instdir/mpi \
-            ${srcdir}/plfs ${instdir}/plfs ${ompi_platform_file} \
-            >> $mpi_build_log 2>&1
-            if [[ $? == 0 ]]; then
-                mpi_stat="Successfully built and installed"
-                mpi_ok="PASS"
-                mpi_bin_dir="${instdir}/mpi/bin"
-                mpi_lib_dir="${instdir}/mpi/lib"
-                mpi_inc_dir="${instdir}/mpi/include"
-            else
-                mpi_stat='Failed to build and install'
-                mpi_ok="FAIL"
-            fi
+        # Build openmpi. 
+        echo "Building and installing openmpi." | tee $mpi_build_log
+        # Compile openmpi from a tarball
+        ${basedir}/openmpi_build.sh $openmpi_tarball $srcdir $instdir/mpi \
+        ${srcdir}/plfs ${instdir}/plfs ${ompi_platform_file} \
+        >> $mpi_build_log 2>&1
+        if [[ $? == 0 ]]; then
+            mpi_stat="Successfully built and installed"
+            mpi_ok="PASS"
+            mpi_bin_dir="${instdir}/mpi/bin"
+            mpi_lib_dir="${instdir}/mpi/lib"
+            mpi_inc_dir="${instdir}/mpi/include"
         else
-            # There isn't any plfs source to patch open mpi against.
-            echo "No plfs source given. It is not possible to patch and build open mpi." | tee -a $mpi_build_log
-            mpi_stat="No plfs source to patch"
+            mpi_stat='Failed to build and install'
             mpi_ok="FAIL"
         fi
     fi

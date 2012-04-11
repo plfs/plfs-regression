@@ -48,7 +48,10 @@ addr="${USER}@lanl.gov"
 
 # Alternatively, specify a location of an already working version of PLFS.
 # These locations will be symbolicly linked inside the regression suite's
-# installation directory in a directory named plfs.
+# installation directory in a directory named plfs with the exception of the
+# directory given in plfs_src_directory. That will be symbolically linked
+# inside the regression suite's source directory in a directory named plfs.
+# The source is needed in at least one test and for patching mpi if needed.
 # Setting the next three values will be ignored if plfs_source_directory is
 # set.
 # The directory where the PLFS user binaries are located.
@@ -59,6 +62,8 @@ addr="${USER}@lanl.gov"
 #plfs_lib_directory=/path/to/plfs/lib
 # The directory where the PLFS headers are located.
 #plfs_include_directory=/path/to/plfs/include
+# The directory where the PLFS source files are located.
+#plfs_src_directory=/path/to/plfs/source
 
 # What to do about mpi. Either open_mpi_tarball or mpi_bin_directory,
 # mpi_lib_directory, and mpi_include_directory must be specified.
