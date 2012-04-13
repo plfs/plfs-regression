@@ -66,11 +66,11 @@ def parse_args(argv):
         + "line. If rs_mnt_append_path is not specified in "
         + "experiment_managment's configuration, nothing is appended.")
     parser = OptionParser(usage=usage, description=description)
-    options, args = parser.parse_args()
+    options, args = parser.parse_args(argv)
     return args
 
 if __name__ == "__main__":
-    args = parse_args(sys.argv)
+    args = parse_args(sys.argv[1:])
     ret_list = append_path(args)
     print ' '.join(ret_list)
     sys.exit()

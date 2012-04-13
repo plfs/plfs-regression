@@ -181,7 +181,7 @@ def parse_args(argv):
         + "plfs_check_config. Userful for just finding the names of the "
         + "needed PLFS directories.", default=False)
 
-    (options, args) = parser.parse_args()
+    (options, args) = parser.parse_args(argv)
     if options.get_mountpoints == False and options.get_backends == False:
         parser.error("At least -m or -b is required. Use -h or --help "
             + "for help.")
@@ -214,7 +214,7 @@ def main(argv=None):
     """The main method that is used when this script is called from the shell.
     """
     if argv == None:
-        argv = sys.argv
+        argv = sys.argv[1:]
     options,args = parse_args(argv)
     if options.get_mountpoints == True:
         ret_list = get_mountpoints(ignore_errors=options.ignore_errors, mp_type=options.mp_type)
