@@ -16,7 +16,7 @@ class unable_to_continue_error(Exception):
         return str(self.value)
 
 # Parse command line arguments
-def parse_args(num_required):
+def parse_args(argv, num_required):
     """Parse the command line arguments.
 
     Requires one input parameter: the number of required command line
@@ -74,7 +74,7 @@ def parse_args(num_required):
     group.add_option("--noemail", action="store_true", dest="noemail",
                       help="Tell the script to not generate an email.")
     parser.add_option_group(group)
-    (options, args) = parser.parse_args()
+    (options, args) = parser.parse_args(argv)
 
     if len(args) < num_required:
         parser.error("Required argument not provided. Use -h or --help for help.")
@@ -402,7 +402,7 @@ def catastrophic_exit(options, msg, dir):
 
 
 # Main routine
-def main():
+def main(argv=None):
     """The main routine for checking running tests inside the regression suite.
 
     Return values:
@@ -412,9 +412,11 @@ def main():
        were not checked
     """
 
+    if argv == None:
+        argv = sys.argv[1:]
     required_args = 0
     num_test_types = 4
-    options, args = parse_args(required_args)
+    options, args = parse_args(argv=argv,num_required=required_args)
     global reg_base_dir
     if options.basedir == ".":
         reg_base_dir = os.getcwd()

@@ -4,7 +4,7 @@ import os,shlex,sys,subprocess,re,time,shutil,pickle,imp
 from optparse import OptionParser,OptionGroup
 
 # Parse command line arguments
-def parse_args(num_required, num_test_types):
+def parse_args(argv, num_required, num_test_types):
     """Parse the command line arguments.
 
     Requires two input parameters: the number of required command line
@@ -49,7 +49,7 @@ def parse_args(num_required, num_test_types):
                       "this script is run as part of a cron job.", 
                       metavar="DIR")
     parser.add_option_group(group)
-    (options, args) = parser.parse_args()
+    (options, args) = parser.parse_args(argv)
 
     if len(args) < num_required:
         parser.error("Required argument not provided. Use -h or --help for help.")
@@ -229,17 +229,20 @@ def submit_tests(options, types_table):
 
 
 # Main routine
-def main():
+def main(argv=None):
     """The main routine for submitting tests inside the regression suite.
 
     Return values:
     0: At least some jobs submitted
     1: No jobs submitted.
     """
-
+    
+    if argv == None:
+        argv = sys.argv[1:]
     required_args = 0
     num_test_types = 4
-    options, args, types_table = parse_args(required_args, num_test_types)
+    options, args, types_table = parse_args(argv=argv,
+        num_required=required_args, num_test_types=num_test_types)
     global reg_base_dir
     if options.basedir == ".":
         reg_base_dir = os.getcwd()
