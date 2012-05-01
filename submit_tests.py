@@ -73,6 +73,8 @@ def parse_args(argv, num_required, num_test_types):
     # Keep track in a table what types of tests are to be run as well
     # as check the types
     types_table=[]
+    # 0 is not a valid test type, but it will be included so that it is easy
+    # to find test types just by using the type of test as an index.
     for i in range(0,num_test_types+1):
         types_table.append(False)
     for i in types:
@@ -88,9 +90,11 @@ def submit_tests(options, types_table):
     
     Return values:
     Successfully submitted at least one job flag and dictionary of jobs submitted.
+    0, {non-empty} - At least one test successfully submitted.
     1, {}          - Problem working with files related to submitting tests.
     1, {non-empty} - Problems with submitting tests. Not one test fully submitted.
-    0, {non-empty} - At least one test successfully submitted.
+    2, {non-empty} - At least one test successfully submitted, but there were lines
+                     in the test list file that had problems.
     """
 
     test_info = {}
@@ -140,6 +144,9 @@ def submit_tests(options, types_table):
     # Flag when at least one test reports successfully submitted. This will
     # be the return value: 0 for at least one submitted, 1 for none submitted.
     succ_submitted = 1
+    # Flag to keep tell whether there was a problem with one of the lines in
+    # the test list file.
+    test_list_line_problem = False
 
     for line in f_cont:
         # Parse the control file line by line, looking for valid lines
@@ -151,20 +158,23 @@ def submit_tests(options, types_table):
         if len(tokens) != 2:
             print ("Error in " + str(options.control_file) + " line " + str(line_num) 
                    + ". Improper number of fields. Skipping...")
+            test_list_line_problem = True
             continue
 
         test_type = tokens[0]
         # Check the test type
-        if (int(test_type)) < 0 or (int(test_type) > (len(types_table) - 1)):
+        if (int(test_type)) < 1 or (int(test_type) > (len(types_table) - 1)):
             print ("Error in " + str(options.control_file) + " line " + str(line_num) 
                     + ". Improper test type " + str(test_type) 
                     + ". Skipping...")
+            test_list_line_problem = True
             continue
         # Get the test's directory name (its location)
         test_loc = tokens[1]
 
         # We now have where to run the test and its valid test type
         if types_table[int(test_type)] == True:
+            print ("Entering " + str(test_dir) + "/" + str(test_loc))
             try:
                 os.chdir(test_loc)
             except OSError:
@@ -220,12 +230,18 @@ def submit_tests(options, types_table):
             # Go back to the tests directory and do the next test.
             print "Entering " + str(test_dir)
             os.chdir(test_dir)
+            print "-" * 50
     print "-" * 50
     f_cont.close()
     f_sub.close()
     print "Entering " + str(reg_base_dir)
     os.chdir(reg_base_dir)
-    return succ_submitted, test_info
+    # Only return 2 if at least one job was successfully submitted and there
+    # was a problem with one of the lines in the test list file.
+    if succ_submitted == 0 and test_list_line_problem == True:
+        return 2, test_info
+    else:
+        return succ_submitted, test_info
 
 
 # Main routine
@@ -233,8 +249,10 @@ def main(argv=None):
     """The main routine for submitting tests inside the regression suite.
 
     Return values:
-    0: At least some jobs submitted
+    0: At least some jobs submitted.
     1: No jobs submitted.
+    2: At least some jobs submitted, but there was an error in parsing a line
+       in the test list file.
     """
     
     if argv == None:
@@ -256,7 +274,7 @@ def main(argv=None):
 #    succ_sub = 0
 #    test_info = {"write_read_no_error": ['Submitted', ''], 
 #                 "write_read_error": ['Submitted', '']}
-    if succ_sub != 0:
+    if succ_sub == 1:
         print ("Error: problems with submitting tests. No tests fully "
             "submitted.")
         return 1
@@ -273,7 +291,8 @@ def main(argv=None):
             + ": " + str(detail) + ".\nExiting without writing.")
         return 1
     print ("Successfully wrote dictionary to " + str(options.dict_file) + ".")
-    return 0
+    # succ_sub could be 0 or 2 at this point.
+    return succ_sub
 
 
 if __name__ == "__main__":

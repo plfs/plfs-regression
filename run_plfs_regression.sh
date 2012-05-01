@@ -99,9 +99,6 @@ function format_email {
     if [ "$runtests" == "True" ]; then
         echo "Submitting tests...$submit_test_stat" >> $email_message
         if [ "$submit_test_stat" != 'PASS' ]; then
-            echo "No tests submitted." >> $email_message
-        fi
-        if [ "$submit_test_stat" == 'FAIL' ]; then
             echo "Please see $submit_tests_log." >> $email_message
         fi
     else
@@ -1122,13 +1119,16 @@ if [ "$runtests" == "True" ]; then
     ${basedir}/submit_tests.py --control=$control_file --idfile=$id_file \
         --dictfile=$dict_file --basedir=${basedir} --types=$testtypes \
         > $submit_tests_log 2>&1
-    if [[ $? == 0 ]]; then
+    ret=$?
+    if [[ $ret == 0 ]]; then
         submit_test_stat="PASS"
+    elif [[ $ret == 2 ]]; then
+        submit_test_stat="WARNING: errors in parsing $control_file"
     else
-        submit_test_stat="FAIL"
+        submit_test_stat="FAIL: no tests submitted"
     fi
     echo $submit_test_stat
-    if [ "$submit_test_stat" == 'FAIL' ]; then
+    if [ "${submit_test_stat:0:4}" == 'FAIL' ]; then
         script_exit 1
     fi
 else
