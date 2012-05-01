@@ -210,6 +210,10 @@ def submit_tests(options, types_table):
                         "suite will not wait for these to finish to check results):")
                     for i in ids:
                         print i
+            # See if a test was skipped
+            elif -2 in ids or "-2" in ids:
+                print (str(test_loc) + " skipped due to configuration")
+                test_info[test_loc] = ['Skipped due to configuration', '']
             else:
                 succ_submitted = 0
                 print ("Submitted test in directory " + str(test_loc))

@@ -228,6 +228,7 @@ def checkresults(options, tests_status, email_file):
     tests_pass = {}
     tests_fail = {}
     tests_not_submitted = {}
+    tests_skipped = {}
     tests_other = {}
     # Loop through the keys in tests_status
     for key in tests_status.keys():
@@ -236,6 +237,11 @@ def checkresults(options, tests_status, email_file):
             tests_not_submitted[key] = tests_status[key]
             del tests_status[key]
             all_passed = False
+            continue
+        # Note which tests that were skipped.
+        if tests_status[key][0] == "Skipped due to configuration":
+            tests_skipped[key] = tests_status[key]
+            del tests_status[key]
             continue
 
         print "Entering " + str(test_dir) + "/" + str(key)
@@ -325,10 +331,11 @@ def checkresults(options, tests_status, email_file):
         ret = 0
     else:
         ret = 1
-    return (ret, tests_fail, tests_other, tests_not_submitted, tests_pass)
+    return (ret, tests_fail, tests_other, tests_not_submitted, tests_pass,
+        tests_skipped)
 
 def print_summary(options, tests_fail, tests_other, tests_not_submitted, 
-    tests_pass):
+    tests_pass, tests_skipped):
     """Print out a summary of the differenct classes of tests."""
 
     print "\n\nSummary of tests that were run"
@@ -359,6 +366,9 @@ def print_summary(options, tests_fail, tests_other, tests_not_submitted,
         if len(v) > 1:
             for s in v[1:]:
                 print str(s)
+    # Report jobs that were skipped.
+    for k, v in tests_skipped.iteritems():
+        print str(k) + "..." + str(v[0])
 
 
 def catastrophic_exit(options, msg, dir):
@@ -504,8 +514,8 @@ def main(argv=None):
 
     # Check each job in test_info and report on it
     (status, tests_fail, tests_other, tests_not_submitted, 
-    tests_pass) = checkresults(options=options, tests_status=test_info, 
-        email_file=email_file)
+        tests_pass, tests_skipped) = checkresults(options=options,
+        tests_status=test_info, email_file=email_file)
 
     if status == 0:
         r_status = "PASSED"
@@ -520,7 +530,7 @@ def main(argv=None):
     # Print out a summary
     print_summary(options=options, tests_fail=tests_fail,
         tests_other=tests_other, tests_not_submitted=tests_not_submitted,
-        tests_pass=tests_pass)
+        tests_pass=tests_pass, tests_skipped=tests_skipped)
     
     # Put the output back to normal so that only the summary is in the file
     if email_file != None:
