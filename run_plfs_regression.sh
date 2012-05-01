@@ -715,14 +715,26 @@ if [ "$build" == "True" ]; then
         plfs_ok="FAIL"
     fi
 
+    # Set up the environment to use the regression suite's plfs. This will
+    # redefine plfs_bin_dir, plfs_lib_dir and plfs_inc_dir.
+    setup_rs_env_plfs
+
+    # Check for FATAL problems when dealing with the plfsrc files. These
+    # can't be ignored and need to be fixed.
+    output=`plfs_check_config 2>&1`
+    echo $output | grep "FATAL" >> /dev/null
+    if [[ $? == 0 ]]; then
+        plfs_stat="FATAL problem with using plfs_check_config on a plfsrc file; please fix the rc file(s)"
+        plfs_ok="FAIL"
+        echo $plfs_stat >> $plfs_build_log
+        echo "plfs_check_config output:" >> $plfs_build_log
+        plfs_check_config >> $plfs_build_log 2>&1
+    fi
+
     echo $plfs_stat
     if [ "$plfs_ok" == "FAIL" ]; then
         script_exit 1
     fi
-
-    # Set up the environment to use the regression suite's plfs. This will
-    # redefine plfs_bin_dir, plfs_lib_dir and plfs_inc_dir.
-    setup_rs_env_plfs
 
     # experiment_management
     echo "Checking experiment_management. Please see $expr_mgmt_get_log."
@@ -776,6 +788,39 @@ if [ "$build" == "True" ]; then
                 echo "experiment_management/run_expr.py (must be executable)" >> $expr_mgmt_get_log
                 echo "experiment_management/lib/expr_mgmt.py" >> $expr_mgmt_get_log
                 echo "experiment_management/lib/fs_test.py" >> $expr_mgmt_get_log
+            fi
+            # Check for exprmgmtrc
+            if [ -e ~/.exprmgmtrc ] || [ -e "$EXPRMGMTRC" ]; then
+                missing=""
+                # Check for runcommand
+                runcommand=`tests/utils/rs_exprmgmtrc_option_value.py \
+                    runcommand`
+                if [ "$runcommand" == "" ]; then
+                    missing="$missing, runcommand"
+                fi
+                # Check for ppn
+                ppn=`tests/utils/rs_exprmgmtrc_option_value.py ppn`
+                if [ "$ppn" == "" ]; then
+                    missing="$missing, ppn"
+                fi
+                # Check for outdir
+                outdir=`tests/utils/rs_exprmgmtrc_option_value.py outdir`
+                if [ "$outdir" == "" ]; then
+                    missing="$missing, outdir"
+                fi
+                if [ "$missing" != "" ]; then
+                    # Remove ', ' from the beginning of the string
+                    missing=${missing:2}
+                    expr_mgmt_stat="experiment_management rc file doesn't define the following: $missing"
+                    expr_mgmt_ok="FAIL"
+                    echo $expr_mgmt_stat >> $expr_mgmt_get_log
+                fi
+            else
+                expr_mgmt_stat="Valid rc file for experiment_management not found."
+                expr_mgmt_ok="FAIL"
+                echo $expr_mgmt_stat >> $expr_mgmt_get_log
+                echo "Please create ~/.exprmgmtrc or set the environment variable" >> $expr_mgmt_get_log
+                echo "EXPRMGMTRC to a valid experiment_management rc file." >> $expr_mgmt_get_log
             fi
         fi
     fi
