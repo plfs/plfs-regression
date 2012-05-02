@@ -9,6 +9,17 @@ accomplish anything when running tests. This way the regression
 environment is easily considered by looking at what is currently in the 
 regression directory structure and log files.
 
+A regression run has four phases:
+- build phase: all dependencies are retrieved and built, if neccessary.
+- configuration and directory check: check required configuration files
+  of all packages and that the plfs-related directories can be created.
+- test submittal: tests are submitted. If no tests are submitted (either by
+  configuration or by errors), this phase becomes the final phase for a
+  regression run. If specified, a summary email will be sent.
+- test checking: if at least one test is run, this last stage is entered.
+  Each test that was run will have it's results checked and logged. If
+  specified, an summary email will be sent.
+
 Information on writing tests for the regression suite is located in:
 tests/README.
 
@@ -37,8 +48,13 @@ Dependencies:
   will use these mount points, experiment_management input (see below) and
   run-time information to construct file targets that will be used during the
   test. Without the applicable experiment_management setting, targets will be
-  placed directly into the mount point. Some tests use only one backend, others
-  will use all backends found in the plfs rc files.
+  placed directly into the mount point.
+  Note about the check for directories and plfs rc files:
+  The checks for plfs related directores and rc files happen after the build
+  phase. If build phase was successfull but any of the checks fail, it is not
+  necessary to rerun the build phase. Instead, use run_plfs_regression.sh's
+  '--nobuild' option to skip the build phase. The checks will still be done
+  before the test submittal phase.
 - Fuse tests that run on compute nodes will make sure the mount_point
   specified in the plfsrc is present. This way it is possible to use a
   location such as /var/tmp, but users will not have to log in to each compute
@@ -50,6 +66,12 @@ Dependencies:
   not pass these on the command line when invoking experiment_management. In
   addition, msub should be defined to include "-j oe" as many of the tests
   expect to look for only one output file.
+  Note about the check for experiment_management rc files:
+  Like the check for plfs rc files, the check for experiment_management rc
+  files is done after the build stage. If the build phase was successfull,
+  but the check on experiment_management rc files fails, it is not necessary
+  to rerun the build phase; use '--nobuild' to skip the build stage. The test of
+  the rc files will be done before the test submittal stage.
 - If putting test target files directly into the PLFS mount point is not
   desired, specify rs_mnt_append_path in experiment_management's rc file.
   Assign it a path relative to the mount point. Tests will append this path to
@@ -123,19 +145,8 @@ Files and directories in the regression suite:
   needed source code or link to already existing binaries and libraries. If
   there are any issues with these steps, run_plfs_regression.sh will exit the
   regression run and send an email notification to addresses specified in the
-  config file. If all needed packages are present, this script will passe
-  control to check_tests.py.
-- plfs_build.sh: build plfs and install it into the installation directory (given
-  in config file). It will make sure the correct version of the autotools can be
-  used. If they are not found, it exits and the regression suite will exit.
-- openmpi_build.sh: build openmpi and install it. This script does not check
-  for the correct version of autotools (at this time). Since plfs_build.sh runs
-  first and it checks for the correct version of autotools, it is assumed that
-  if plfs_build.sh completed successfully, then it is ok for openmpi_build.sh
-  to assume that the correct version of the autotools is in use.
-- fs_test_build.sh: builds fs_test source.
-- src_cp.sh: copy source from one location into anther. This script can be used
-  to copy any set of code into the regression environment (plfs, fs_test, etc).
+  config file. If all needed packages are present, this script will call
+  submit_tests.py to submit tests and then pass control to check_tests.py.
 - submit_tests.py: python script that will submit tests that are located in the
   tests directory. It will use a control file to know which tests to submit.
   Submit_tests.py file is where we specify how many different types of tests can
@@ -156,6 +167,17 @@ Files and directories in the regression suite:
   check_tests.py process dies before the whole regression run is complete.
   This script is to make sure check_tests.py finishes at some point and sends
   a report.
+- plfs_build.sh: build plfs and install it into the installation directory (given
+  in config file). It will make sure the correct version of the autotools can be
+  used. If they are not found, it exits and the regression suite will exit.
+- openmpi_build.sh: build openmpi and install it. This script does not check
+  for the correct version of autotools (at this time). Since plfs_build.sh runs
+  first and it checks for the correct version of autotools, it is assumed that
+  if plfs_build.sh completed successfully, then it is ok for openmpi_build.sh
+  to assume that the correct version of the autotools is in use.
+- fs_test_build.sh: builds fs_test source.
+- src_cp.sh: copy source from one location into anther. This script can be used
+  to copy any set of code into the regression environment (plfs, fs_test, etc).
 - src: Directory that will contain all source needed by the regression suite.
   All code will be copied into this directory in it's own directory. The
   directory names will be hardcoded into run_plfs_regression.sh so that it can
