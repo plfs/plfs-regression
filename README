@@ -18,7 +18,7 @@ A regression run has four phases:
   regression run. If specified, a summary email will be sent.
 - test checking: if at least one test is run, this last stage is entered.
   Each test that was run will have it's results checked and logged. If
-  specified, an summary email will be sent.
+  specified, a summary email will be sent.
 
 Information on writing tests for the regression suite is located in:
 tests/README.

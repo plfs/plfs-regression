@@ -99,24 +99,20 @@ cd "$plfs_srcdir"
 echo "Running ./scripts/make_plfs_patch"
 ./scripts/make_plfs_patch
 
-# Go back to the directory containing the openmpi directory
-echo "Entering $srcdir"
-cd "$srcdir"
+# Change directory to the open mpi source directory
+echo "Entering ${srcdir}/${openmpi_name}"
+if [ ! -d "${srcdir}/${openmpi_name}" ]; then
+    echo "Error: ${srcdir}/${openmpi_name} directory not found"
+    exit 1
+fi
+cd ${srcdir}/${openmpi_name}
 
 # Patch openmpi
 echo "Patching openmpi"
-patch -p0 < ${plfs_srcdir}/ad-patches/openmpi/${ompi_name}-plfs-prep.patch
-check_exit $? "Using ompi-1.4.3-plfs-prep.patch"
-patch -p0 < ${plfs_srcdir}/ad-patches/openmpi/${ompi_name}-plfs.patch
-check_exit $? "Using ompi-1.4.3-plfs.patch"
-
-# cd into the openmpi directory
-echo "Entering $openmpi_name"
-if [ ! -d "$openmpi_name" ]; then
-    echo "Error: $openmpi_name directory not located in $srcdir"
-    exit 1
-fi
-cd $openmpi_name
+patch -p1 < ${plfs_srcdir}/ad-patches/openmpi/${ompi_name}-plfs-prep.patch
+check_exit $? "Using ${ompi_name}-plfs-prep.patch"
+patch -p1 < ${plfs_srcdir}/ad-patches/openmpi/${ompi_name}-plfs.patch
+check_exit $? "Using ${ompi_name}-plfs.patch"
 
 # Run autogen.sh
 echo "Running ./autogen.sh"
@@ -126,7 +122,7 @@ check_exit $? "Autogen.sh process"
 # Get the platform file from the plfs source directory, substituting the right
 # paths for the regression environment.
 echo "Generating platform file for openmpi compilation"
-sed 's|REPLACE_PLFS_LIB|'${plfs_instdir}'/lib|;s|REPLACE_PLFS_INC|'${plfs_instdir}'/include|' \
+sed 's|REPLACE_PLFS_LIB|'${plfs_instdir}'/lib|g;s|REPLACE_PLFS_INC|'${plfs_instdir}'/include|g' \
     ${platform_file} > ./platform_file
 check_exit $? "Generating platform file for openmpi"
 
@@ -137,7 +133,7 @@ check_exit $? "Configure process"
 
 # Run make
 echo "Running make"
-make
+make -j 3
 check_exit $? "Make process"
 
 # Run make install
