@@ -49,3 +49,19 @@ def get_target():
     else:
         target = None
     return target
+
+# Return the filename defined here
+def get_filename():
+    return file
+
+# Return a list of mount_points
+def get_mountpoints():
+    mount_points = rs_plfs_config_query.get_mountpoints()
+    if len(mount_points) <= 0:
+        mount_points = None
+    return mount_points
+
+# Returns the number of mount points found
+def get_mountpoint_cnt():
+    mount_points = rs_plfs_config_query.get_mountpoints()
+    return len(mount_points)
