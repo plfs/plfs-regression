@@ -8,9 +8,6 @@ test_common = imp.load_module('test_common', fp, path, desc)
 fp.close()
 import fs_test
 
-# For tests of type 2 and 3, use the mount point located in .plfsrc
-target = test_common.get_target()
-
 mpi_options = {
     "n"     : [ test_common.nprocs ]
 }
@@ -26,7 +23,7 @@ program_options = {
   "type"        : [ 2 ],
   "nobj"        : [ 4 ],
   "strided"     : [ 1 ],
-  "target"      : [ target ],
+  "target"      : [ '$path' ],
   "io"          : [ 'posix' ],
   "sync"        : [ '' ],
   "barriers"    : [ 'aopen' ],
