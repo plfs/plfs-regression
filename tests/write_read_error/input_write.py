@@ -12,7 +12,6 @@ fp.close()
 import fs_test
 
 # For tests of type 2 and 3, use the mount point located in .plfsrc
-target = common.get_target()
 
 mpi_options = {
     "n"     : [ common.nprocs ]
@@ -31,7 +30,7 @@ program_options = {
   "op"         : [ 'write' ],
   "touch"      : [ '3' ],
   "check"      : [ '3' ],
-  "target"     : [ target ]
+  "target"     : [ '$path' ]
 }
 
 # fs_test doesn't need program_arguments
