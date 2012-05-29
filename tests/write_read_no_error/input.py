@@ -9,7 +9,7 @@ fp.close()
 import fs_test
 
 # For tests of type 2 and 3, use the mount point located in .plfsrc
-target = test_common.get_target()
+#target = test_common.get_target()
 
 mpi_options = {
     "n"     : [ test_common.nprocs ]
@@ -25,8 +25,7 @@ program_options = {
   "nodb"       : [ ''],
   "type"     : [ 2 ],
   "nobj"     : [ 4 ],
-  "strided"  : [ 0 ],
-  "target"   : [ target ]
+  "target"   : [ '$path' ]
 }
 
 # fs_test doesn't need program_arguments
@@ -35,5 +34,5 @@ def get_commands(expr_mgmt_options):
   global mpi_options, mpi_program, program_options 
   return fs_test.get_commands( mpi_options=mpi_options, 
           mpi_program=mpi_program, program_options=program_options,
-          n1_strided=False, n1_segmented=True, nn=False, 
+          n1_strided=True, n1_segmented=False, nn=False, 
           expr_mgmt_options=expr_mgmt_options)
