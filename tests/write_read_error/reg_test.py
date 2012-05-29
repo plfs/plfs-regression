@@ -29,21 +29,19 @@ def main(argv=None):
     # Walltime for the job(s)
     walltime = "5:00"
 
-    # Figure out the target that this test will be using.
-    target = common.get_target()
-    if target == None:
-        print ("Error getting a target.")
+    # Figure out the mounts for this test
+    mounts = common.get_mountpoints()
+    if mounts == None:
+        print ("Error getting mounts")
         return [-1]
-
-    # Get the mount_point. No need to check because if there was a problem,
-    # it would have been found in getting the target.
-    mnt_pt = common.get_mountpoint()
+    # Get the target filename
+    filename = common.get_filename()
+    # Define utils directory
+    utils_dir = (common.basedir + "/tests/utils/")
 
     # Prescript and postscript
-    prescript = (common.basedir + "/tests/utils/rs_plfs_fuse_mount.sh "
-        + str(mnt_pt))
-    postscript = (common.basedir + "/tests/utils/rs_plfs_fuse_umount.sh "
-        + str(mnt_pt))
+    prescript = (common.basedir + "/tests/utils/rs_plfs_fuse_mount.sh ")
+    postscript = (common.basedir + "/tests/utils/rs_plfs_fuse_umount.sh ")
     
     # Compile replace_char.c so that it can be used in the test
     print ("Compiling replace_char.c")
@@ -67,56 +65,61 @@ def main(argv=None):
         # Write the header including statements to get the correct environment
         f.write('#!/bin/bash\n')
         f.write('source ' + str(common.basedir) + '/tests/utils/rs_env_init.sh\n')
-        f.write("echo \"Running " + str(prescript) + "\"\n")
-        f.write("need_to_umount=\"True\"\n")
+
+        # Create a for loop to iterate throuh all mountpoints/paths
+        mounts=' '.join(mounts)
+        f.write('for mnt in ' + str(mounts) + '\n')
+        f.write('do\n')
+        f.write("    echo \"Running " + str(prescript) + "$mnt" + "\"\n")
+        f.write("    need_to_umount=\"True\"\n")
         # The next section of code is to determine if the script needs to
         # run the unmount command. If rs_plfs_fuse_mount.sh returns with a 1,
         # this test is not going to issue the unmount command.
-        f.write(str(prescript) + "\n")
-        f.write("ret=$?\n")
-        f.write("if [ \"$ret\" == 0 ]; then\n")
-        f.write("    echo \"Mounting successful\"\n")
-        f.write("    need_to_umount=\"True\"\n")
-        f.write("elif [ \"$ret\" == 1 ]; then\n")
-        f.write("    echo \"Mount points already mounted.\"\n")
-        f.write("    need_to_umount=\"False\"\n")
-        f.write("else\n")
-        f.write("    echo \"Something wrong with mounting.\"\n")
-        f.write("    exit 1\n")
-        f.write("fi\n")
-        f.close()
-        # Generate the write command
-        os.system(str(common.em_p.get_expr_mgmt_dir(common.basedir))
-            + "/run_expr.py --dispatch=list ./input_write.py >> " + str(script))
-        # Put in a check of the previous command
-        f = open(script, 'a')
-        f.write("ret=$?\n")
-        f.write("if [ \"$ret\" == 0 ]; then\n")
-        f.write("    echo \"Write successful\"\n")
-        f.write("else\n")
-        f.write("    echo \"Something wrong with writing.\"\n")
-        f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
-        f.write("        echo \"Running " + str(postscript) + "\"\n")
-        f.write("        " + str(postscript) + "\n")
+        f.write("    " + str(prescript) + "$mnt" + "\n")
+        f.write("    ret=$?\n")
+        f.write("    if [ \"$ret\" == 0 ]; then\n")
+        f.write("        echo \"Mounting successful\"\n")
+        f.write("        need_to_umount=\"True\"\n")
+        f.write("    elif [ \"$ret\" == 1 ]; then\n")
+        f.write("        echo \"Mount points already mounted.\"\n")
+        f.write("        need_to_umount=\"False\"\n")
+        f.write("    else\n")
+        f.write("        echo \"Something wrong with mounting.\"\n")
+        f.write("        exit 1\n")
         f.write("    fi\n")
-        f.write("    exit 1\n")
-        f.write("fi\n")
+
+        # Generate target for use by fs_test
+        f.write('    top=`' + str(utils_dir) + 'rs_exprmgmtrc_target_path_append.py $mnt`\n')
+        f.write('    path=$top/' + str(filename) + '\n')
+        f.write('    echo Using $path as target\n')
+        # Generate the fs_test write command through experiment_management
+        fs_test_command = str(common.em_p.get_expr_mgmt_dir(common.basedir)) + "/run_expr.py --dispatch=list " + "./input_write.py"
+        cmd = subprocess.Popen([fs_test_command], stdout=subprocess.PIPE, shell=True)
+        fs_test_run, errors = cmd.communicate()
+        f.write("    " + str(fs_test_run) + '\n')
+
         # Now need to write the command that will change the target so that 
         # reading causes a single error.
-        f.write(str(common.curr_dir) + '/replace_char ' + str(target) + ' 0\n')
+        f.write("    " + str(common.curr_dir) + '/replace_char ' + "$path" + ' 0\n')
+
+        # Generate the fs_test read command through experiment_management
+        fs_test_command = str(common.em_p.get_expr_mgmt_dir(common.basedir)) + "/run_expr.py --dispatch=list " + "./input_read.py"
+        cmd = subprocess.Popen([fs_test_command], stdout=subprocess.PIPE, shell=True)
+        fs_test_run, errors = cmd.communicate()
+        f.write("    " + str(fs_test_run) + '\n')
         f.close()
-        # Generate the read command
-        os.system(str(common.em_p.get_expr_mgmt_dir(common.basedir))
-            + "/run_expr.py --dispatch=list ./input_read.py >> " + str(script))
-        # Remove the target if it is still there
-        os.system("echo \"if [ -e " + str(target) + " ]; then rm " 
-            + str(target) + "; fi\" >> " + str(script))
+
+        # Remove target file if it exists
+        os.system("echo \"if [ -e " + "$path" + " ]; then rm " 
+            + "$path"  + "; fi\" >> " + str(script))
+
         # Write into the script the script that will unmount plfs
         f = open(script, 'a')
-        f.write("if [ \"$need_to_umount\" == \"True\" ]; then\n")
-        f.write("    echo \"Running " + str(postscript) + "\"\n")
-        f.write("    " + str(postscript) + "\n")
-        f.write("fi\n")
+        f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
+        f.write("        echo \"Running " + str(postscript) + "$mnt" + "\"\n")
+        f.write("        " + str(postscript) + "$mnt" + "\n")
+        f.write("    fi\n")
+        f.write('done\n')
         f.close()
         # Make the script executable.
         os.chmod(script, 0764)
@@ -131,7 +134,7 @@ def main(argv=None):
         '--nprocs=' + str(common.nprocs), '--walltime=' + str(walltime), 
         '--dispatch=msub'])
     return [last_id]
-#    return [0]
+    return [0]
 
 if __name__ == "__main__":
     result = main()
