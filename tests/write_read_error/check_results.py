@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os,re,sys,subprocess
+import os,re,sys,subprocess,imp
 curr_dir = os.getcwd()
 basedir = re.sub('tests/write_read_error.*', '', curr_dir)
 
@@ -17,6 +17,11 @@ emp.add_exprmgmt_paths(basedir)
 import expr_mgmt
 
 from optparse import OptionParser
+
+# Load the common.py module to get common variables
+(fp, path, desc) = imp.find_module('common', [os.getcwd()])
+common = imp.load_module('common', fp, path, desc)
+fp.close()
 
 num_outfiles_req = 1
 
@@ -53,6 +58,8 @@ def check(output_files):
     """
 
     # Check that the run completed
+    # Get number of mountpoints used for run
+    mount_runs = common.get_mountpoint_cnt()
     print "Checking " + str(output_files)
     st1 = os.system('egrep -q "Completed IO Read." ' + str(output_files))
     if st1 == 0:
@@ -68,22 +75,24 @@ def check(output_files):
         if st2 == 0:
             return ["FAILED", output_files, "Expected 1 bad byte error not "
                 "seen"]
-        if st2 > 1:
+        if st2 > mount_runs:
             return ["FAILED", output_files, "Only one bad byte error "
                 "expected; more than one encountered"]
-        # st2 should equal 1, which is expected.
+        # st2 should equal the number of mountpoints found.
         # Check for other errors
         bad = "error"
         ok1 = "^#"
         ok2 = "Errors and warnings written to \(-errout\): stderr"
         ok3 = "WARNING ERROR.*1 bad byte"
         ok4 = "Data written to target file.*write_read_error"
-        ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3) + "|" + str(ok4)
-        #status = os.system('cat ' + str(file) + ' | sed -e ' + str(fix) 
-        #        + ' | egrep -v ' + str(ok) + ' | egrep -i ' + str(bad))
-        st3 = os.system('cat ' + str(output_files) + ' | egrep -v "' 
-                + str(ok) + '" | egrep -qi ' + str(bad))
-        if st3 == 0:
+        ok5 = ".*write_read_error.out as target" 
+        ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3) + "|" + str(ok4) + "|" + str(ok5)
+        st3 = subprocess.Popen('cat ' + str(output_files) + ' | egrep -v "' 
+                + str(ok) + '" | egrep -qi ' + str(bad), stdin=None,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        st3_output = st3.communicate()
+   
+        if len(st3_output[0]) > 0:
             return ["FAILED", output_files, "Additional errors encountered "
                 "besides expected bad byte error."]
         else:
