@@ -125,90 +125,88 @@ def main(argv=None):
     test_stat = "FAILED"
 
     try:
-        # Get a mount point
+        # Get all mount points
         mount_points = pcq.get_mountpoints()
-        if len(mount_points) > 0:
-            mount_point = mount_points[-1]
-        else:
+        if len(mount_points) <= 0:
             raise plfsMntError("unable to get mount point.\n")
-
-#        problem = False
+        # Loop through all mount points
+        for mount_point in mount_points:
 
         # Mount the plfs mount point
-        p = subprocess.Popen([str(utils_dir) + '/rs_plfs_fuse_mount.sh '
-            + str(mount_point) + ' serial'], stdout=of, stderr=of, shell=True)
-        p.communicate()
-        if p.returncode == 0:
-            print (str(mount_point) + " successfully mounted")
-            need_to_umount = True
-        elif p.returncode == 1:
-            # This script will not issue the unmount command if
-            # rs_plfs_fuse_mount.sh returns with a 1.
-            print (str(mount_point) + " already mounted")
-            need_to_umount = False
-        else:
-            raise plfsMntError("problem with mounting\nExiting.\n")
-
-        try:
-            file_base = os.getenv("MY_MPI_HOST") + ".truncate"
-            file_size=1048576
-            # Check for rs_mnt_append_path in experiment_management
-            top_dir = tpa.append_path([mount_point])[0]
-            file1 = str(top_dir) + "/" + str(file_base) + "1"
-            data="a"*file_size
-        
-            # create the file
-            writeFile(file1,data,0,os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
-            if checkData(file1,data,phase='write') == -1:
-                raise chkDataError("Problem with post write data check\n")
-
-            # truncate it
-            tlen = int(file_size/2)
-            truncateFile(file1,tlen)
-            data=data[:tlen]
-            if checkData(file1,data,phase='truncate') == -1:
-                raise chkDataError("Problem with post truncate data check\n")
-
-            # overwrite a tenth of it
-            data2="b"*int(file_size/10)
-            offset=int(file_size/5)
-            expected  = data[:offset]
-            expected += data2
-            expected += data[offset+len(data2):len(data)]
-            writeFile(file1,data2,offset,os.O_WRONLY)
-            if checkData(file1,expected,phase='overwrite') == -1:
-                raise chkDataError("Problem with post overwrite data check\n")
-
-            # truncate it one more time in the middle of the overwritten piece
-            tlen = offset + int(len(data2)/2)
-            expected=expected[:tlen]
-            truncateFile(file1,tlen)
-            if checkData(file1,expected,phase='truncate2') == -1:
-                raise chkDataError("Problem with second truncate data check\n")
-
-            # Remove the file
-            print("Removing " + str(file1))
-            os.remove(file1)
-            test_stat = "PASSED"
-        except (OSError, IOError), detail:
-            print("Problem in working with file " + str(file1) + ": " + str(detail))
-        except chkDataError, detail:
-            print("Data Verification Error: " + str(detail))
-
-        # Unmount the plfs mount point
-        if need_to_umount == True:
-            print ("Unmounting " + str(mount_point))
-            sys.stdout.flush()
-            sys.stderr.flush()
-            p = subprocess.Popen([str(utils_dir) + '/rs_plfs_fuse_umount.sh '
+            p = subprocess.Popen([str(utils_dir) + '/rs_plfs_fuse_mount.sh '
                 + str(mount_point) + ' serial'], stdout=of, stderr=of, shell=True)
             p.communicate()
-            if p.returncode != 0:
-                # Couldn't unmount; treat this as an error.
-                raise plfsMntError("Unable to unmount " + str(mount_point) + "\n")
+            if p.returncode == 0:
+                print (" ")
+                print (str(mount_point) + " successfully mounted")
+                need_to_umount = True
+            elif p.returncode == 1:
+                # This script will not issue the unmount command if
+                # rs_plfs_fuse_mount.sh returns with a 1.
+                print (str(mount_point) + " already mounted")
+                need_to_umount = False
             else:
-                print ("Successfully unmounted " + str(mount_point))
+                raise plfsMntError("problem with mounting\nExiting.\n")
 
+            try:
+                file_base = os.getenv("MY_MPI_HOST") + ".truncate"
+                file_size=1048576
+                # Check for rs_mnt_append_path in experiment_management
+                top_dir = tpa.append_path([mount_point])[0]
+                file1 = str(top_dir) + "/" + str(file_base) + "1"
+                data="a"*file_size
+        
+                # create the file
+                writeFile(file1,data,0,os.O_WRONLY|os.O_CREAT|os.O_TRUNC)
+                if checkData(file1,data,phase='write') == -1:
+                    raise chkDataError("Problem with post write data check\n")
+
+                # truncate it
+                tlen = int(file_size/2)
+                truncateFile(file1,tlen)
+                data=data[:tlen]
+                if checkData(file1,data,phase='truncate') == -1:
+                    raise chkDataError("Problem with post truncate data check\n")
+
+                # overwrite a tenth of it
+                data2="b"*int(file_size/10)
+                offset=int(file_size/5)
+                expected  = data[:offset]
+                expected += data2
+                expected += data[offset+len(data2):len(data)]
+                writeFile(file1,data2,offset,os.O_WRONLY)
+                if checkData(file1,expected,phase='overwrite') == -1:
+                    raise chkDataError("Problem with post overwrite data check\n")
+
+                # truncate it one more time in the middle of the overwritten piece
+                tlen = offset + int(len(data2)/2)
+                expected=expected[:tlen]
+                truncateFile(file1,tlen)
+                if checkData(file1,expected,phase='truncate2') == -1:
+                    raise chkDataError("Problem with second truncate data check\n")
+
+                # Remove the file
+                print("Removing " + str(file1))
+                os.remove(file1)
+                test_stat = "PASSED"
+            except (OSError, IOError), detail:
+                print("Problem in working with file " + str(file1) + ": " + str(detail))
+            except chkDataError, detail:
+                print("Data Verification Error: " + str(detail))
+
+            # Unmount the plfs mount point
+            if need_to_umount == True:
+                print ("Unmounting " + str(mount_point))
+                sys.stdout.flush()
+                sys.stderr.flush()
+                p = subprocess.Popen([str(utils_dir) + '/rs_plfs_fuse_umount.sh '
+                    + str(mount_point) + ' serial'], stdout=of, stderr=of, shell=True)
+                p.communicate()
+                if p.returncode != 0:
+                    # Couldn't unmount; treat this as an error.
+                    raise plfsMntError("Unable to unmount " + str(mount_point) + "\n")
+                else:
+                    print ("Successfully unmounted " + str(mount_point))
     except plfsMntError, detail:
         print("Problem dealing with plfs mounts: " + str(detail))
         test_stat = "FAILED"
