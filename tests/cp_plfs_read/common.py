@@ -55,4 +55,8 @@ def get_mountpoints():
 def get_filename():
     return file
 
+# Returns the number of mount points found
+def get_mountpoint_cnt():
+    mount_points = rs_plfs_config_query.get_mountpoints()
+    return len(mount_points)
 
