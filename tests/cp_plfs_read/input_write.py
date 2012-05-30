@@ -33,6 +33,7 @@ program_options = {
   "touch"      : [ '3' ],
   "check"      : [ '3' ],
   "target"     : [ target ]
+#  "target"     : [ '$path' ]
 }
 
 # fs_test doesn't need program_arguments
