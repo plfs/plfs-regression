@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os,re,sys
+import os,re,sys,imp
 curr_dir = os.getcwd()
 basedir = re.sub('tests/adio_nto1_strided.*', '', curr_dir)
 
@@ -17,6 +17,14 @@ emp.add_exprmgmt_paths(basedir)
 import expr_mgmt
 
 from optparse import OptionParser
+
+import commands
+from decimal import Decimal
+# Load the common.py module to get common variables
+(fp, path, desc) = imp.find_module('test_common', [os.getcwd()])
+tc = imp.load_module('test_common', fp, path, desc)
+fp.close()
+
 
 num_outfiles_req = 1
 
@@ -53,9 +61,15 @@ def check(output_file):
     """
 
     # Check that the run completed
+    # Determine how many runs completed in this test and compare against
+    # the number of mount points 
     print "Checking " + str(output_file)
-    st1 = os.system('egrep -q "Completed IO Read." ' + str(output_file))
-    if st1 == 0:
+    complete_cnt = commands.getoutput('grep "Completed IO Read." ' + str(output_file) + ' | wc -l')
+    complete_cnt = Decimal(complete_cnt)
+    mount_count=tc.get_mountpoint_cnt()
+    if complete_cnt != mount_count:
+        return ["FAILED", output_file, "Test did not finish IO Read"]
+    else:
         # Now check to see if there were any errors.
         bad = "error"
         ok1 = "^#"
@@ -68,8 +82,6 @@ def check(output_file):
             return ["FAILED", output_file, "Errors in output"]
         else:
             return ["PASSED"]
-    else:
-        return ["FAILED", output_file, "Test did not finish IO Read"]
     
 def parse_args(argv):
     """Parse args."""
