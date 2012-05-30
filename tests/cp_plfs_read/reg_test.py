@@ -30,22 +30,24 @@ def main(argv=None):
     walltime = "5:00"
 
     # Figure out the target that this test will be using.
-    plfs_target=common.get_target()
     scratch_target=common.get_panfs_target()
     if scratch_target == None: 
        print ("Error getting a scratch target.")
        return [-1]
-    elif plfs_target == None:
-       print ("Error getting a fuse target.")
-       return [-1]
 
-    # Get the mount_point. No need to check because if there was a problem,
-    # it would have been found in getting the target.
-    mnt_pt = common.get_mountpoint()
+    # Figure out the mounts for this test
+    mounts = common.get_mountpoints()
+    if mounts == None:
+        print ("Error getting mounts")
+        return [-1]
+    # Get the target filename
+    filename = common.get_filename()
+    # Define utils directory
+    utils_dir = (common.basedir + "/tests/utils/")
+
 # Prescript and postscript 
-    prescript = (common.basedir + "/tests/utils/rs_plfs_fuse_mount.sh " + str(mnt_pt))
-    postscript = (common.basedir + "/tests/utils/rs_plfs_fuse_umount.sh "
-        + str(mnt_pt))
+    prescript = (common.basedir + "/tests/utils/rs_plfs_fuse_mount.sh ")
+    postscript = (common.basedir + "/tests/utils/rs_plfs_fuse_umount.sh ")
     
     # Create the script
     try:
@@ -53,60 +55,80 @@ def main(argv=None):
         # Write the header including statements to get the correct environment
         f.write('#!/bin/bash\n')
         f.write('source ' + str(common.basedir) + '/tests/utils/rs_env_init.sh\n')
-        f.write("echo \"Running " + str(prescript) + "\"\n")
-        f.write("need_to_umount=\"True\"\n")
+
+        # Create a for loop to iterate throuh all mountpoints/paths
+        mounts=' '.join(mounts)
+        f.write('for mnt in ' + str(mounts) + '\n')
+        f.write('do\n')
+        f.write("    echo \"Running " + str(prescript) + "$mnt" + "\"\n")
+        f.write("    need_to_umount=\"True\"\n")
         # The next section of code is to determine if the script needs to
         # run the unmount command. If rs_plfs_fuse_mount.sh returns with a 1,
         # this test is not going to issue the unmount command.
-        f.write(str(prescript) + "\n")
-        f.write("ret=$?\n")
-        f.write("if [ \"$ret\" == 0 ]; then\n")
-        f.write("    echo \"Mounting successful\"\n")
-        f.write("    need_to_umount=\"True\"\n")
-        f.write("elif [ \"$ret\" == 1 ]; then\n")
-        f.write("    echo \"Mount points already mounted.\"\n")
-        f.write("    need_to_umount=\"False\"\n")
-        f.write("else\n")
-        f.write("    echo \"Something wrong with mounting.\"\n")
-        f.write("    exit 1\n")
-        f.write("fi\n")
-        f.write("echo \"Attempting to write to non-plfs space\"\n")
+        f.write("    " + str(prescript) + "$mnt" + "\n")
+        f.write("    ret=$?\n")
+        f.write("    if [ \"$ret\" == 0 ]; then\n")
+        f.write("        echo \"Mounting successful\"\n")
+        f.write("        need_to_umount=\"True\"\n")
+        f.write("    elif [ \"$ret\" == 1 ]; then\n")
+        f.write("        echo \"Mount points already mounted.\"\n")
+        f.write("        need_to_umount=\"False\"\n")
+        f.write("    else\n")
+        f.write("        echo \"Something wrong with mounting.\"\n")
+        f.write("        exit 1\n")
+        f.write("    fi\n")
+        # Generate target for use by fs_test
+        f.write('    top=`' + str(utils_dir) + 'rs_exprmgmtrc_target_path_append.py $mnt`\n')
+        f.write('    path=$top/' + str(filename) + '\n')
+        f.write('    echo Using $path as target\n')
+
+        f.write("    echo \"Attempting to write to non-plfs space\"\n")
         f.close()
+
         # Generate the write command
         os.system(str(common.em_p.get_expr_mgmt_dir(common.basedir))
             + "/run_expr.py --dispatch=list ./input_write.py >> " + str(script))
         # Put in a check of the previous command
         f = open(script, 'a')
-        f.write("ret=$?\n")
-        f.write("if [ \"$ret\" == 0 ]; then\n")
-        f.write("    echo \"Write successful\"\n")
-        f.write("else\n")
-        f.write("    echo \"Something wrong with writing.\"\n")
-        f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
-        f.write("        echo \"Running " + str(postscript) + "\"\n")
-        f.write("        " + str(postscript) + "\n")
+        f.write("    ret=$?\n")
+        f.write("    if [ \"$ret\" == 0 ]; then\n")
+        f.write("        echo \"Write successful\"\n")
+        f.write("    else\n")
+        f.write("        echo \"Something wrong with writing.\"\n")
+        f.write("        if [ \"$need_to_umount\" == \"True\" ]; then\n")
+        f.write("            echo \"Running " + str(postscript) + "\"\n")
+        f.write("            " + str(postscript) + "\n")
+        f.write("        fi\n")
+        f.write("        exit 1\n")
         f.write("    fi\n")
-        f.write("    exit 1\n")
-        f.write("fi\n")
+
+        # Generate plfs target path from mountpoint
+        f.write('    top=`' + str(utils_dir) + 'rs_exprmgmtrc_target_path_append.py $mnt`\n')
+        f.write('    plfs_target=$top/' + str(filename) + '\n')
+        f.write("    echo \"Using " +  str(scratch_target) + " as copy source\"\n")
+        f.write('    echo \"Using $plfs_target as copy target\"\n')
+
         # Copy scratch file to plfs space 
-        f.write(" echo \"Copying file from non-plfs to plfs space\"\n")
-        f.write("cp " + scratch_target + " " + plfs_target + "\n")
-        f.write("echo \"Attempting to read from plfs space\"\n")
+        f.write("    echo \"Copying file from non-plfs to plfs space\"\n")
+        f.write("    cp " + scratch_target + " " + "$plfs_target" + "\n")
+        f.write("    echo \"Attempting to read from plfs space\"\n")
         f.close()
+
         # Generate the read command
         os.system(str(common.em_p.get_expr_mgmt_dir(common.basedir))
             + "/run_expr.py --dispatch=list ./input_read.py >> " + str(script))
         # Remove the targets if it is still there
         os.system("echo \"if [ -e " + str(scratch_target) + " ]; then rm " 
           + str(scratch_target) + "; fi\" >> " + str(script))
-        os.system("echo \"if [ -e " + str(plfs_target) + " ]; then rm " 
-          + str(plfs_target) + "; fi\" >> " + str(script))
+#        os.system("echo \"if [ -e " + str(plfs_target) + " ]; then rm " 
+#          + str(plfs_target) + "; fi\" >> " + str(script))
         # Write into the script the script that will unmount plfs
         f = open(script, 'a')
-        f.write("if [ \"$need_to_umount\" == \"True\" ]; then\n")
-        f.write("    echo \"Running " + str(postscript) + "\"\n")
-        f.write("    " + str(postscript) + "\n")
-        f.write("fi\n")
+        f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
+        f.write("        echo \"Running " + str(postscript) + "$mnt" + "\"\n")
+        f.write("        " + str(postscript) + "$mnt" + "\n")
+        f.write("    fi\n")
+        f.write('done\n')
         f.close()
         # Make the script executable.
         os.chmod(script, 0764)
