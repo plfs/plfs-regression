@@ -69,67 +69,68 @@ def main(argv=None):
     test_stat = "FAILED"
 
     try:
-        # Get a mount point
+        # Get all mount points
         mount_points = pcq.get_mountpoints()
-        if len(mount_points) > 0:
-            mount_point = mount_points[-1]
-        else:
+        if len(mount_points) <= 0:
             raise plfsMntError("unable to get mount point.\n")
 
-        # Check for rs_mnt_append_path in experiment_management
-        top_dir = tpa.append_path([mount_point])[0]
-        # Define two targets
-        file1 = str(curr_dir) + "/truncate_o_control"
-        file2 = str(top_dir) + "/" + os.getenv("MY_MPI_HOST") + ".truncate_o_test"
+        # Loop through all mount points
+        for mount_point in mount_points:
+            # Check for rs_mnt_append_path in experiment_management
+            top_dir = tpa.append_path([mount_point])[0]
+            # Define two targets
+            file1 = str(curr_dir) + "/truncate_o_control"
+            file2 = str(top_dir) + "/" + os.getenv("MY_MPI_HOST") + ".truncate_o_test"
 
-        # variable to keep track of if we need to issue the unmount command.
-        need_to_umount = True
-       
-        # Mount the plfs mount point
-        print("Mounting " + str(mount_point))
-        # Flush the output so that the output in the file is somewhat
-        # consistent in time.
-        sys.stdout.flush()
-        sys.stderr.flush() 
-        p = subprocess.Popen([str(utils_dir) + '/rs_plfs_fuse_mount.sh '
-            + str(mount_point) + ' serial'], stdout=of, stderr=of, shell=True)
-        p.communicate()
-        if p.returncode == 0:
-            print (str(mount_point) + " successfully mounted")
+            # variable to keep track of if we need to issue the unmount command.
             need_to_umount = True
-        elif p.returncode == 1:
-            # This script will not issue the unmount command if
-            # rs_plfs_fuse_mount.sh returns with a 1.
-            print (str(mount_point) + " already mounted")
-            need_to_umount = False
-        else:
-            raise plfsMntError("problem with mounting\nExiting.\n")
-        
-        sys.stdout.flush()
-        sys.stderr.flush() 
-        
-        # Call the truncate_open_file.bash script with the two files
-        p = subprocess.Popen(['./truncate_open_file.bash ' + str(file1)
-            + ' ' + str(file2)], stdout=of, stderr=of, shell=True)
-        p.communicate()
-        if p.returncode == 0:
-            test_stat = "PASSED"
-        
-        # Unmount the plfs mount point
-        if need_to_umount == True:
+       
+            # Mount the plfs mount point
+            print(" ")
+            print("Mounting " + str(mount_point))
+            # Flush the output so that the output in the file is somewhat
+            # consistent in time.
             sys.stdout.flush()
-            sys.stderr.flush()
-            print ("Unmounting " + str(mount_point))
-            sys.stdout.flush()
-            sys.stderr.flush()
-            p = subprocess.Popen([str(utils_dir) + '/rs_plfs_fuse_umount.sh '
+            sys.stderr.flush() 
+            p = subprocess.Popen([str(utils_dir) + '/rs_plfs_fuse_mount.sh '
                 + str(mount_point) + ' serial'], stdout=of, stderr=of, shell=True)
             p.communicate()
-            if p.returncode != 0:
-                # Couldn't unmount; treat this as an error.
-                raise plfsMntError("Unable to unmount " + str(mount_point) + "\n")
+            if p.returncode == 0:
+                print (str(mount_point) + " successfully mounted")
+                need_to_umount = True
+            elif p.returncode == 1:
+                # This script will not issue the unmount command if
+                # rs_plfs_fuse_mount.sh returns with a 1.
+                print (str(mount_point) + " already mounted")
+                need_to_umount = False
             else:
-                print ("Successfully unmounted " + str(mount_point))
+                raise plfsMntError("problem with mounting\nExiting.\n")
+        
+            sys.stdout.flush()
+            sys.stderr.flush() 
+        
+            # Call the truncate_open_file.bash script with the two files
+            p = subprocess.Popen(['./truncate_open_file.bash ' + str(file1)
+                + ' ' + str(file2)], stdout=of, stderr=of, shell=True)
+            p.communicate()
+            if p.returncode == 0:
+                test_stat = "PASSED"
+        
+            # Unmount the plfs mount point
+            if need_to_umount == True:
+                sys.stdout.flush()
+                sys.stderr.flush()
+                print ("Unmounting " + str(mount_point))
+                sys.stdout.flush()
+                sys.stderr.flush()
+                p = subprocess.Popen([str(utils_dir) + '/rs_plfs_fuse_umount.sh '
+                    + str(mount_point) + ' serial'], stdout=of, stderr=of, shell=True)
+                p.communicate()
+                if p.returncode != 0:
+                    # Couldn't unmount; treat this as an error.
+                    raise plfsMntError("Unable to unmount " + str(mount_point) + "\n")
+                else:
+                    print ("Successfully unmounted " + str(mount_point))
 
     except plfsMntError, detail:
         print("Problem dealing with plfs mounts: " + str(detail))
