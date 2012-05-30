@@ -33,23 +33,6 @@ file = os.getenv("MY_MPI_HOST") + ".cp_plfs_read.out"
 import rs_plfs_config_query
 import rs_exprmgmtrc_target_path_append as tpa
 
-def get_mountpoint():
-    mount_points = rs_plfs_config_query.get_mountpoints()
-    if len(mount_points) > 0:
-        mount_point = mount_points[-1]
-    else:
-        mount_point = None
-    return mount_point
-
-def get_target():
-    mount_point = get_mountpoint()
-    if mount_point != None:
-        top_dir = tpa.append_path([mount_point])[0]
-        target = str(top_dir) + "/" + str(file)
-    else:
-        target = None
-    return target
-
 # this function returns a panfs scratch space target
 def get_panfs_target():
     scratch_script = utils_dir + "/rs_scratch_mount_find.sh"
@@ -60,3 +43,16 @@ def get_panfs_target():
     else:
         target = None
     return target
+
+# Return a list of mount_points
+def get_mountpoints():
+    mount_points = rs_plfs_config_query.get_mountpoints()
+    if len(mount_points) <= 0:
+        mount_points = None
+    return mount_points
+
+# Return the filename defined here
+def get_filename():
+    return file
+
+
