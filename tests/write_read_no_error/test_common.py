@@ -43,3 +43,8 @@ def get_mountpoints():
         mount_points = None
     return mount_points
 
+# Returns the number of mount points found
+def get_mountpoint_cnt():
+    mount_points = rs_plfs_config_query.get_mountpoints()
+    return len(mount_points)
+
