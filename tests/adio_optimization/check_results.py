@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os,re,sys
+import os,re,sys,imp
 curr_dir = os.getcwd()
 basedir = re.sub('tests/adio_optimization.*', '', curr_dir)
 
@@ -17,6 +17,13 @@ emp.add_exprmgmt_paths(basedir)
 import expr_mgmt
 
 from optparse import OptionParser
+
+import commands
+from decimal import Decimal
+# Load the common.py module to get common variables
+(fp, path, desc) = imp.find_module('test_common', [os.getcwd()])
+tc = imp.load_module('test_common', fp, path, desc)
+fp.close()
 
 num_outfiles_req = 1
 
@@ -53,9 +60,16 @@ def check(output_files):
     """
 
     # Check that the run completed
+    # Determine how many runs completed in this test and compare against
+    # the number of mount points 
     print "Checking " + str(output_files[0])
-    st1 = os.system('egrep -q "Completed IO Read." ' + str(output_files[0]))
-    if st1 == 0:
+    complete_cnt = commands.getoutput('grep "Completed IO Read." ' + str(output_files[0]) + ' | wc -l')
+    complete_cnt = Decimal(complete_cnt)
+    mount_count=tc.get_mountpoint_cnt()
+    if complete_cnt != mount_count:
+        return ["FAILED", output_files[0], "Test did not finish IO Read"]
+    else:
+
         # Now check to see if there were any errors.
         bad = "error"
         ok1 = "^#"
@@ -81,8 +95,6 @@ def check(output_files):
                     return ["FAILED", output_files[0], "plfs_disable_paropen=1 not seen in output"]
             else:
                 return ["FAILED", output_files[0], "plfs_disable_broadcast=1 not seen in output"]
-    else:
-        return ["FAILED", output_files[0], "Test did not finish IO Read"]
     
 def parse_args(argv):
     """Parse args."""
