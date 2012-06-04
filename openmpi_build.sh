@@ -84,7 +84,7 @@ function check_exit {
 #   not found.
 function find_patchfile {
     ver=$1
-    patches_dir="ad-patches/openmpi"
+    patches_dir="patches/openmpi"
 
     i=0
     # Check for a ompi-<version>-plfs-prep.patch file. Then, iterate up the
@@ -182,17 +182,17 @@ function find_patchfile {
 }
 
 # Go to the plfs source directory
-echo "Entering $plfs_srcdir"
-if [ ! -d "$plfs_srcdir" ]; then
-    echo "Error: $plfs_srcdir does not exist."
+echo "Entering $plfs_srcdir/mpi_adio"
+if [ ! -d "$plfs_srcdir/mpi_adio" ]; then
+    echo "Error: $plfs_srcdir/mpi_adio does not exist."
     exit 1
 fi
-cd "$plfs_srcdir"
+cd "$plfs_srcdir/mpi_adio"
 
 # Run the make_plfs_patch script to generate ompi-plfs.patch. Capture the
 # output to figure out what the name of the generated patch file is.
 echo "Running ./scripts/make_plfs_patch"
-./scripts/make_plfs_patch | tee ./.mk_plfs_ptch_output_file
+./scripts/make_ad_plfs_patch | tee ./.mk_plfs_ptch_output_file
 ad_plfs_patch_file=`tail -n 1 ./.mk_plfs_ptch_output_file | awk '{print $NF}'`
 rm -f ./.mk_plfs_ptch_output_file
 # Check that the patch file exists and is not size zero.
@@ -254,7 +254,7 @@ cd ${srcdir}/${openmpi_name}
 
 # Patch Open MPI
 echo "Patching Open MPI..."
-patch -p1 < ${plfs_srcdir}/${PATCH_FILE}
+patch -p1 < ${plfs_srcdir}/mpi_adio/${PATCH_FILE}
 check_exit $? "Using ${plfs_srcdir}/${PATCH_FILE}"
 patch -p1 < ${ad_plfs_patch_file}
 check_exit $? "Using ${ad_plfs_patch_file}"
