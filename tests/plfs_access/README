@@ -1,0 +1,11 @@
+This test is used to verify that plfs_access returns the correct values
+based on a plfs mount point plus sub directories.
+
+Files:
+- reg_test.py Handles top level management of the test including calling
+              access.bash       
+- access.c  C source code that gets compiled with plfs libs.  It calls
+            plfs_access
+- access.bash Script that compiles access.c and and executes access binary
+              that in turn calls plfs_access
+- check_results.py Determines if the test has passed or failed
