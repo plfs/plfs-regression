@@ -26,7 +26,9 @@ program_options = {
   "sync"      : [ '' ],
   "barriers"   : [ 'aopen' ],
   "strided"  : [ 0 ],
-  "target"   : [ "plfs:$path" ]
+  "target"   : [ "plfs:$path" ],
+  "touch"       : [ '3' ],
+  "check"       : [ '3' ]
 }
 
 # fs_test doesn't need program_arguments

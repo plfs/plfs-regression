@@ -27,7 +27,9 @@ program_options = {
   "io"          : [ 'mpi' ],
   "sync"        : [ '' ],
   "barriers"    : [ 'aopen' ],
-  "hints"       : [ 'panfs_concurrent_write=1' ]
+  "hints"       : [ 'panfs_concurrent_write=1' ],
+  "touch"       : [ '3' ],
+  "check"       : [ '3' ]
 }
 
 # fs_test doesn't need program_arguments

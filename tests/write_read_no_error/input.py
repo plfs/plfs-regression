@@ -25,7 +25,9 @@ program_options = {
   "nodb"       : [ ''],
   "type"     : [ 2 ],
   "nobj"     : [ 4 ],
-  "target"   : [ '$path' ]
+  "target"   : [ '$path' ],
+  "touch"       : [ '3' ],
+  "check"       : [ '3' ]
 }
 
 # fs_test doesn't need program_arguments
