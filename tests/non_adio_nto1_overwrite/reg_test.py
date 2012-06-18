@@ -95,12 +95,11 @@ def main(argv=None):
         f.write("            else\n")
         f.write("                echo \"Target file matches expected file size\"\n")
         f.write("            fi\n")
-        # Remove the targets if it is still there
-        f.write("            if [ -e $path ]; then\n")
-        f.write("                rm -f $path\n")
-        f.write("            fi\n")
-       
         f.write('        done\n')
+        # Remove the targets if it is still there
+        f.write("        if [ -e $path ]; then\n")
+        f.write("            rm -f $path\n")
+        f.write("        fi\n")
         f.write('    done\n')
         # Write into the script the script that will unmount plfs
         f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
