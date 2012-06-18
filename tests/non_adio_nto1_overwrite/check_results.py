@@ -76,7 +76,7 @@ def check(output_file):
         bad = "error"
         ok1 = "^#"
         ok2 = "Errors and warnings written to \(-errout\): stderr"
-        ok3 = "^Data written to target file.*posix_nto1_strided"
+        ok3 = "^Data written to target file.*non_adio_nto1_overwrite"
         ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3)
         st2 = os.system('cat ' + str(output_file) + ' | egrep -v "' 
                 + str(ok) + '" | egrep -qi ' + str(bad))
