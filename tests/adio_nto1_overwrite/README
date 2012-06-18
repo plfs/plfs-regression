@@ -1,0 +1,20 @@
+This test will use fs_test to create an N-1 strided files using plfs via  
+adio.  The initial file (4MB) is overwritten with a 2MB file.
+The last overwrite creates a 5MB files
+
+Files:
+- reg_test.py: entry point for the test. Creates reg_test.sh which will be
+  the actual program that will be run to do the steps in this test.
+- input.py: experiment_management input file to generate the mpi
+  command that will write out the fs_test target.
+- test_common.py: file containing shared variables and functions for use in
+  creating a consistent submittal of reg_test.sh.
+- input_script.py: experiment_management input file that will be used to run
+  reg_test.sh, the generated script.
+
+The test proceeds as follows:
+- reg_test.py creates reg_test.sh
+- reg_test.py calls experiment_management with input_write.py as input. The
+  output is put into reg_test.sh.
+- reg_test.sh implemets for loops for mount_points and write_size (4M, 2M, 5M).
+- reg_test.sh verifies file size after each iteration.
