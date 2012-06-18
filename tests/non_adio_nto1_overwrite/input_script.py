@@ -4,8 +4,8 @@
 
 # Figure out that base directory of the regression suite
 import imp,os
-(fp, path, desc) = imp.find_module('common', [os.getcwd()])
-common = imp.load_module('common', fp, path, desc)
+(fp, path, desc) = imp.find_module('test_common', [os.getcwd()])
+test_common = imp.load_module('test_common', fp, path, desc)
 fp.close()
 
 import expr_mgmt
@@ -18,7 +18,7 @@ mpirun=''
 
 mpi_options = {}
 
-mpi_program = ( common.curr_dir + "/" + str(script))
+mpi_program = ( test_common.curr_dir + "/" + str(script))
 
 program_options = {}
 
