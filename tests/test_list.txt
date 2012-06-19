@@ -23,3 +23,10 @@
 3 adio_nto1_strided
 3 adio_nton
 2 posix_nton
+2 fd_consistency
+2 plfs_access
+2 non_adio_nto1_overwrite
+2 non_adio_nton_overwrite
+3 adio_nto1_overwrite
+3 adio_nton_overwrite
+
