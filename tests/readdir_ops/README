@@ -1,0 +1,10 @@
+This test is used to verify that directory and file creation and deletion
+work in a fuse mount point.
+
+Files:
+- reg_test.py Handles top level management of the test including calling
+              readdir.bash       
+- dir_ops.c  C source code that creates specified file and directory then
+               removes to verify directory contents coherency. 
+- readdir.bash Script that compiles and executes dir_ops.c  
+- check_results.py Determines if the test has passed or failed
