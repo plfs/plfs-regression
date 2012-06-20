@@ -190,6 +190,34 @@ function check_in_path {
     fi
 }
 
+# Function that will determine the name of the mpi library, e.g. libmpi or 
+# libmpich. This function assumes that mpi_lib_dir has already been set 
+# (in setup-rs_env_mpi). 
+# If this funtion finds an mpi library, it sets $mpi_lib_name to the specific lib found
+# and returns 0.  If the mpi library is not found, it returns 1.
+# Return values:  0 - Found libmpi  1 - Did not find libmpi
+function find_mpi_libname {
+    # set default to "None"
+    temp_name="None"
+    # Figure out the library name. Go from most restrictive to least.
+    for name in mpich mpi; do
+        ls $mpi_lib_dir | grep -qw lib$name
+        if [[ $? == 0 ]]; then
+            temp_name=$name
+            break
+        fi
+    done  
+    if [ "$temp_name" == "None" ]; then
+        echo "Could not find a libmpi in $mpi_lib_dir" >> $mpi_build_log
+        return 1
+    else
+        mpi_lib_name=$temp_name
+        echo "Found a libmpi in $mpi_lib_dir" >> $mpi_build_log
+        return 0
+
+    fi
+}
+
 # Function that will set up paths to use the regression suite's plfs. PLFS
 # should already be present in ${instdir}.
 function setup_rs_env_plfs {
@@ -207,6 +235,8 @@ function setup_rs_env_plfs {
 
 # Function that will set up paths to use the regression suite's mpi. MPI
 # should already be present in ${instdir}.
+# Return values: 1 if a mpi lib is not found
+#                0 if mpi lib is found
 function setup_rs_env_mpi {
     # Redefine some variables.
     mpi_bin_dir=${instdir}/mpi/bin
@@ -217,13 +247,21 @@ function setup_rs_env_mpi {
     #echo "Old PATH: $old_PATH"
     #echo "New PATH: $PATH"
     export PATH
+    # Get the name of the mpi lib
+    find_mpi_libname
+    if [[ $? != 0 ]]; then
+        return 1
+    else 
+        return 0
+    fi
 }
 
 # Function that will set up env variables for compiling and linking against
-# the regression suite's plfs and mpi
+# the regression suite's plfs and mpi.  This function should be called
+# after calling setup_rs_env_plfs and setup_rs_env_mpi.
 function setup_rs_env_flags {
     export RS_LDFLAGS="-L$plfs_lib_dir -Wl,-rpath=$plfs_lib_dir -Wl,--whole-archive -lplfs -Wl,--no-whole-archive -lz -lstdc++ -L$mpi_lib_dir -Wl,-rpath=$mpi_lib_dir -l$mpi_lib_name -lm"
-    export RS_CFLAGS="-I$plfs_inc_dir -I$mpi_inc_dir"
+    export RS_CFLAGS="-I$plfs_inc_dir -I$mpi_inc_dir -DHAS_PLFS"
 }
 
 # Default values for command line parameters
@@ -735,9 +773,6 @@ if [ "$build" == "True" ]; then
 
     #MPI
     echo "Checking mpi. Please see $mpi_build_log."
-    # Default mpi library will be libmpi unless something else is found. This
-    # is the name of the library that open mpi builds.
-    mpi_lib_name="mpi"
     if [ "$openmpi_tarball" == "None" ]; then
         # Use an already existing version of mpi. mpi_bin_dir, mpi_lib_dir and
         # mpi_inc_dir will already be defined. Check to make sure all is well.
@@ -752,22 +787,7 @@ if [ "$build" == "True" ]; then
         fi
         # Check for libmpi
         ls $mpi_lib_dir | grep -q libmpi
-        if [[ $? == 0 ]]; then
-            # Found a libmpi
-            echo "Found a libmpi in $mpi_lib_dir" >> $mpi_build_log
-            # Figure out the library name. Go from most restrictive to least.
-            for name in mpich mpi; do
-                ls $mpi_lib_dir | grep -q lib$name
-                if [[ $? == 0 ]]; then
-                    mpi_lib_name=$name
-                    break
-                fi
-            done
-            if [ "$mpi_lib_name" == "None" ]; then
-                mpi_stat="unable to determine mpi library name."
-                mpi_ok="FAIL"
-            fi
-        else
+        if [[ $? != 0 ]]; then
             echo "libmpi* was not found in $mpi_lib_dir. It does not appear that $mpi_lib_dir contains mpi libraries." >> $mpi_build_log
             mpi_stat="mpi libraries not found"
             mpi_ok="FAIL"
@@ -832,6 +852,16 @@ if [ "$build" == "True" ]; then
         fi
     fi
     echo $mpi_stat
+    # Set up the environment to use the regression suite's mpi. mpi_bin_dir,
+    # mpi_lib_dir, and mpi_inc_dir will be redefined.
+    setup_rs_env_mpi
+    if [[ $? != 0 ]]; then
+       mpi_stat="Unable to determine mpi library name"
+       mpi_ok="FAIL"
+    else
+       # Set up MPI_LD and MPI_INC
+       setup_rs_env_flags
+    fi
     # final sanity check on the needed mpi directories
     if [ ! -d "${instdir}/mpi/bin" ]; then
         echo "ERROR: ${instdir}/mpi/bin is not avaliable." 2>&1
@@ -849,13 +879,6 @@ if [ "$build" == "True" ]; then
     if [ "$mpi_ok" == "FAIL" ]; then
         script_exit 1
     fi
-
-    # Set up the environment to use the regression suite's mpi. mpi_bin_dir,
-    # mpi_lib_dir, and mpi_inc_dir will be redefined.
-    setup_rs_env_mpi
-
-    # Set up MPI_LD and MPI_INC
-    setup_rs_env_flags
 
     # experiment_management
     echo "Checking experiment_management. Please see $expr_mgmt_get_log."
@@ -1055,11 +1078,18 @@ else
     # Set up the environment to use the regression suite's plfs. This will
     # redefine plfs_bin_dir, plfs_lib_dir and plfs_inc_dir.
     setup_rs_env_plfs
+
     # Set up the environment to use the regression suite's mpi. mpi_bin_dir,
     # mpi_lib_dir, and mpi_inc_dir will be redefined.
     setup_rs_env_mpi
-    # Set up MPI_LD and MPI_INC
-    setup_rs_env_flags
+    if [[ $? != 0 ]]; then
+       mpi_stat="Unable to determine mpi library name"
+       mpi_ok="FAIL"
+       script_exit 1
+    else
+       # Set up MPI_LD and MPI_INC
+       setup_rs_env_flags
+    fi
 fi
 
 # Now, do some checking
