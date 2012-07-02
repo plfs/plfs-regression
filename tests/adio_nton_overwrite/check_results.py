@@ -67,8 +67,8 @@ def check(output_file):
     complete_cnt = commands.getoutput('grep "Completed IO Read." ' + str(output_file) + ' | wc -l')
     complete_cnt = Decimal(complete_cnt)
     mount_count=tc.get_mountpoint_cnt()
-    # Mount count = number of mounts * 2 (posix and fuse_mount) * 3 ( 3 object size 4M, 2M, 5M) 
-    mount_count=2*mount_count*3
+    # Mount count = number of mounts * 3 ( 3 object size 4M, 2M, 5M) 
+    mount_count=mount_count*3
     if complete_cnt != mount_count:
         return ["FAILED", output_file, "Test did not finish IO Read"]
     else:
