@@ -1,0 +1,18 @@
+This test will perform various trunc offset operations on a file created 
+by this test. It will work on a shared_file (N-1) mountpoint.
+
+Files:
+- reg_test.py: entry point for the test.  It runs the bash script trunc.bash
+- truncate.c: C program that performs truncate operations on a file created
+  by the program.  
+- trunc.bash: Script that compiles truncate.c and runs truncate (compiled 
+  truncate.c).
+- check_results.py: Looks at output logs and determines if the test has
+  passed or failed
+
+The test proceeds as follows:
+- reg_test.py Sets up environment and calls trunc.bash
+  target.
+- trunc.bash determines if shared_file mount point exists. If a shared_file
+  mount point does exist, c executable truncate is called. 
+- truncate performs various truncate tests on a file created.
