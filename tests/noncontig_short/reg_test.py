@@ -101,7 +101,11 @@ def main(argv=None):
         # Use mpirun to run compiled mpicc noncontig_short test
         f.write("    echo \"Running noncontig_short.x on target via mpirun -np 2\"\n")
         f.write("    mpirun -np 2 " + str(common.curr_dir) + "/noncontig_short.x -fname $path\n")
-        f.write('done\n')
+        # delete target file if it exists
+        f.write("    if [ -e $path ]; then\n")
+        f.write("        rm -f $path\n")
+        f.write("    fi\n")
+##        f.write('done\n')
         # Determine if need to unmount
         f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
         f.write("        echo \"Running " + str(postscript) + "$mnt" + "\"\n")
