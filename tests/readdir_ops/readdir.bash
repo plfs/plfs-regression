@@ -2,22 +2,6 @@
 source /users/atorrez/iotests/regression//tests/utils/rs_env_init.sh
 
 
-function run_plfs_access {
-#     access_result=`./access $dir`
-     
-     echo "Running plfs_access on $1"
-     access_result=`./access $1`
-     echo $access_result | grep ': '$2''
-     if [ $? == 0 ]; then
-        echo "Correct plfs_access return value"
-        return 0
-     else
-        echo "Error plfs_access invalid return value"
-        exit 1
-     fi
-}
-
-
 compile_out=`gcc -o dir_ops dir_ops.c`
 if [ $? == 0 ]; then
     echo "dir_ops.c compiled successfully"
@@ -53,7 +37,7 @@ fi
 for mnt in $mount_points
 do
   echo ""
-  echo "Using $mnt for plfs_access test"
+  echo "Using $mnt for readdir_ops test"
 #
 # Mount the defined mount point
 #
