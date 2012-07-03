@@ -1,5 +1,5 @@
 #!/bin/bash
-source /users/atorrez/iotests/regression//tests/utils/rs_env_init.sh
+source ../utils/rs_env_init.sh
 
 
 compile_out=`mpicc -o truncate truncate.c`
@@ -41,7 +41,7 @@ if [ $nto1_mnt_cnt -ge 1 ]; then
     do
       echo ""
       echo "Using $mnt for truncate test"
-      nto1_mount=`plfs_check_config | grep -A 1 /var/tmp/plfs.atorrez | grep -B 1 N-1 | head -1 | awk '{print $3}'`
+      nto1_mount=`plfs_check_config | grep -A 1 $mnt | grep -B 1 N-1 | head -1 | awk '{print $3}'`
       if [ $mnt == $nto1_mount ]; then
 #
 # Mount the defined mount point
