@@ -37,54 +37,55 @@ fi
 #
 nto1_mnt_cnt=`plfs_check_config | grep N-1 | wc -l`
 if [ $nto1_mnt_cnt -ge 1 ]; then
-for mnt in $mount_points
-do
-  echo ""
-  echo "Using $mnt for truncate test"
-  nto1_mount=`plfs_check_config | grep -A 1 /var/tmp/plfs.atorrez | grep -B 1 N-1 | head -1 | awk '{print $3}'`
-  if [ $mnt == $nto1_mount ]; then
+    for mnt in $mount_points
+    do
+      echo ""
+      echo "Using $mnt for truncate test"
+      nto1_mount=`plfs_check_config | grep -A 1 /var/tmp/plfs.atorrez | grep -B 1 N-1 | head -1 | awk '{print $3}'`
+      if [ $mnt == $nto1_mount ]; then
 #
 # Mount the defined mount point
 #
-  ../utils/rs_plfs_fuse_mount.sh $mnt serial
-  ret=$?
-  echo "XX $ret"
-  if [ $ret == 0 ]; then
-     need_to_unmount=1
-  elif [ $ret == 1 ]; then
-     need_to_unmount=0
-  else
-    echo "Failure: Mount point $mnt is not mounted and could not be mounted by $USER"
-    exit 1
-  fi 
+          ../utils/rs_plfs_fuse_mount.sh $mnt serial
+          ret=$?
+          echo "XX $ret"
+          if [ $ret == 0 ]; then
+              need_to_unmount=1
+          elif [ $ret == 1 ]; then
+              need_to_unmount=0
+          else
+              echo "Failure: Mount point $mnt is not mounted and could not be mounted by $USER"
+              exit 1
+          fi 
 
 
 #
 # Append user name to mount
-  target=`../utils/rs_exprmgmtrc_target_path_append.py $mnt`
 #
-  echo "going to call C truncate program"
-  return_value=0;
+          target=`../utils/rs_exprmgmtrc_target_path_append.py $mnt`
+#
+          echo "going to call C truncate program"
+          return_value=0;
 #
 # Call dir_ops to create and remove directories and files
 #
-  ./truncate $target/tmp.txt 
-  if [ $? == 1 ]; then
-    return_value=1
-  fi 
+          ./truncate $target/tmp.txt 
+          if [ $? == 1 ]; then
+              return_value=1
+          fi 
 #
 # Unmount if necessary
 #
-  echo "Going to unmount $mnt now $need_to_unmount"
-  if [ $need_to_unmount == 1 ]; then
-    ../utils/rs_plfs_fuse_umount.sh $mnt serial
-    if [ $? != 0 ]; then
-      echo "Failure: Mount point $mnt could not be unmounted by $USER"
-      exit 1
-    fi 
-  fi 
-  fi
-done
+          echo "Going to unmount $mnt now $need_to_unmount"
+          if [ $need_to_unmount == 1 ]; then
+              ../utils/rs_plfs_fuse_umount.sh $mnt serial
+              if [ $? != 0 ]; then
+                  echo "Failure: Mount point $mnt could not be unmounted by $USER"
+                  exit 1
+              fi 
+          fi 
+      fi
+    done
 else
     echo "Error:  Test requires shared_file (N-1) mount point but none found"
     exit 1
