@@ -97,8 +97,9 @@ def main(argv=None):
         f.write("        fi\n")
         f.write('    done\n')
         # Remove the targets if it is still there
-        f.write("    if [ -e $path ]; then\n")
-        f.write("        rm -f $path\n")
+        f.write("    if [ -e ${path}.0 ]; then\n")
+        f.write('        file=${path}".*"\n')
+        f.write("        rm -f $file\n")
         f.write("    fi\n")
         # Write into the script the script that will unmount plfs
         f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
