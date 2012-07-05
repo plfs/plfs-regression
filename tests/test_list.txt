@@ -29,4 +29,6 @@
 2 non_adio_nton_overwrite
 3 adio_nto1_overwrite
 3 adio_nton_overwrite
+2 noncontig_short
+2 truncate_ops
 
