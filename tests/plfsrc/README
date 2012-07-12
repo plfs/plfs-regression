@@ -1,0 +1,9 @@
+This test is used to verify plfsrc functionalilty.  It produces various
+plfsrc files then determines if plfs_check_config reports the correct
+information based on the plfsrc file produced.
+Files:
+- reg_test.py:  Sets up the output directory and calls test_plfsrc.bash file 
+- test_plfsrc.bash: Copies and manipulates various plfsrc files.  Runs
+  various tests to make sure plfs_check_config reports plfsrc directives
+  correctly
+- check_results.py: checks the newest log file to see if the test passed
