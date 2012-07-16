@@ -21,7 +21,7 @@ program_options = {
   "shift"       : [ '' ],
   "nodb"        : [ ''],
   "type"        : [ 1 ],
-  "nobj"        : [ 4 ],
+  "time"        : [ 300 ],
   "target"      : [ '$path' ],
   "io"          : [ 'posix' ],
   "sync"        : [ '' ],
