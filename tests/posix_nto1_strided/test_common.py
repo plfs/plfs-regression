@@ -27,7 +27,7 @@ em_p.add_exprmgmt_paths(basedir)
 # enough to cover at least two nodes.
 import expr_mgmt
 ppn = expr_mgmt.config_option_value("ppn")
-nprocs = 4 * int(ppn)
+nprocs = 16 * int(ppn)
 
 # Import the module with functions for finding mount points.
 import rs_plfs_config_query
