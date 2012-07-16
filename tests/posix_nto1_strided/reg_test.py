@@ -28,7 +28,7 @@ def main(argv=None):
     # generated script
     input_script = "input_test.py"
     # Walltime of the job(s)
-    walltime = "10:00"
+    walltime = "40:00"
 
     # Figure out the mounts for this test
     mounts = tc.get_mountpoints()
