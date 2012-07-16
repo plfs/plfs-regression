@@ -28,7 +28,7 @@ def main(argv=None):
     # generated script
     input_script = "input_test.py"
     # Walltime of the job(s)
-    walltime = "20:00"
+    walltime = "40:00"
     
     # get all mountpoints and associated target path and file
     target_paths = tc.get_target_paths()
