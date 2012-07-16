@@ -26,7 +26,7 @@ def main(argv=None):
     # Script that can be passed to experiment_management that will run the
     # generated script
     input_script = "input_script.py"
-    walltime = "25:00"
+    walltime = "40:00"
 
     # get all mountpoints and associated target path and file
     target_paths = tc.get_target_paths()
