@@ -57,6 +57,8 @@ def main(argv=None):
         f.write('done\n')
 
         f.close()
+        # Make the script executable
+        os.chmod(gen_script, 0764)
     except (IOError, OSError), detail:
         print ("Problem with creating script " + str(gen_script) + ": "
             + str(detail))
