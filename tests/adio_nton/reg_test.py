@@ -58,6 +58,8 @@ def main(argv=None):
         f.write("   " + str(fs_test_run) + '\n')
         f.write('done\n')
         f.close()
+        # Make the script executable
+        os.chmod(script, 0764)
     except (IOError, OSError), detail:
         print ("Problem with creating script " + str(script) 
             + ": " + str(detail))
