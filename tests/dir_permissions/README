@@ -1,0 +1,2 @@
+This test verifies that direcotry permissions set on the FUSE mount
+match backend permissions accordingly. 
