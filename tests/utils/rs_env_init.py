@@ -32,3 +32,14 @@ def add_plfs_paths(dir=None):
     if mpi_inst_bin not in os.environ["PATH"]:
         os.environ["PATH"] = mpi_inst_bin + ":" + os.environ["PATH"]
 
+    # MPI lib
+    mpi_inst_lib = dir + "/inst/mpi/lib"
+    try:
+        if mpi_inst_lib not in os.environ["LD_LIBRARY_PATH"]:
+            os.environ["LD_LIBRARY_PATH"] = (mpi_inst_lib + ":" + 
+                os.environ["LD_LIBRARY_PATH"])
+    except KeyError:
+        #LD_LIBRARYY_PATH is not in the dictionary of env variables yet.
+        os.environ["LD_LIBRARY_PATH"] = (mpi_inst_lib + ":" +
+            os.environ["LD_LIBRARY_PATH"])
+

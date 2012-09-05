@@ -37,6 +37,11 @@ fi
 PATH=$basedir/inst/plfs/sbin:$basedir/inst/plfs/bin:$basedir/inst/mpi/bin:$PATH
 export PATH
 
+# Some MPI implementations require their lib directory to be in LD_LIBRAY_PATH,
+# so we'll always put it in.
+LD_LIBRARY_PATH=$basedir/inst/mpi/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH
+
 # Get the tests/utils directory
 utils_dir="$basedir/tests/utils"
 
