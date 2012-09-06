@@ -1,6 +1,5 @@
 #!/bin/bash
-source /users/atorrez/iotests/regression//tests/utils/rs_env_init.sh
-
+source ../utils/rs_env_init.sh
 
 function run_plfs_access {
 #     access_result=`./access $dir`
