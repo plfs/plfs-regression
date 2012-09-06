@@ -1,6 +1,5 @@
 #!/bin/bash
-source /users/atorrez/iotests/regression//tests/utils/rs_env_init.sh
-
+source ../utils/rs_env_init.sh
 
 compile_out=`gcc -o dir_ops dir_ops.c`
 if [ $? == 0 ]; then
