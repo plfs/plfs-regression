@@ -1,6 +1,10 @@
 *.pyc
-.run_plfs_reg_summary.txt
 config
 inst/
 logs/
 src/
+DO_NOT_RUN_REGRESSION
+.dict_file
+.id_file
+.run_plfs_reg_summary.txt
+.run_plfs_regression.lock

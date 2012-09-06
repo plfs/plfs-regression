@@ -177,7 +177,7 @@ dict_file=${basedir}/.dict_file
 # Where to store job ids for checking on later. This file is very important
 # as it serves a lock file for the regression. If this file is present, it
 # implies that a set of tests are already running.
-id_file=${basedir}/id_file
+id_file=${basedir}/.id_file
 
 # File that will contain information from run_plfs_regression that needs
 # to be included in the generated email that will be sent by check_tests.py.
