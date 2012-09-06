@@ -1,5 +1,6 @@
 *.pyc
 config
+openmpi_platform_file
 inst/
 logs/
 src/
