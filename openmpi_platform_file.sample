@@ -6,10 +6,10 @@
 # otherwise parallel programs seem to have trouble with files.
 #
 with_io_romio_flags=--with-file-system=ufs+nfs+plfs
-LDFLAGS="-LREPLACE_PLFS_LIB -Wl,-rpath=REPLACE_PLFS_LIB -lplfs -lstdc++ -lpthread"
-CFLAGS="-IREPLACE_PLFS_INC"
-CXXFLAGS="-IREPLACE_PLFS_INC"
-CCASFLAGS="-IREPLACE_PLFS_INC"
+LDFLAGS="REPLACE_PLFS_LDFLAGS"
+CFLAGS="REPLACE_PLFS_CFLAGS"
+CXXFLAGS="REPLACE_PLFS_CFLAGS"
+CCASFLAGS="REPLACE_PLFS_CFLAGS"
 
 # The following are needed to make sure all types of libraries are created.
 enable_shared=yes

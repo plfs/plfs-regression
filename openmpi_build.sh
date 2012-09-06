@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # This script will extract openmpi source from a tarball, patch it against
-# plfs, and compile it.
+# plfs, and compile it. It expects appropriate flags for building against
+# PLFS to be in the environment variables RS_PLFS_LDFLAGS and RS_PLFS_CFLAGS.
 
 # Tarball to use
 tarball="$1"
@@ -11,14 +12,12 @@ srcdir="$2"
 openmpi_instdir="$3"
 # Where the plfs source directory is located
 plfs_srcdir="$4"
-# Where plfs installation directory is located
-plfs_instdir="$5"
 # What platform file to use as a template
-platform_file="$6"
+platform_file="$5"
 
 if [ "$tarball" == "" ] || [ "$srcdir" == "" ] || 
    [ "$openmpi_instdir" == "" ] || [ "$plfs_srcdir" == "" ] || 
-   [ "$plfs_instdir" == "" ] || [ "$platform_file" == "" ]; then
+   [ "$platform_file" == "" ]; then
     echo "Error: missing one or more command line parameters."
     echo ""
     echo "Usage:"
@@ -27,7 +26,6 @@ if [ "$tarball" == "" ] || [ "$srcdir" == "" ] ||
     echo -e "\tSRC is the directory to extract TB into."
     echo -e "\tOINST is the installation directory for openmpi."
     echo -e "\tPSRC is the PLFS source directory."
-    echo -e "\tPINST is the installation directory for plfs so that openmpi can be patched against it."
     echo -e "\tPFILE is the platform file that will be used as a template when building open mpi."
     exit 1
 fi
@@ -267,8 +265,11 @@ check_exit $? "Autogen.sh process"
 # Get the platform file from the plfs source directory, substituting the right
 # paths for the regression environment.
 echo "Generating platform file for openmpi compilation"
-sed 's|REPLACE_PLFS_LIB|'${plfs_instdir}'/lib|g;s|REPLACE_PLFS_INC|'${plfs_instdir}'/include|g' \
-    ${platform_file} > ./platform_file
+sedline="sed 's|REPLACE_PLFS_LDFLAGS|${RS_PLFS_LDFLAGS}|g;s|REPLACE_PLFS_CFLAGS|${RS_PLFS_CFLAGS}|g' \
+    ${platform_file} > ./platform_file"
+#sed 's|REPLACE_PLFS_LDFLAGS|'${RS_PLFS_LDFLAGS}'|g;s|REPLACE_PLFS_CFLAGS|'${RS_PLFS_CFLAGS}'|g' \
+#    ${platform_file} > ./platform_file
+eval $sedline
 check_exit $? "Generating platform file for openmpi"
 
 # Run configure

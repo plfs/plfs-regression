@@ -126,9 +126,19 @@ Quick Start/Sanity Check:
    job should be submitted. When the job has finished, run ./check_results.py.
    Deal with any issues in getting the test to run; this may require doing
    step 1 again.
-   If there are environment issues on the compute nodes, consider using
-   tests/utils/env_customize.sh to deal with them. Details about this file are
-   in tests/README.
+   If there are environment issues, consider creating
+   tests/utils/env_customize.sh to deal with them. This file will be sourced
+   by tests/ustils/rs_env_init.sh, which is the main script that makes sure
+   the environment is set up to use the regression suite's executables and
+   libraries. /tests/utils/env_customize.sh will be sourced by
+   run_plfs_regression.sh and by tests running on compute nodes, so it may be
+   necessary to put conditionals in env_customize.sh to make sure the proper
+   hosts are all getting the right environment. Env_customize.sh must be
+   written in bash or sh.
+   As an example, a library is found by default on a machine's frontend, but
+   not on the compute nodes. Env_customize.sh could modify LD_LIBRARY_PATH
+   based on compute nodes names such that the library will be found when it
+   comes time to run binaries on the compute nodes.
 3) If the above worked, it should be ok to run the whole regression suite
    (e.g. run_plfs_regression.sh --nobuild --testtypes=2,3)
 
@@ -209,12 +219,12 @@ Files and directories in the regression suite:
   order for check_tests.py to create a suitable summary.
 
 Notes
-- The regression suite needs to figure out the mpi library name. Unlike mpi.h,
-  there is no standard for naming the library. Mpich and mvapich name it
-  libmpich* while open mpi names it libmpi*. Knowing the library name is
-  necessary in setting MPI_LD in compiling a parallel program so that the
-  right -l parameter is used. Currently the regression suite looks for the mpi
-  library by searching these names in order: libmpich*, libmpi.
+- The regression suite will rely on the MPI implementation's wrapper scripts
+  (such as mpicc, mpif90, etc.). This way the regression suite doesn't have to
+  worry about MPI library names and getting the linking right. As at least one
+  MPI implementation doesn't make sure its own MPI libraries are properly
+  linked into the executable (no use of rpath), the regression suite will
+  set LD_LIBRARY_PATH to include a path to the MPI libraries.
 - For fs_test compilation, the regression suite will over-write MPI_LD and
   MPI_INC to have the proper flags to compile fs_test against the regression
   suite's plfs and mpi. This change is not permanent to the user's

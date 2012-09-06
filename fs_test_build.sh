@@ -38,8 +38,8 @@ function check_exit {
 }
 
 # Grab the linking flags that we need
-export MPI_LD=$RS_LDFLAGS
-export MPI_INC=$RS_CFLAGS
+export MPI_LD=$RS_PLFS_LDFLAGS
+export MPI_INC=$RS_PLFS_CFLAGS
 
 # Echo the values of the needed environment variables
 echo "The following are the values of the needed environment variables:"

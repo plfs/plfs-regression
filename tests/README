@@ -65,19 +65,6 @@ Test writing guidelines/invariants
 - Reg_test.py and check_results.py will always be called from within the test
   directory. This can be used in determining where the rest of the regression
   suite is located.
-- Before tests are submitted, the regression suite will set up the applicable
-  environment variables to use the regression suite's version of executables
-  and libraries. Tests should be able to call on those executables
-  without having to put full paths for the purposes of submitting tests.
-  LD_LIBRARY_PATH is not modified; instead, all binaries that the regression
-  suite provides should have rpath's in them to find the right libraries. If
-  a test needs to compile something against the plfs or mpi libraries, two
-  environment variables are defined which will have the proper linking and
-  include statements. These variables are RS_LDFLAGS and RS_CFLAGS. The
-  RS_LDFLAGS environment variable will have the necessary parameters to put
-  the plfs and mpi library directories in the compiled binary's rpath so there
-  should be no need to modify LD_LIBRARY_PATH to get a test's compiled
-  binaries to work with the regression suite's plfs and mpi libraries.
 - Tests should be written such that they can be run on their own outside of
   the regression suite. This helps in developing and testing of the tests.
   This requirement applies to both reg_test.py and check_results.py. That is,
@@ -114,15 +101,17 @@ Test writing guidelines/invariants
 - Environmental problems are common, especially when running tests on compute
   nodes. Utils/rs_env_init.sh was created in an attempt to help set up an
   environment on the compute nodes that will use the regression suite's
-  executables and libraries. It does not catch everything, however. For
-  specific commands that aren't applicable to be used in general, a user can
-  create utils/env_customize.sh to further customize the environment set up
-  by utils/rs_env_init.sh. Rs_env_init.sh will source env_customize.sh if it
-  exists. Env_customize.sh must be written in bash or sh.
-  For example, a library is found by default on a machine's frontend, but not
-  on the compute nodes. Env_customize.sh could modify LD_LIBRARY_PATH such
-  that the library will be found when it comes time to run binaries on the
-  compute nodes.
+  executables and libraries. It is recommended that each test that runs on
+  compute nodes sources utils/rs_env_init.sh. This script does not catch
+  everything, but remember that machine- or user-specific commands can be used
+  by users for their particular environment by creating utils/rs_env_init.sh.
+  Before modifying utils/rs_env_init.sh, consider if the modification is
+  better left in the customization script.
+- Tests that run on the headnode may not need to source utils/rs_env_inti.sh
+  as run_plfs_regression.sh will have already sourced it. The environment
+  inherited from run_plfs_regression.sh when reg_test.py should already
+  include the needed environment variables for using the regression suite's
+  executables and libraries.
 - Some of the scripts in utils will source optional customization files. For
   example, rs_env_init.sh will source env_customize.sh if it exists. This
   allows for the separation of user-specific environment setup from the more
@@ -160,6 +149,18 @@ Test writing guidelines/invariants
   fail will have their output files saved for troubleshooting purposes. This
   decision is not done by the test scripts; it is done by the regression
   suite's check_tests.py script.
+- If compiling files for a test is needed, it is recommended to use the MPI
+  wrappers for parallel applications. LD_LIBRARY_PATH is set appropriately
+  by rs_env_init.*, so the MPI libraries should always be able to be found.
+- When building a program that requires PLFS, the appropriate compling and
+  linking flags can be found by calling on the rs_plfs_buildflags_get.py
+  helper script. This script can be used from the shell or directly through
+  python. When calling from the shell, two lines are output: the first
+  contains the flags needed for compiling (-I flags); the second contains the
+  flags for linking (-L and -l flags). Rpath flags will be included in the
+  linking flags so that the PLFS library can always be found. When called from
+  python, a two member list is returned where the order mirrors that of the
+  order output for shells.
 
 Some useful features of check_results.py that aren't absolutely necessary but
 may help in copying from other tests and troubleshooting:

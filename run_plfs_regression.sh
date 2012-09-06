@@ -181,87 +181,22 @@ function script_exit {
     exit $1
 }
 
-function check_in_path {
-    result=`command -v $1`
-    if [ $? == "0" ]; then
-        echo $result
-    else
-        echo NULL
-    fi
-}
-
-# Function that will determine the name of the mpi library, e.g. libmpi or 
-# libmpich. This function assumes that mpi_lib_dir has already been set 
-# (in setup-rs_env_mpi). 
-# If this funtion finds an mpi library, it sets $mpi_lib_name to the specific lib found
-# and returns 0.  If the mpi library is not found, it returns 1.
-# Return values:  0 - Found libmpi  1 - Did not find libmpi
-function find_mpi_libname {
-    # set default to "None"
-    temp_name="None"
-    # Figure out the library name. Go from most restrictive to least.
-    for name in mpich mpi; do
-        ls $mpi_lib_dir | grep -qw lib$name
-        if [[ $? == 0 ]]; then
-            temp_name=$name
-            break
-        fi
-    done  
-    if [ "$temp_name" == "None" ]; then
-        echo "Could not find a libmpi in $mpi_lib_dir" >> $mpi_build_log
-        return 1
-    else
-        mpi_lib_name=$temp_name
-        echo "Found a libmpi in $mpi_lib_dir" >> $mpi_build_log
-        return 0
-
-    fi
-}
-
-# Function that will set up paths to use the regression suite's plfs. PLFS
-# should already be present in ${instdir}.
-function setup_rs_env_plfs {
-    # Redefine some variables.
-    plfs_bin_dir=${instdir}/plfs/bin
-    plfs_sbin_dir=${instdir}/plfs/sbin
-    plfs_lib_dir=${instdir}/plfs/lib
-    plfs_inc_dir=${instdir}/plfs/include
-    old_PATH=`echo $PATH`
-    PATH="${plfs_sbin_dir}:${plfs_bin_dir}:$PATH"
-    #echo "Old PATH: $old_PATH"
-    #echo "New PATH: $PATH"
-    export PATH
-}
-
-# Function that will set up paths to use the regression suite's mpi. MPI
-# should already be present in ${instdir}.
-# Return values: 1 if a mpi lib is not found
-#                0 if mpi lib is found
-function setup_rs_env_mpi {
-    # Redefine some variables.
-    mpi_bin_dir=${instdir}/mpi/bin
-    mpi_lib_dir=${instdir}/mpi/lib
-    mpi_inc_dir=${instdir}/mpi/include
-    old_PATH=`echo $PATH`
-    PATH="${mpi_bin_dir}:$PATH"
-    #echo "Old PATH: $old_PATH"
-    #echo "New PATH: $PATH"
-    export PATH
-    # Get the name of the mpi lib
-    find_mpi_libname
+# Function that will set up environment variables for building against PLFS.
+#
+# No input and no output, but after calling the function, RS_PLFS_LDFLAGS and
+# RS_PLFS_CFLAGS environment variables will be set for linking and compiling
+# against PLFS. RS_PLFS_LDFLAGS will contain the necessary linking flags;
+# RS_PLFS_CFLAGS will contain the necessary compling flags.
+function setup_rs_plfs_flags {
+    # Grab the flags needed for building against PLFS
+    flags=`tests/utils/rs_plfs_buildflags_get.py`
     if [[ $? != 0 ]]; then
         return 1
-    else 
-        return 0
     fi
-}
-
-# Function that will set up env variables for compiling and linking against
-# the regression suite's plfs and mpi.  This function should be called
-# after calling setup_rs_env_plfs and setup_rs_env_mpi.
-function setup_rs_env_flags {
-    export RS_LDFLAGS="-L$plfs_lib_dir -Wl,-rpath=$plfs_lib_dir -Wl,--whole-archive -lplfs -Wl,--no-whole-archive -lz -lstdc++ -L$mpi_lib_dir -Wl,-rpath=$mpi_lib_dir -l$mpi_lib_name -lm"
-    export RS_CFLAGS="-I$plfs_inc_dir -I$mpi_inc_dir -DHAS_PLFS"
+    rs_plfs_cflags=`echo "$flags" | head -n 1`
+    rs_plfs_ldflags=`echo "$flags" | tail -n 1`
+    export RS_PLFS_LDFLAGS=$rs_plfs_ldflags
+    export RS_PLFS_CFLAGS=$rs_plfs_cflags
 }
 
 # Default values for command line parameters
@@ -762,14 +697,19 @@ if [ "$build" == "True" ]; then
         plfs_ok="FAIL"
     fi
 
+    # Get the necessary flags for building against PLFS. This will set
+    # RS_PLFS_LDFLAGS and RS_PLFS_CFLAGS
+    setup_rs_plfs_flags
+    if [[ $? != 0 ]]; then
+        echo "Error setting PLFS build flags" >> $plfs_build_log
+        plfs_stat="problem setting PLFS build flags"
+        plfs_ok="FAIL"
+    fi
+
     echo $plfs_stat
     if [ "$plfs_ok" == "FAIL" ]; then
         script_exit 1
     fi
-
-    # Set up the environment to use the regression suite's plfs. This will
-    # redefine plfs_bin_dir, plfs_lib_dir and plfs_inc_dir.
-    setup_rs_env_plfs
 
     #MPI
     echo "Checking mpi. Please see $mpi_build_log."
@@ -838,7 +778,7 @@ if [ "$build" == "True" ]; then
         echo "Building and installing openmpi." | tee $mpi_build_log
         # Compile openmpi from a tarball
         ${basedir}/openmpi_build.sh $openmpi_tarball $srcdir $instdir/mpi \
-        ${srcdir}/plfs ${instdir}/plfs ${ompi_platform_file} \
+        ${srcdir}/plfs ${ompi_platform_file} \
         >> $mpi_build_log 2>&1
         if [[ $? == 0 ]]; then
             mpi_stat="Successfully built and installed"
@@ -852,16 +792,6 @@ if [ "$build" == "True" ]; then
         fi
     fi
     echo $mpi_stat
-    # Set up the environment to use the regression suite's mpi. mpi_bin_dir,
-    # mpi_lib_dir, and mpi_inc_dir will be redefined.
-    setup_rs_env_mpi
-    if [[ $? != 0 ]]; then
-       mpi_stat="Unable to determine mpi library name"
-       mpi_ok="FAIL"
-    else
-       # Set up MPI_LD and MPI_INC
-       setup_rs_env_flags
-    fi
     # final sanity check on the needed mpi directories
     if [ ! -d "${instdir}/mpi/bin" ]; then
         echo "ERROR: ${instdir}/mpi/bin is not avaliable." 2>&1
@@ -879,6 +809,10 @@ if [ "$build" == "True" ]; then
     if [ "$mpi_ok" == "FAIL" ]; then
         script_exit 1
     fi
+
+    # set up the environment to use the regression suite's binaries and
+    # libraries
+    source ${basedir}/tests/utils/rs_env_init.sh >> /dev/null
 
     # experiment_management
     echo "Checking experiment_management. Please see $expr_mgmt_get_log."
@@ -1075,21 +1009,18 @@ else
     expr_mgmt_stat="skipped due to configuration"
     expr_mgmt_ok="PASS"
 
-    # Set up the environment to use the regression suite's plfs. This will
-    # redefine plfs_bin_dir, plfs_lib_dir and plfs_inc_dir.
-    setup_rs_env_plfs
-
-    # Set up the environment to use the regression suite's mpi. mpi_bin_dir,
-    # mpi_lib_dir, and mpi_inc_dir will be redefined.
-    setup_rs_env_mpi
+    # call the function that will set up the necessary flags for building
+    # against plfs. This will set RS_PLFS_LDFLAGS and RS_PLFS_CFLAGS
+    setup_rs_plfs_flags
     if [[ $? != 0 ]]; then
-       mpi_stat="Unable to determine mpi library name"
-       mpi_ok="FAIL"
-       script_exit 1
-    else
-       # Set up MPI_LD and MPI_INC
-       setup_rs_env_flags
+        plfs_stat="Error setting PLFS build flags"
+        plfs_ok="FAIL"
+        script_exit 1
     fi
+
+    # Call the helper script that will set up the environment to use the
+    # regression suite's binaries and libraries.
+    source ${basedir}/tests/utils/rs_env_init.sh >> /dev/null
 fi
 
 # Now, do some checking
