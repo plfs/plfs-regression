@@ -1,0 +1,4 @@
+reg_test.sh
+output/
+noncontig_short.x
+*.pyc

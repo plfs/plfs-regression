@@ -1,0 +1,4 @@
+reg_test.sh
+output/
+replace_char
+*.pyc

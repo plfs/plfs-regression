@@ -1,0 +1,6 @@
+*.pyc
+.run_plfs_reg_summary.txt
+config
+inst/
+logs/
+src/

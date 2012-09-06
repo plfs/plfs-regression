@@ -1,7 +1,0 @@
-This is just a simple adio write and read test.
-
-reg_test.py is the main script. It takes no options so just run it. It will create
-reg_test.sh using write commands and using experiment_management. input.py is the
-input file used by experiment_management to generate the commands that are
-put in reg_test.sh. Then, reg_test.py will use experiment_management to submit
-reg_test.sh. It will do this by passing input_script.py to experimenet_management.
