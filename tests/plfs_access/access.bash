@@ -17,11 +17,11 @@ function run_plfs_access {
 }
 
 
-echo "RS_LDFLAGS = ${RS_PLFS_LDFLAGS}"
-echo "RS_CFLAGS = ${RS_PLFS_CFLAGS}"
+echo "RS_PLFS_LDFLAGS = ${RS_PLFS_LDFLAGS}"
+echo "RS_PLFS_CFLAGS = ${RS_PLFS_CFLAGS}"
 echo "Going to compile access.c"
 #compile_out=`gcc -o access -I /users/atorrez/Testing/regression/inst/plfs/include -L /usr/projects/plfs/rrz/plfs/gcc-system/plfs-2.2.1/install/lib -lplfs -lpthread access.c`
-compile_out=`gcc -o access ${RS_LDFLAGS} ${RS_CFLAGS} access.c`
+compile_out=`gcc -o access ${RS_PLFS_LDFLAGS} ${RS_PLFS_CFLAGS} access.c`
 if [ $? == 0 ]; then
     echo "access.c compiled successfully"
 else
