@@ -82,6 +82,7 @@ int main(int argc, char **argv){
     if ( rc < 0 ) {
         printf("Error:  Failed on file write of zero bytes.\n");
     }
+    close(out);
     sprintf(map_cmd, "plfs_map %s", path);
     system(map_cmd);
     Stat(path,0);
