@@ -166,6 +166,7 @@ if ( -x "$pexec" ) then
     if ( $status != 0 ) then
         echo "Problem executing $command. Exiting."
         rm -f $node_file
+        exit 1
     endif
     set nodes = `uniq $node_file | tr '\n' ','`
     # Remove the temporary node_file
