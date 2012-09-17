@@ -107,14 +107,11 @@ def main(argv=None):
         cmd = subprocess.Popen([fs_test_command], stdout=subprocess.PIPE, shell=True)
         fs_test_run, errors = cmd.communicate()
         f.write("    " + str(fs_test_run) + '\n')
-        f.close()
 
         # Remove target file if it exists
-        os.system("echo \"if [ -e " + "$path" + " ]; then rm " 
-            + "$path"  + "; fi\" >> " + str(script))
+        f.write("    if [ -e \"$path\" ]; then rm \"$path\"; fi\n")
 
         # Write into the script the script that will unmount plfs
-        f = open(script, 'a')
         f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
         f.write("        echo \"Running " + str(postscript) + "$mnt" + "\"\n")
         f.write("        " + str(postscript) + "$mnt" + "\n")
