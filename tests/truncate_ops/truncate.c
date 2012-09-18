@@ -34,8 +34,6 @@ int main(int argc, char **argv){
 
     int out, rc;
     char *path; 
-    char map_cmd[128];
-
 
     if ( argc > 1 ) {
         path = strdup(argv[1]);
@@ -62,14 +60,12 @@ int main(int argc, char **argv){
     if ( rc < 0) {
         printf("Error: Truncate to offset 0 failed\n");
     }
-    sprintf(map_cmd, "plfs_map %s", path);
-    system(map_cmd);
     Stat(path,0);
     
 //    now make sure we can write zero bytes
 //    printf("write0\n");
     printf("writing 0 bytes to %s\n", path);
-    system("rm path");
+//  system("rm path");
     out=open(path,O_WRONLY|O_CREAT|O_TRUNC,S_IRWXU);
     if ( out < 0 ) {
         printf("Error:  Failed on file open\n");
@@ -83,8 +79,6 @@ int main(int argc, char **argv){
         printf("Error:  Failed on file write of zero bytes.\n");
     }
     close(out);
-    sprintf(map_cmd, "plfs_map %s", path);
-    system(map_cmd);
     Stat(path,0);
     
 //    now make sure we can truncate to offset N to grow
@@ -103,8 +97,6 @@ int main(int argc, char **argv){
     if ( rc < 0) {
         printf("Error: Truncate to offset 100 failed\n");
     }
-    sprintf(map_cmd, "plfs_map %s", path);
-    system(map_cmd);
     Stat(path,100);
     
 //    now make sure we can truncate to offset N to shrink
@@ -128,12 +120,10 @@ int main(int argc, char **argv){
     if ( rc < 0) {
         printf("Error: Truncate to offset 1 failed\n");
     }
-    sprintf(map_cmd, "plfs_map %s", path);
-    system(map_cmd);
     Stat(path,1);
     
 //    now make sure we can overwrite a file
-    printf("Overwriting file $s\n", path);
+    printf("Overwriting file %s\n", path);
     out=open(path,O_WRONLY|O_CREAT|O_TRUNC,S_IRWXU);
     if ( out < 0 ) {
         printf("Error:  Failed on file open\n");
@@ -152,8 +142,6 @@ int main(int argc, char **argv){
         printf("Error: Overwrite of file failed\n");
     }
     close(out);
-    sprintf(map_cmd, "plfs_map %s", path);
-    system(map_cmd);
     Stat(path,5);
     unlink(path);
     exit(0);
