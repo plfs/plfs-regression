@@ -66,7 +66,7 @@ else
            while [ $cnt -lt $cnt_max ]
            do
              let "cnt += 1"
-             echo $cnt
+             echo "Test iteration $cnt on mount $mnt" 
              if [ $build_for_mnt -eq 1 ]; then
 
                #setup to build plfs from tarball      
@@ -139,6 +139,9 @@ else
                if [ $open_files != 0 ]; then 
                  echo "ERROR open file count not 0"
                fi 
+               echo ""
+               echo "Completed interation $cnt of $cnt_max on $mnt"
+               echo ""
              fi
            done # end while loop
            echo "Removing plfs tarball and directory from $target"
