@@ -53,7 +53,6 @@ fi
               exit 1
           fi 
 
-
 #
 # Append user name to mount
 #
