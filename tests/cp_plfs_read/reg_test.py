@@ -27,7 +27,7 @@ def main(argv=None):
     # generated script
     input_script = "input_script.py"
     # Walltime for the job(s)
-    walltime = "5:00"
+    walltime = "10:00"
 
     # Figure out the target that this test will be using.
     scratch_target=common.get_panfs_target()

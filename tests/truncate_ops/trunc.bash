@@ -35,20 +35,15 @@ fi
 #
 # Loop through all mount points
 #
-nto1_mnt_cnt=`plfs_check_config | grep N-1 | wc -l`
-if [ $nto1_mnt_cnt -ge 1 ]; then
     for mnt in $mount_points
     do
       echo ""
       echo "Using $mnt for truncate test"
-      nto1_mount=`plfs_check_config | grep -A 1 $mnt | grep -B 1 N-1 | head -1 | awk '{print $3}'`
-      if [ $mnt == $nto1_mount ]; then
 #
 # Mount the defined mount point
 #
           ../utils/rs_plfs_fuse_mount.sh $mnt serial
           ret=$?
-          echo "XX $ret"
           if [ $ret == 0 ]; then
               need_to_unmount=1
           elif [ $ret == 1 ]; then
@@ -57,7 +52,6 @@ if [ $nto1_mnt_cnt -ge 1 ]; then
               echo "Failure: Mount point $mnt is not mounted and could not be mounted by $USER"
               exit 1
           fi 
-
 
 #
 # Append user name to mount
@@ -84,10 +78,5 @@ if [ $nto1_mnt_cnt -ge 1 ]; then
                   exit 1
               fi 
           fi 
-      fi
     done
-else
-    echo "Error:  Test requires shared_file (N-1) mount point but none found"
-    exit 1
-fi
 exit $return_value
