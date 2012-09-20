@@ -102,19 +102,6 @@ addr="${USER}@lanl.gov"
 # directory in a directory named "test_fs" with a name of fs_test.MY_MPI_HOST.x.
 #fs_test_location=/path/to/fs_test-binary
 
-# What to do about pexec. Either pexec_source_directory or pexec_location must
-# be specified.
-
-# Specify source code for pexec. The directory specified by the following will be
-# copied into the regression suite's installation directory and be named "pexec". The
-# regression suite will check to make sure a valid pexec executable is available.
-#pexec_source_directory=/path/to/pexec/directory
-
-# Alternatively, specify the following to use pexec from an external location.
-# A symbolic link to the executable will be created in the regression suite's
-# installation directory in a directory named "pexec" as "pexec" (pexec/pexec).
-#pexec_location=/path/to/pexec
-
 # Experiment management framework. Either experiment_management_source or
 # experiment_management_directory must be specified.
 

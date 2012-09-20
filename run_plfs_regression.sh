@@ -81,12 +81,6 @@ function format_email {
         echo "Log file located at $fs_test_build_log" >> $email_message
     fi
 
-    # Check pexec
-    echo "pexec status....$pexec_ok: $pexec_stat" >> $email_message
-    if [ "$pexec_ok" == 'FAIL' ]; then
-        echo "Log file located at $pexec_get_log" >> $email_message
-    fi
-  
     # Check getting experiment_management
     echo "experiment_management status...$expr_mgmt_ok: $expr_mgmt_stat" >> $email_message
     if [ "$expr_mgmt_ok" == 'FAIL' ]; then
@@ -212,8 +206,6 @@ mpi_lib_dir="None"
 mpi_inc_dir="None"
 fs_test_src_from="None"
 fs_test_loc="None"
-pexec_src_from="None"
-pexec_loc="None"
 expr_mgmt_src_from="None"
 expr_mgmt_loc="None"
 testtypes="1,2"
@@ -232,9 +224,6 @@ do
             ;;
         --fstestsrc=*)
             fs_test_source_directory=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
-            ;;
-        --pexecsrc=*)
-            pexec_source_directory=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
             ;;
         --exprmgmtsrc=*)
             experiment_management_source=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
@@ -365,25 +354,6 @@ else
     exit 1
 fi
 
-if [ -n "$pexec_source_directory" ]; then
-    if [ -e "$pexec_source_directory/pexec" ]; then
-        pexec_src_from="$pexec_source_directory"
-    else
-        echo "$0: $pexec_source_directory does not contain a valid pexec executable."
-        exit 1
-    fi
-elif [ -n "$pexec_location" ]; then
-    if [ -e "$pexec_location" ]; then
-        pexec_loc=$pexec_location
-    else
-        echo "$0: $pexec_location is not a valid executable."
-        exit 1
-    fi
-else
-    echo "$0: either pexec_source_directory or pexec_location must be specified. Please see the config file."
-    exit 1
-fi
-
 if [ -n "$experiment_management_source" ]; then
     if [ -d "$experiment_management_source" ]; then
         expr_mgmt_src_from="$experiment_management_source"
@@ -497,11 +467,6 @@ if [ "$fs_test_src_from" == "None" ]; then
 else
     echo "fs_test source: $fs_test_src_from"
 fi
-if [ "$pexec_src_from" == "None" ]; then
-    echo "pexec binary: $pexec_loc"
-else
-    echo "pexec source: $pexec_src_from"
-fi
 if [ "$expr_mgmt_src_from" == "None" ]; then
     echo "Experiment_management location: $expr_mgmt_loc"
 else
@@ -526,8 +491,6 @@ mpi_stat="Not checked"
 mpi_ok="PASS"
 fs_test_stat="Not checked"
 fs_test_ok="PASS"
-pexec_stat="Not checked"
-pexec_ok="PASS"
 expr_mgmt_stat="Not checked"
 expr_mgmt_ok="PASS"
 submit_test_stat="Not done"
@@ -548,7 +511,6 @@ fi
 plfs_build_log=${log_dir}/plfs_build.log
 mpi_build_log=${log_dir}/mpi_build.log
 fs_test_build_log=${log_dir}/fs_test_build.log
-pexec_get_log=${log_dir}/pexec_get.log
 expr_mgmt_get_log=${log_dir}/expr_mgmt_get.log
 submit_tests_log=${log_dir}/submit_tests.log
 config_file_log=${log_dir}/config_file.log
@@ -935,67 +897,6 @@ if [ "$build" == "True" ]; then
     if [ "$fs_test_ok" == "FAIL" ]; then
         script_exit 1
     fi
-
-    # pexec
-    echo "Checking pexec. Please see $pexec_get_log."
-    # Remove the old inst/pexec directory if needed
-    if [ -d "${instdir}/pexec" ]; then
-        echo "Removing $instdir/pexec" > $pexec_get_log 2>&1
-        rm -rf $instdir/pexec >> $pexec_get_log 2>&1
-        if [ -d "${instdir}/pexec" ]; then
-            echo "Error: Unable to remove $instdir/pexec" >> $pexec_get_log 2>&1
-            pexec_stat="unable to remove old pexec installation"
-            pexec_ok="FAIL"
-        fi
-    fi
-    
-    if [ "$pexec_ok" == "PASS" ]; then
-        if [ "$pexec_src_from" == "None" ]; then
-            # Use an executable already on the system, don't copy it into the source dir.
-            echo "Linking pexec..." | tee -a $pexec_get_log
-            # We already know, based on the check on the config file, that the
-            # pexec executable is a valid executable. Just link it in to the
-            # regression suite.
-            pexec_stat="pexec successfully found"
-            # Directory should be removed already.
-            mkdir ${instdir}/pexec >> $pexec_get_log 2>&1
-            ln -s $pexec_loc ${instdir}/pexec/pexec >> $pexec_get_log 2>&1
-            if [ ! -e "${instdir}/pexec/pexec" ]; then
-                pexec_stat="unable to create new pexec installation"
-                pexec_ok="FAIL"
-            else
-                pexec_stat="successfully linked"
-                pexec_ok="PASS"
-            fi
-        else
-            # We're copying the directory given by pexec_src_from into the regression
-            # suite's installation directory
-            echo "Copying pexec..." | tee -a $pexec_get_log
-            ${basedir}/src_cp.sh $pexec_src_from $instdir/pexec >> $pexec_get_log 2>&1
-            if [[ $? == 0 ]]; then
-                pexec_stat="successfully copied"
-                pexec_ok="PASS"
-            else
-                pexec_stat="unable to copy"
-                pexec_ok="FAIL"
-            fi
-            # If all is well so far, double check that there is a pexec executable.
-            if [ "$pexec_ok" == "True" ]; then
-                if [ ! -e "${instdir}/pexec/pexec" ]; then
-                    pexec_stat="copied pexec code, but there is no pexec executable"
-                    pexec_ok="FAIL"
-                else
-                    pexec_stat="successfully copied and executable present"
-                    pexec_ok="PASS"
-                fi
-            fi
-        fi
-    fi
-    echo $pexec_stat | tee -a $pexec_get_log
-    if [ "$pexec_ok" == "FAIL" ]; then
-        script_exit 1
-    fi
-
 else
     echo "--nobuild used...skipping source retrevial and building"
     plfs_stat="skipped due to configuration"
@@ -1004,8 +905,6 @@ else
     mpi_ok="PASS"
     fs_test_stat="skipped due to configuration"
     fs_test_ok="PASS"
-    pexec_stat="skipped due to configuration"
-    pexec_ok="PASS"
     expr_mgmt_stat="skipped due to configuration"
     expr_mgmt_ok="PASS"
 
