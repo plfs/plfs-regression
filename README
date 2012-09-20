@@ -26,14 +26,33 @@ tests/README.
 Dependencies:
 - What ever compiler that is desired should be setup either through login
   scripts or in the regression suite's config file (see below).
-- The following packages/programs will be needed: plfs, mpi (for running 
-  parallel tests; either in the form of a source tarball or an already patched
-  for plfs mpi installation), fs_test (for running specific IO patterns and
-  many tests use it), pexec (for mounting plfs on compute nodes during
-  parallel execution), and experiment_management (for creating test commands
-  tailored to the system being run on). In addition, these system services are
-  needed: /bin/mail (to send email) and MOAB (for submitting and tracking
-  parallel tests).
+- The following packages/programs are required:
+  - Python >= 2.5
+  - PLFS: can be either in the form of source or an already built version.
+    PLFS source is used in at least one test so is required even when
+    providing an already built version of PLFS. When given source, the
+    regression suite will build PLFS.
+  - MPI (for running parallel tests): can be either in the form of a source
+    tarball or an already patched for PLFS MPI installation. If the tarball is
+    given, MPI will be built. NOTE: at this time, only Open MPI tarballs are
+    supported.
+  - fs_test (for running specific IO patterns and many tests use it): can be
+    in the form of source or an already compiled version. It is available in
+    the fs-test project (https://github.com/fs-test). If source is given,
+    fs_test will be compiled against the regression suite's PLFS and MPI.
+  - experiment_management (for creating test commands tailored to the system
+    being run on): available in the fs-test project
+    (https://github.com/fs-test). This package does not require complilation.
+  - job scheduler (for submitting and tracking parallel tests): the regression
+    suite relies on the command 'checkjob' to determine if submitted jobs have
+    completed or not. Additionally, the following line is expected to be in
+    checkjob's output:
+      Status <status>
+    The regression suite will look for the following values for <status>:
+    Completed or Removed. If the job scheduler on the system does not provide
+    checkjob with that format, the regression suite will be unable to determine
+    when jobs complete and will error out. It is known that the MOAB job
+    scheduler provides this functionality.
 - A working ~/.plfsrc file consistent with the version of plfs that is to be
   tested. It is not necessary that all of the directories for the PLFS mount
   points and backends exist. The regression suite will ensure that these
@@ -55,7 +74,7 @@ Dependencies:
   necessary to rerun the build phase. Instead, use run_plfs_regression.sh's
   '--nobuild' option to skip the build phase. The checks will still be done
   before the test submittal phase.
-- Fuse tests that run on compute nodes will make sure the mount_point
+  Fuse tests that run on compute nodes will make sure the mount_point
   specified in the plfsrc is present. This way it is possible to use a
   location such as /var/tmp, but users will not have to log in to each compute
   node individually to make sure the mount point exists. This checking for the
@@ -72,6 +91,32 @@ Dependencies:
   but the check on experiment_management rc files fails, it is not necessary
   to rerun the build phase; use '--nobuild' to skip the build stage. The test of
   the rc files will be done before the test submittal stage.
+- A config file in the Regression directory. A sample is provided as
+  config.sample. Copy this file as config (in the same directory) and edit
+  config accordingly. All information related to specifying where to find
+  dependencies will be entered in that file. It is heavily commented in an
+  attempt to explain all the different options available.
+- MY_MPI_HOST environment variable set as in the experiment_management
+  framework.
+- Define MPI_CC environment variable as the command to compile parallel
+  programs. For example, set it to mpicc (generic mpi implementation) or cc
+  (cray implementation).
+- If email capabilities are needed/wanted, /bin/mail needs to be available.
+- If the PLFS source is a checkout from the PLFS repository, then the proper
+  version of autotools for running PLFS's autogen.sh script are necessary. 
+  Either those programs should already be in a user's default path or how to
+  find them should be specified in the config file.
+- If Open MPI is to be built by the regression suite, a platform file must
+  be used when compiling Open MPI to make it aware of the locations of the
+  PLFS library. A sample platform file is provided as
+  openmpi_platform_file.sample. It contains the minimum settings necessary
+  to make Open MPI aware of the PLFS library. It can be copied to
+  openmpi_platform_file and modified, but the REPLACE_PLFS_* characters must
+  remain so that the regression suite can accurately generate a usable
+  platform file. The regression suite will first check for the existance of
+  openmpi_platform_file. If it is not present, the regression suite will
+  check for openmpi_platform_file.sample. This way, if a custom platform file
+  is not needed, users can do nothing and the sample will be used.
 - If putting test target files directly into the PLFS mount point is not
   desired, specify rs_mnt_append_path in experiment_management's rc file.
   Assign it a path relative to the mount point. Tests will append this path to
@@ -80,31 +125,6 @@ Dependencies:
   The regression suite will make sure the directory specified by
   rs_mnt_append_path exists on all backends which will ensure that it exists
   as /<mount_point>/<rs_mnt_append_path>.
-- Python >= 2.5
-- A config file in the Regression directory. A sample is provided as
-  config.sample. Copy this file as config (in the same directory) and edit
-  config accordingly. All information related to specifying where to find
-  dependencies will be entered in that file. It is heavily commented in an
-  attempt to explain all the different options available.
-- If open mpi is to be built by the regression suite, a platform file must
-  be used when compiling open mpi to make it aware of the locations of the
-  PLFS library. A sample platform file is provided as
-  openmpi_platform_file.sample. It contains the minimum settings necessary
-  to make open mpi aware of the PLFS library. It can be copied to
-  openmpi_platform_file and modified, but the REPLACE_PLFS_* characters must
-  remain so that the regression suite can accurately generate a usable
-  platform file. The regression suite will first check for the existance of
-  openmpi_platform_file. If it is not present, the regression suite will
-  check for openmpi_platform_file.sample. This way, if a custom platform file
-  is not needed, users can do nothing and the sample will be used.
-- MY_MPI_HOST environment variable set as in the experiment_management
-  framework.
-- Define MPI_CC environment variable as the command to compile parallel
-  programs. For example, set it to mpicc (generic mpi implementation) or cc
-  (cray implementation).
-- The proper version of autotools for compiling plfs should be available.
-  Either those programs should already be in a user's path or how to find
-  them should be specified in the config file.
 
 Usage:
 ./run_plfs_regression.sh [OPTIONS ...]

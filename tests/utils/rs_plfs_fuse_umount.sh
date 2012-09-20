@@ -70,7 +70,7 @@ if [ "$serial" == "True" ]; then #Serial
     fi
 else # parallel
     echo "$script_name: Attempting to unmount $mount_point on all nodes"
-    ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh --plfs=${basedir}/inst/plfs/sbin/plfs --pexec=${basedir}/inst/pexec/pexec --mntpt=$mount_point umount
+    ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh --plfs=${basedir}/inst/plfs/sbin/plfs --pexec=${basedir}/tests/utils/pexec.pl --mntpt=$mount_point umount
     ret=$?
     if [ $ret == 0 ]; then
         successfully_unmounted="True"

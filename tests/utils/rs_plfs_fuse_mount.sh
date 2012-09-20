@@ -134,7 +134,7 @@ else #parallel
     echo "$script_name: Executing ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh"
     ${basedir}/tests/utils/rs_computenodes_plfs_launch.csh \
         --plfs=${basedir}/inst/plfs/sbin/plfs \
-        --pexec=${basedir}/inst/pexec/pexec --mntpt=$mount_point \
+        --pexec=${basedir}/tests/utils/pexec.pl --mntpt=$mount_point \
         --mnt_opts="$mopts"
     ret=$?
     if [ $ret == 0 ]; then
