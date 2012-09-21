@@ -144,6 +144,10 @@ delete_passing_test_output=True
 # Set to True or False. Default is True.
 send_email=True
 
+# Specify whether or not the user is prompted for input.
+# Set to True or False. Default is True.
+prompt=True
+
 # What control file to use in the tests directory. Don't include full path,
 # just the file name.
 control_file=test_list.txt

@@ -51,6 +51,8 @@ function print_usage {
     echo -e "\t\tEquivalent to setting do_tests to False in the config file."
     echo -e "\t--noemail"
     echo -e "\t\tEquivalent to setting send_email to False in the config file."
+    echo -e "\t--noprompt"
+    echo -e "\t\tEquivalent to setting prompt to False in the config file."
     echo -e "\t-h,--help"
     echo -e "\t\tDisplay this message and exit"
 }
@@ -193,7 +195,7 @@ function setup_rs_plfs_flags {
     export RS_PLFS_CFLAGS=$rs_plfs_cflags
 }
 
-# Default values for command line parameters
+# Default values for control variables.
 plfs_src_from="None"
 plfs_bin_dir="None"
 plfs_sbin_dir="None"
@@ -214,6 +216,7 @@ build="True"
 runtests="True"
 noplfs=0
 doemail="True"
+prompt_user="True"
 
 # The config file has already been parsed, so check command line args.
 for i in $*
@@ -249,6 +252,9 @@ do
             ;;
         --noemail)
             send_email="False"
+            ;;
+        --noprompt)
+            prompt="False"
             ;;
         *)
             # Unknown option
@@ -421,6 +427,17 @@ if [ -n "$send_email" ]; then
     fi
 fi
 
+if [ -n "$prompt" ]; then
+    if [ "$prompt" == "True" ]; then
+        prompt_user="True"
+    elif [ "$prompt" == "False" ]; then
+        prompt_user="False"
+    else
+        echo "$0: Invalid option for prompt. Must be True or False. Please see the config file."
+        exit 1
+    fi
+fi
+
 # If we're here, then we need to attempt to do a regression run of some sort.
 # Check that this instance of the regression can and/or should run
 if [ -e "${basedir}/DO_NOT_RUN_REGRESSION" ]; then
@@ -433,12 +450,6 @@ if [ -e "${id_file}" ]; then
     echo "Previous regression instance still running. Exiting." 1>&2
     exit 0
 fi
-
-# Create the lock file id_file
-touch $id_file
-
-# Create a lock file for just run_plfs_regression
-touch $run_plfs_regression_lock
 
 # Print some info about where stuff is coming from and what will be attempted.
 echo "Info for this regression run:"
@@ -483,6 +494,16 @@ else
     echo "Delete output of passed tests: False"
 fi
 echo ""
+
+if [ "$prompt_user" == "True" ]; then
+    read -sn 1 -p "Ready to being regression run. Press any key to continue..."; echo
+fi
+
+# Create the lock file id_file
+touch $id_file
+
+# Create a lock file for just run_plfs_regression
+touch $run_plfs_regression_lock
 
 # Variables to keep track of what gets done.
 plfs_stat="Not checked"
