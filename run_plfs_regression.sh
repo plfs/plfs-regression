@@ -475,8 +475,6 @@ fi
 # Print some info about where stuff is coming from and what will be attempted.
 echo "Info for this regression run:"
 echo ""
-echo "MY_MPI_HOST: $MY_MPI_HOST"
-echo "MPI_CC: $MPI_CC"
 if [ "$plfs_src_from" == "None" ]; then
     echo "Using PLFS from the following locations:"
     echo "PLFS user binaries: $plfs_bin_dir"
@@ -507,10 +505,12 @@ else
     echo "experiment_management source: $expr_mgmt_src_from"
 fi
 
+echo "MY_MPI_HOST: $MY_MPI_HOST"
+echo "MPI_CC: $MPI_CC"
 echo "Test types: $testtypes"
 echo "Building: $build"
-echo "Running and checking tests: $runtests"
 echo "Sending email: $doemail"
+echo "Running and checking tests: $runtests"
 if [ "$nodelete" == "" ]; then
     echo "Delete output of passed tests: True"
 else
