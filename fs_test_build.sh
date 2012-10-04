@@ -48,29 +48,17 @@ echo "MPI_CC: $MPI_CC"
 echo "MPI_LD: $MPI_LD"
 echo "MPI_INC: $MPI_INC"
 
-# Make sure the source directory exists
-if [ ! -d $srcdir ]; then
-  mkdir -p $srcdir
-  if [ ! -d $srcdir ]; then
-    echo "Error: Unable to create $srcdir"
-    exit 1
-  fi
-fi
-
-echo "Entering $srcdir"
-cd $srcdir
-
 # Check for the needed directories
-if [ -d test_fs ]; then
-  echo "test_fs directory exists"
+if [ -d ${srcdir}/test_fs ]; then
+  echo "${srcdir}/test_fs directory exists"
 else
-  echo "Error: test_fs directory does not exist"
+  echo "Error: ${srcdir}/test_fs directory does not exist"
   exit 1
 fi
 
 # Now build fs_test
 echo "Entering directory ${srcdir}/test_fs"
-cd test_fs
+cd ${srcdir}/test_fs
 
 echo "Running make clean"
 make clean

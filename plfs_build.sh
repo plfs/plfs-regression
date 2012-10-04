@@ -12,11 +12,6 @@
 # to run the compilation process directly in the path given by the
 # first command line parameter.
 
-req_m4_version="1.4.14"
-req_autoconf_version="2.65"
-req_automake_version="1.11.1"
-req_libtool_version="2.2.6b"
-
 # Where to put source files
 srcdir="$1"
 # Where to put the binaries

@@ -195,6 +195,23 @@ function setup_rs_plfs_flags {
     export RS_PLFS_CFLAGS=$rs_plfs_cflags
 }
 
+function check_env_vars {
+    env_var_problem="False"
+    if [ -z "$MPI_CC" ]; then
+        echo "MPI_CC env variable not set"
+        env_var_problem="True"
+    fi
+    if [ -z "$MY_MPI_HOST" ]; then
+        echo "MY_MPI_HOST env variable not set"
+        env_var_problem="True"
+    fi
+    if [ "$problem" == "True" ]; then
+        return 1
+    else
+        return 0
+    fi
+}
+
 # Default values for control variables.
 plfs_src_from="None"
 plfs_bin_dir="None"
@@ -214,7 +231,6 @@ testtypes="1,2"
 nodelete=""
 build="True"
 runtests="True"
-noplfs=0
 doemail="True"
 prompt_user="True"
 
@@ -451,9 +467,16 @@ if [ -e "${id_file}" ]; then
     exit 0
 fi
 
+check_env_vars
+if [[ $? != 0 ]]; then
+    exit 1
+fi
+
 # Print some info about where stuff is coming from and what will be attempted.
 echo "Info for this regression run:"
 echo ""
+echo "MY_MPI_HOST: $MY_MPI_HOST"
+echo "MPI_CC: $MPI_CC"
 if [ "$plfs_src_from" == "None" ]; then
     echo "Using PLFS from the following locations:"
     echo "PLFS user binaries: $plfs_bin_dir"
@@ -496,7 +519,7 @@ fi
 echo ""
 
 if [ "$prompt_user" == "True" ]; then
-    read -sn 1 -p "Ready to being regression run. Press any key to continue..."; echo
+    read -sn 1 -p "Ready to begin regression run. Press any key to continue..."; echo
 fi
 
 # Create the lock file id_file
@@ -580,10 +603,10 @@ if [ "$build" == "True" ]; then
             plfs_ok="FAIL"
         fi
         # Check for plfs source
-        if [ -e "$plfs_src_dir/scripts/make_plfs_patch" ]; then
+        if [ -e "$plfs_src_dir/mpi_adio/scripts/make_plfs_patch" ]; then
             echo "Found plfs source in $plfs_src_dir" >> $plfs_build_log
         else
-            echo "$plfs_src_dir does not contain scripts/make_plfs_patch. It does not appear that $plfs_src_dir contains plfs source files." >> $plfs_build_log
+            echo "$plfs_src_dir does not contain mpi_adio/scripts/make_plfs_patch. It does not appear that $plfs_src_dir contains plfs source files." >> $plfs_build_log
             plfs_stat="plfs source not found"
             plfs_ok="FAIL"
         fi
@@ -943,7 +966,7 @@ else
     source ${basedir}/tests/utils/rs_env_init.sh >> /dev/null
 fi
 
-# Now, do some checking
+# Now, do some rc file checking
 echo "Checking for plfs and experiment_management rc file existance. Please see $config_file_log."
 # Check for FATAL problems when dealing with the plfsrc files. These
 # can't be ignored and need to be fixed.

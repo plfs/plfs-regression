@@ -97,7 +97,9 @@ Dependencies:
   dependencies will be entered in that file. It is heavily commented in an
   attempt to explain all the different options available.
 - MY_MPI_HOST environment variable set as in the experiment_management
-  framework.
+  framework. This variable needs to be set in such a way that it is defined
+  on compute nodes. Set it in log-in scripts or using the env_customize.sh
+  script (covered in the Quick Start section).
 - Define MPI_CC environment variable as the command to compile parallel
   programs. For example, set it to mpicc (generic mpi implementation) or cc
   (cray implementation).

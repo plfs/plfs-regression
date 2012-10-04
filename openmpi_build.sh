@@ -267,8 +267,6 @@ check_exit $? "Autogen.sh process"
 echo "Generating platform file for openmpi compilation"
 sedline="sed 's|REPLACE_PLFS_LDFLAGS|${RS_PLFS_LDFLAGS}|g;s|REPLACE_PLFS_CFLAGS|${RS_PLFS_CFLAGS}|g' \
     ${platform_file} > ./platform_file"
-#sed 's|REPLACE_PLFS_LDFLAGS|'${RS_PLFS_LDFLAGS}'|g;s|REPLACE_PLFS_CFLAGS|'${RS_PLFS_CFLAGS}'|g' \
-#    ${platform_file} > ./platform_file
 eval $sedline
 check_exit $? "Generating platform file for openmpi"
 

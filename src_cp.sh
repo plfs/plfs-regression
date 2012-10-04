@@ -21,28 +21,19 @@ if [ "$srcdir" == "" ] || [ "$dstdir" == "" ]; then
   exit 1
 fi
 
-# Remove old directory, if needed
-if [ -d "$dstdir" ]; then
-  echo "Removing old $dstdir"
-  rm -rf "$dstdir"
-  if [ -d "$dstdir" ]; then
-    echo "Error: Unable to remove old $dstdir"
-    exit 1
-  fi
-fi
-
-# Check that the destination directory exists
-if [ ! -d $dstdir ]; then
-  mkdir -p $dstdir
-  if [ ! -d $dstdir ]; then
-    echo "Error: Unable to create $dstdir"
-    exit 1
-  fi
-fi
-
 if [ -d "$srcdir" ]; then
+  # Remove old directory, if needed
+  if [ -d "$dstdir" ]; then
+    echo "Removing old $dstdir"
+    rm -rf "$dstdir"
+    if [ -d "$dstdir" ]; then
+      echo "Error: Unable to remove old $dstdir"
+      exit 1
+    fi
+  fi
+
   echo "Copying $srcdir to $dstdir"
-  cp -r ${srcdir}/* ${dstdir}/
+  cp -r ${srcdir} ${dstdir}
   if [[ $? != 0 ]]; then
     echo "Error: problem with copying"
     exit 1

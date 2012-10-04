@@ -144,8 +144,8 @@ def submit_tests(options, types_table):
     # Flag when at least one test reports successfully submitted. This will
     # be the return value: 0 for at least one submitted, 1 for none submitted.
     succ_submitted = 1
-    # Flag to keep tell whether there was a problem with one of the lines in
-    # the test list file.
+    # Flag to tell whether there was a problem with one of the lines in the
+    # test list file.
     test_list_line_problem = False
 
     for line in f_cont:
