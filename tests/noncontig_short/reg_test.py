@@ -49,11 +49,18 @@ def main(argv=None):
     prescript = (common.basedir + "/tests/utils/rs_plfs_fuse_mount.sh ")
     postscript = (common.basedir + "/tests/utils/rs_plfs_fuse_umount.sh ")
 
-    # Compile replace_char.c so that it can be used in the test
+    # Check MPI_CC
+    mpi_cc = os.getenv('MPI_CC')
+    if mpi_cc == None:
+        print >>sys.stderr, ("Env variable MPI_CC is not set. Exiting as "
+            + "this is needed to compile a program.")
+        return [-1]
+
+    # Compile noncontig_short.c so that it can be used in the test
     print ("Compiling noncontig_short.c")
     try:
-        retcode = subprocess.call('mpicc -o noncontig_short.x noncontig_short.c',
-            shell=True)
+        retcode = subprocess.call(str(mpi_cc) + ' -o noncontig_short.x '
+            + 'noncontig_short.c', shell=True)
     except OSError, detail:
         print >>sys.stderr, ("Problem compiling noncontig_short.c: "
             + str(detail))
