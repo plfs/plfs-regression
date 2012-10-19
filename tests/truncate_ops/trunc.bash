@@ -1,8 +1,12 @@
 #!/bin/bash
 source ../utils/rs_env_init.sh
 
+if [ -z "$MPI_CC" ]; then
+    echo "MPI_CC is not defined. Exiting."
+    exit 1
+fi
 
-compile_out=`mpicc -o truncate truncate.c`
+compile_out=`$MPI_CC -o truncate truncate.c`
 if [ $? == 0 ]; then
     echo "truncate.c compiled successfully"
 else
