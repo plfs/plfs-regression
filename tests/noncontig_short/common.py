@@ -26,6 +26,9 @@ import expr_mgmt
 ppn = expr_mgmt.config_option_value("ppn")
 nprocs = 2 * int(ppn)
 
+# Need the runcommand from experiment_management
+runcommand = expr_mgmt.config_option_value("runcommand")
+
 # The file to use in the target to fs_test.x
 file = os.getenv("MY_MPI_HOST") + ".noncontig_short.out"
 

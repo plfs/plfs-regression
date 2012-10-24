@@ -105,9 +105,11 @@ def main(argv=None):
         f.write('    top=`' + str(utils_dir) + 'rs_exprmgmtrc_target_path_append.py $mnt`\n')
         f.write('    path=$top/' + str(filename) + '\n')
         f.write('    echo Using $path as target\n')
-        # Use mpirun to run compiled mpicc noncontig_short test
-        f.write("    echo \"Running noncontig_short.x on target via mpirun -np 2\"\n")
-        f.write("    mpirun -np 2 " + str(common.curr_dir) + "/noncontig_short.x -fname $path\n")
+        # Use common.runcommand to run compiled noncontig_short test
+        f.write("    echo \"Running noncontig_short.x on target via " 
+                + str(common.runcommand) + " -n 2\"\n")
+        f.write("    " + str(common.runcommand) + " -n 2 " + str(common.curr_dir) 
+                + "/noncontig_short.x -fname $path\n")
         # delete target file if it exists
         f.write("    if [ -e $path ]; then\n")
         f.write("        rm -f $path\n")
