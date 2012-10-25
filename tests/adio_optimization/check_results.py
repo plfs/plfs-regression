@@ -72,7 +72,7 @@ def check(output_files):
 
         # Now check to see if there were any errors.
         bad = "error"
-        ok1 = "^#"
+        ok1 = "^#|^MPICH_ABORT_ON_ERROR="
         ok2 = "Errors and warnings written to \(-errout\): stderr"
         ok3 = "MPICH_ABORT_ON_ERROR"
         ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3)

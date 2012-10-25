@@ -81,7 +81,7 @@ def check(output_files):
         # st2 should equal the number of mountpoints found.
         # Check for other errors
         bad = "error"
-        ok1 = "^#"
+        ok1 = "^#|^MPICH_ABORT_ON_ERROR="
         ok2 = "Errors and warnings written to \(-errout\): stderr"
         ok3 = "WARNING ERROR.*1 bad byte"
         ok4 = "Data written to target file.*write_read_error"

@@ -70,7 +70,7 @@ def check(output_file):
         return ["FAILED", output_file, "Test did not finish IO Read"]
     else:
         bad = "error"
-        ok1 = "^#"
+        ok1 = "^#|^MPICH_ABORT_ON_ERROR="
         ok2 = "Errors and warnings written to \(-errout\): stderr"
         ok3 = "^Data written to target file.*write_read_no_error"
         ok4 = "^Using.*write_read_no_error.out as target"

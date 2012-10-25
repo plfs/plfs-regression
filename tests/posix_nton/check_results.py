@@ -72,7 +72,7 @@ def check(output_file):
 
         # Now check to see if there were any errors.
         bad = "error"
-        ok1 = "^#"
+        ok1 = "^#|^MPICH_ABORT_ON_ERROR="
         ok2 = "Errors and warnings written to \(-errout\): stderr"
         ok3 = "^Data written to target file.*posix_nto1_strided"
         ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3)
