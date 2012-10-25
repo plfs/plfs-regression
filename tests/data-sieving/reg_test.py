@@ -83,7 +83,9 @@ def main(argv=None):
         # The next section of code is to determine if the script needs to
         # run the unmount command. If rs_plfs_fuse_mount.sh returns with a 1,
         # this test is not going to issue the unmount command.
-        f.write("    " + str(prescript) + "$mnt" + "\n")
+        # We also only need the parent node to mount PLFS so that it can do
+        # the diff. The actual MPI run will be done through MPI/IO.
+        f.write("    " + str(prescript) + "$mnt" + " serial\n")
         f.write("    ret=$?\n")
         f.write("    if [ \"$ret\" == 0 ]; then\n")
         f.write("        echo \"Mounting successful\"\n")
