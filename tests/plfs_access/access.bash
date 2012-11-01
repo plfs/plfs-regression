@@ -16,12 +16,17 @@ function run_plfs_access {
      fi
 }
 
-
-echo "RS_PLFS_LDFLAGS = ${RS_PLFS_LDFLAGS}"
-echo "RS_PLFS_CFLAGS = ${RS_PLFS_CFLAGS}"
+flags=`../utils/rs_plfs_buildflags_get.py`
+if [[ $? != 0 ]]; then
+    exit 1
+fi
+rs_plfs_cflags=`echo "$flags" | head -n 1`
+rs_plfs_ldflags=`echo "$flags" | tail -n 1`
+echo "PLFS linking flags = ${rs_plfs_ldflags}"
+echo "PLFS compile flags = ${rs_plfs_cflags}"
 echo "Going to compile access.c"
 #compile_out=`gcc -o access -I /users/atorrez/Testing/regression/inst/plfs/include -L /usr/projects/plfs/rrz/plfs/gcc-system/plfs-2.2.1/install/lib -lplfs -lpthread access.c`
-compile_out=`gcc -o access ${RS_PLFS_LDFLAGS} ${RS_PLFS_CFLAGS} access.c`
+compile_out=`gcc -o access ${rs_plfs_cflags} ${rs_plfs_ldflags} access.c`
 if [ $? == 0 ]; then
     echo "access.c compiled successfully"
 else
