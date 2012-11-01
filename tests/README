@@ -152,15 +152,16 @@ Test writing guidelines/invariants
 - If compiling files for a test is needed, it is recommended to use the MPI
   wrappers for parallel applications. LD_LIBRARY_PATH is set appropriately
   by rs_env_init.*, so the MPI libraries should always be able to be found.
-- When building a program that requires PLFS, the appropriate compling and
-  linking flags can be found by calling on the rs_plfs_buildflags_get.py
-  helper script. This script can be used from the shell or directly through
-  python. When calling from the shell, two lines are output: the first
-  contains the flags needed for compiling (-I flags); the second contains the
-  flags for linking (-L and -l flags). Rpath flags will be included in the
-  linking flags so that the PLFS library can always be found. When called from
-  python, a two member list is returned where the order mirrors that of the
-  order output for shells.
+- When building a program that requires PLFS (even if that program is only
+  going to use PLFS through MPI/IO), the appropriate compling and linking
+  flags can be found by calling on the rs_plfs_buildflags_get.py helper
+  script. This script can be used from the shell or directly through python.
+  When calling from the shell, two lines are output: the first contains the
+  flags needed for compiling (-I flags); the second contains the flags for
+  linking (-L and -l flags). Rpath flags will be included in the linking
+  flags so that the PLFS library can always be found. When called from python,
+  a two member list is returned where the order mirrors that of the order
+  output for shells.
 
 Some useful features of check_results.py that aren't absolutely necessary but
 may help in copying from other tests and troubleshooting:
