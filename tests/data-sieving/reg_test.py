@@ -13,6 +13,10 @@ fp.close()
 # After loading common.py, can load run_expr
 import run_expr
 
+# load the module that can get at PLFS build flags. Possible after loading
+# common.py
+import rs_plfs_buildflags_get
+
 def main(argv=None):
     """The main routine for submitting and running a test.
 
@@ -53,9 +57,15 @@ def main(argv=None):
     
     # Compile fileview-with-ds-switch.c so that it can be used in the test
     print ("Compiling fileview-with-ds-switch.c")
+    # get build flags
+    [cflags, ldflags] = rs_plfs_buildflags_get.get_rs_plfs_buildflags(common.basedir)
+    print ("Using the following build flags:")
+    print ("compile flags: " + str(cflags))
+    print ("linking flags: " + str(ldflags))
     try:
-        retcode = subprocess.call(str(mpi_cc) + ' -o fileview-with-ds-switch fileview-with-ds-switch.c', 
-            shell=True)
+        retcode = subprocess.call(str(mpi_cc) + ' ' + str(cflags) + ' '
+            + str(ldflags) + ' -o fileview-with-ds-switch '
+            + 'fileview-with-ds-switch.c', shell=True)
     except OSError, detail:
         print >>sys.stderr, ("Problem compiling fileview-with-ds-switch.c: " 
             + str(detail))
@@ -124,7 +134,7 @@ def main(argv=None):
         f.write('        echo "Diffing $file_disable and $file_enable"\n')
         f.write('        diff -q $file_disable $file_enable\n')
         f.write('        if [[ $? != 0 ]]; then\n')
-        f.write('            echo "ERROR: $file_enable and $file_disable differ"\n')
+        f.write('            echo "ERROR: diff reports that the files differ"\n')
         f.write('        fi\n')
         f.write('    fi\n')
         
@@ -134,8 +144,8 @@ def main(argv=None):
 
         # Write into the script the script that will unmount plfs
         f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
-        f.write("        echo \"Running " + str(postscript) + "$mnt" + "\"\n")
-        f.write("        " + str(postscript) + "$mnt" + "\n")
+        f.write("        echo \"Running " + str(postscript) + "$mnt" + " serial\"\n")
+        f.write("        " + str(postscript) + "$mnt" + " serial\n")
         f.write("    fi\n")
         f.write('done\n')
         f.close()

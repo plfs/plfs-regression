@@ -61,6 +61,13 @@ def check(output_file):
     # Determine how many runs completed in this test and compare against
     # the number of mount points 
     print "Checking " + str(output_file)
+    # Check if there was an error in data-sieving.
+    st1 = os.system('grep -q "ERROR: diff reports that the files differ" '
+        + str(output_file))
+    if st1 == 0:
+        return ["FAILED", output_file, "data integrity error when attempting "
+            + "to enable data-sieving"]
+    # Check for other errors
     bad = "error"
     ok1 = "^#"
     ok2 = "Errors and warnings written to \(-errout\): stderr"
