@@ -9,11 +9,10 @@ if [ "$scratch_mount" == "" ]; then
    scratch_mount="None"
 else 
    if [ ! -e /$scratch_mount/$USER ]; then
-       # use find to look for a directory with the username in it. Ignore
-       # stderr from find otherwise we might get a lot of "Permission denied"
-       # errors.
-       scratch_dir="`find /panfs -maxdepth 3 -name $USER 2>/dev/null | head -1`"
-       scratch_mount="`dirname $scratch_dir`" 
+       (find /panfs -maxdepth 3 -name $USER>./regression_mnt)>&/dev/null
+       scratch_dir="`cat ./regression_mnt | head -1`"
+       scratch_mount="`dirname $scratch_dir`"
+       rm -f ./regression_mnt
    fi
 fi
 
