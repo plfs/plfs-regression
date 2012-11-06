@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import os,re,sys,subprocess,imp
+import os,re,sys,imp
 curr_dir = os.getcwd()
-basedir = re.sub('tests/write_read_error.*', '', curr_dir)
+basedir = re.sub('tests/data-sieving.*', '', curr_dir)
 
 # Add the directory that contains helper modules
 utils_dir = basedir + "/tests/utils"
@@ -20,13 +20,13 @@ from optparse import OptionParser
 
 # Load the common.py module to get common variables
 (fp, path, desc) = imp.find_module('common', [os.getcwd()])
-common = imp.load_module('common', fp, path, desc)
+tc = imp.load_module('common', fp, path, desc)
 fp.close()
 
 num_outfiles_req = 1
 
-def check(output_files):
-    """Check output files for this test.
+def check(output_file):
+    """Check out put files for this test.
 
     This function should be the only portion that needs to be edited
     for a specific test. It will receive a list of logfiles that
@@ -58,47 +58,26 @@ def check(output_files):
     """
 
     # Check that the run completed
-    # Get number of mountpoints used for run
-    mount_runs = common.get_mountpoint_cnt()
-    print "Checking " + str(output_files)
-    st1 = os.system('egrep -q "Completed IO Read." ' + str(output_files))
+    # Determine how many runs completed in this test and compare against
+    # the number of mount points 
+    print "Checking " + str(output_file)
+    # Check if there was an error in data-sieving.
+    st1 = os.system('grep -q "ERROR: diff reports that the files differ" '
+        + str(output_file))
     if st1 == 0:
-        # There should be exactly one error
-        ps = subprocess.Popen('egrep \'WARNING ERROR.*1 bad byte\' '
-            + str(output_files) + ' | wc -l', stdin=None,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        ps_output = ps.communicate()
-        # If there is anything in stderr
-        if len(ps_output[1]) > 0:
-            return ["FAILED", output_files, "Problem grepping for errors"]
-        st2 = int(ps_output[0].strip())
-        if st2 == 0:
-            return ["FAILED", output_files, "Expected 1 bad byte error not "
-                "seen"]
-        if st2 > mount_runs:
-            return ["FAILED", output_files, "Only one bad byte error "
-                "expected; more than one encountered"]
-        # st2 should equal the number of mountpoints found.
-        # Check for other errors
-        bad = "error"
-        ok1 = "^#|^MPICH_ABORT_ON_ERROR="
-        ok2 = "Errors and warnings written to \(-errout\): stderr"
-        ok3 = "WARNING ERROR.*1 bad byte"
-        ok4 = "Data written to target file.*write_read_error"
-        ok5 = ".*write_read_error.out as target" 
-        ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3) + "|" + str(ok4) + "|" + str(ok5)
-        st3 = subprocess.Popen('cat ' + str(output_files) + ' | egrep -v "' 
-                + str(ok) + '" | egrep -qi ' + str(bad), stdin=None,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        st3_output = st3.communicate()
-   
-        if len(st3_output[0]) > 0:
-            return ["FAILED", output_files, "Additional errors encountered "
-                "besides expected bad byte error."]
-        else:
-            return ["PASSED"]
+        return ["FAILED", output_file, "data integrity error when attempting "
+            + "to enable data-sieving"]
+    # Check for other errors
+    bad = "error"
+    ok1 = "^#"
+    ok2 = "Errors and warnings written to \(-errout\): stderr"
+    ok = str(ok1) + "|" + str(ok2) 
+    st2 = os.system('cat ' + str(output_file) + ' | egrep -v "' 
+            + str(ok) + '" | egrep -qi ' + str(bad))
+    if st2 == 0:
+        return ["FAILED", output_file, "Errors in output"]
     else:
-        return ["FAILED", output_files, "Test did not finish IO Read"]
+        return ["PASSED"]
     
 def parse_args(argv):
     """Parse args."""
@@ -108,7 +87,7 @@ def parse_args(argv):
     description = "This script will check the results of an fs_test run."
     parser = OptionParser(usage=usage, description=description)
     parser.set_defaults(file=None)
-    parser.add_option("-f", "--files", dest="files", help="Specify what files"
+    parser.add_option("-f", "--files", dest="files", help="Specify what files "
                   "to check. May be a comma-separated list of files.",
                   metavar="FILE")
     (options, args) = parser.parse_args(argv[1:])
@@ -129,10 +108,12 @@ def find_outfiles(options):
 
     # If files were not given, find the youngest output files for today's date.
     if options.files == None:
+        # This will return a list of one element
         outfiles = lgf.find_newest(curr_dir + "/" + expr_mgmt.config_option_value("outdir"))
     else:
-        # should only get one file thanks to the check in parse_args
+        # This should only return a list with one file thanks to the check in parse_args
         outfiles = lgf.find_given(options.files.split(','))
+    # This test expects only one output file.
     return outfiles
 
 # Main routine

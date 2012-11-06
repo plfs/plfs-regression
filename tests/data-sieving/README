@@ -1,0 +1,22 @@
+This test will make sure there is no data-integrity problem when data-sieving
+is turned on. PLFS doesn't work with data-sieving, and there are settings in
+the adio layer that should turn this off. Therefore, even when a user tries to
+turn on data-sieving, it should stay off and there should be no data integrity
+problem.
+
+
+Files:
+- reg_test.py: Main test script. Generates reg_test.sh.
+- intput_test.py: input script for experiment_management to run the generated
+  reg_test.sh script.
+- common.py: python file with common variables and functions to ensure a
+  consistent set of parameters.
+
+
+ Flow of the test:
+- reg_test.py compiles fileview-with-ds-switch.c.
+- reg_test.py creates reg_test.sh. Calls upon helper scripts in the regression
+  environment to put in lines into reg_test.sh that get a proper environment
+  and mount through fuse.
+- reg_test.py calls experiment_management with input_test.py as input. This
+  submits reg_test.sh as a job.

@@ -13,6 +13,10 @@ fp.close()
 # After loading common.py, can load run_expr
 import run_expr
 
+# load the module that can get at PLFS build flags. Possible after loading
+# common.py
+import rs_plfs_buildflags_get
+
 def main(argv=None):
     """The main routine for submitting and running a test.
 
@@ -29,50 +33,50 @@ def main(argv=None):
     # Walltime for the job(s)
     walltime = "5:00"
 
-    # Figure out the target that this test will be using.
-    scratch_target=common.get_panfs_target()
-    if scratch_target == None: 
-       print ("Error getting a scratch target.")
-       return [-1]
-
     # Figure out the mounts for this test
     mounts = common.get_mountpoints()
     if mounts == None:
         print ("Error getting mounts")
         return [-1]
-    # Get the target filename
-    filename = common.get_filename()
+    # Specify two files to output tests to
+    file_disable = os.getenv("MY_MPI_HOST") + ".ds_disable"
+    file_enable = os.getenv("MY_MPI_HOST") + ".ds_enable"
     # Define utils directory
     utils_dir = (common.basedir + "/tests/utils/")
 
-# Prescript and postscript 
+    # Prescript and postscript
     prescript = (common.basedir + "/tests/utils/rs_plfs_fuse_mount.sh ")
     postscript = (common.basedir + "/tests/utils/rs_plfs_fuse_umount.sh ")
 
     # Check MPI_CC
-    mpi_cc = os.getenv('MPI_CC')
+    mpi_cc = os.getenv("MPI_CC")
     if mpi_cc == None:
-        print >>sys.stderr, ("Env variable MPI_CC is not set. Exiting as "
+        print >>sys.stedrr, ("Env variable MPI_CC is not set. Exiting as "
             + "this is needed to compile a program.")
         return [-1]
-
-    # Compile noncontig_short.c so that it can be used in the test
-    print ("Compiling noncontig_short.c")
+    
+    # Compile fileview-with-ds-switch.c so that it can be used in the test
+    print ("Compiling fileview-with-ds-switch.c")
+    # get build flags
+    [cflags, ldflags] = rs_plfs_buildflags_get.get_rs_plfs_buildflags(common.basedir)
+    print ("Using the following build flags:")
+    print ("compile flags: " + str(cflags))
+    print ("linking flags: " + str(ldflags))
     try:
-        retcode = subprocess.call(str(mpi_cc) + ' -o noncontig_short.x '
-            + 'noncontig_short.c', shell=True)
+        retcode = subprocess.call(str(mpi_cc) + ' ' + str(cflags) + ' '
+            + str(ldflags) + ' -o fileview-with-ds-switch '
+            + 'fileview-with-ds-switch.c', shell=True)
     except OSError, detail:
-        print >>sys.stderr, ("Problem compiling noncontig_short.c: "
+        print >>sys.stderr, ("Problem compiling fileview-with-ds-switch.c: " 
             + str(detail))
         return [-1]
     if retcode != 0:
-        print >>sys.stderr, ("Compiling noncontig_short.c failed. Return "
+        print >>sys.stderr, ("Compiling fileview-with-ds-switch.c failed. Return "
             "code was " + str(retcode))
         return [-1]
     else:
         print ("Compiling succeeded.")
 
-    
     # Create the script
     try:
         f = open(script, 'w')
@@ -89,7 +93,9 @@ def main(argv=None):
         # The next section of code is to determine if the script needs to
         # run the unmount command. If rs_plfs_fuse_mount.sh returns with a 1,
         # this test is not going to issue the unmount command.
-        f.write("    " + str(prescript) + "$mnt" + "\n")
+        # We also only need the parent node to mount PLFS so that it can do
+        # the diff. The actual MPI run will be done through MPI/IO.
+        f.write("    " + str(prescript) + "$mnt" + " serial\n")
         f.write("    ret=$?\n")
         f.write("    if [ \"$ret\" == 0 ]; then\n")
         f.write("        echo \"Mounting successful\"\n")
@@ -98,27 +104,48 @@ def main(argv=None):
         f.write("        echo \"Mount points already mounted.\"\n")
         f.write("        need_to_umount=\"False\"\n")
         f.write("    else\n")
-        f.write("        echo \"Something wrong with mounting.\"\n")
+        f.write("        echo \"ERROR: Something wrong with mounting.\"\n")
         f.write("        exit 1\n")
         f.write("    fi\n")
-        # Generate target for use by fs_test
+
+        # Generate targets
         f.write('    top=`' + str(utils_dir) + 'rs_exprmgmtrc_target_path_append.py $mnt`\n')
-        f.write('    path=$top/' + str(filename) + '\n')
-        f.write('    echo Using $path as target\n')
-        # Use common.runcommand to run compiled noncontig_short test
-        f.write("    echo \"Running noncontig_short.x on target via " 
-                + str(common.runcommand) + " -n 2\"\n")
-        f.write("    " + str(common.runcommand) + " -n 2 " + str(common.curr_dir) 
-                + "/noncontig_short.x -fname $path\n")
-        # delete target file if it exists
-        f.write("    if [ -e $path ]; then\n")
-        f.write("        rm -f $path\n")
-        f.write("    fi\n")
-##        f.write('done\n')
-        # Determine if need to unmount
+        f.write('    file_enable=$top/' + str(file_enable) + '\n')
+        f.write('    file_disable=$top/' + str(file_disable) + '\n')
+        f.write('    problem=False\n')
+        f.write('    echo Creating $file_disable\n')
+        f.write('    ' + str(common.runcommand) + ' -n ' + str(common.nprocs)
+                + ' ' + str(common.curr_dir) + '/fileview-with-ds-switch plfs:'
+                + '$file_disable disable_ds\n')
+        f.write('    if [[ $? != 0 ]]; then\n')
+        f.write('        echo "ERROR creating $file_disable."\n')
+        f.write('        problem=True\n')
+        f.write('    fi\n')
+        f.write('    echo Creating $file_enable\n')
+        f.write('    ' + str(common.runcommand) + ' -n ' + str(common.nprocs)
+                + ' ' + str(common.curr_dir) + '/fileview-with-ds-switch plfs:'
+                + '$file_enable enable_ds\n')
+        f.write('    if [[ $? != 0 ]]; then\n')
+        f.write('        echo "ERROR creating $file_enable."\n')
+        f.write('        problem=True\n')
+        f.write('    fi\n')
+        f.write('\n')
+        f.write('    if [ "$problem" == False ]; then\n')
+        f.write('        echo "Diffing $file_disable and $file_enable"\n')
+        f.write('        diff -q $file_disable $file_enable\n')
+        f.write('        if [[ $? != 0 ]]; then\n')
+        f.write('            echo "ERROR: diff reports that the files differ"\n')
+        f.write('        fi\n')
+        f.write('    fi\n')
+        
+
+        # Remove target files
+        f.write('    rm -f $file_disable $file_enable\n')
+
+        # Write into the script the script that will unmount plfs
         f.write("    if [ \"$need_to_umount\" == \"True\" ]; then\n")
-        f.write("        echo \"Running " + str(postscript) + "$mnt" + "\"\n")
-        f.write("        " + str(postscript) + "$mnt" + "\n")
+        f.write("        echo \"Running " + str(postscript) + "$mnt" + " serial\"\n")
+        f.write("        " + str(postscript) + "$mnt" + " serial\n")
         f.write("    fi\n")
         f.write('done\n')
         f.close()
