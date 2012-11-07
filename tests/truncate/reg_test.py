@@ -121,9 +121,6 @@ def main(argv=None):
     # Set up paths to plfs install directories
     rs_env_init.add_plfs_paths(basedir)
 
-    # Test status
-    test_stat = "FAILED"
-
     try:
         # Get all mount points
         mount_points = pcq.get_mountpoints()
@@ -131,8 +128,8 @@ def main(argv=None):
             raise plfsMntError("unable to get mount point.\n")
         # Loop through all mount points
         for mount_point in mount_points:
-
-        # Mount the plfs mount point
+            # Test status
+            test_stat = "FAILED"
             p = subprocess.Popen([str(utils_dir) + '/rs_plfs_fuse_mount.sh '
                 + str(mount_point) + ' serial'], stdout=of, stderr=of, shell=True)
             p.communicate()
