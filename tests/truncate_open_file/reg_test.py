@@ -64,10 +64,6 @@ def main(argv=None):
     # Set up paths to plfs install directories
     rs_env_init.add_plfs_paths(basedir)
 
-    # Test status. This will be printed out at the end and will be used to
-    # determine if the test passed when check_results.py is called.
-    test_stat = "FAILED"
-
     try:
         # Get all mount points
         mount_points = pcq.get_mountpoints()
@@ -76,6 +72,9 @@ def main(argv=None):
 
         # Loop through all mount points
         for mount_point in mount_points:
+            # Test status. This will be printed out at the end and will be used to
+            # determine if the test passed when check_results.py is called.
+            test_stat = "FAILED"
             # Check for rs_mnt_append_path in experiment_management
             top_dir = tpa.append_path([mount_point])[0]
             # Define two targets
