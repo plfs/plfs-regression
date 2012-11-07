@@ -30,7 +30,7 @@ def check(output_file):
     st1 = os.system('egrep -q "PASSED" ' + str(output_file))
     if st1 == 0:
         # Now check to see if there were any errors.
-        bad = "error"
+        bad = "error | errno"
         ok1 = "^#"
         #ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3)
         ok = str(ok1)
