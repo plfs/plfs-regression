@@ -173,7 +173,7 @@ def main(argv=None):
                 else:
                     print ("Successfully unmounted " + str(mount_point))
             if test_stat == "FAILED":
-              overall_stat = "FAILED"
+                overall_stat = "FAILED"
      
 
     except plfsMntError, detail:
