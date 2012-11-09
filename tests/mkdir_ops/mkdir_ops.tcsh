@@ -44,6 +44,9 @@ if ( ! -x ../utils/rs_plfs_fuse_umount.sh ) then
   exit 1
 endif
 
+# Used to keep track of any test failing over multiple mount points
+set main_fail = 0
+
 # Loop over each of the PLFS mount points defined in the plfsrc file.
 foreach mnt ( $mount_points )
 #
@@ -53,6 +56,8 @@ foreach mnt ( $mount_points )
 #  set the_mp = `df | grep ${mnt} | awk '{print $6}'`
 #  if ( $the_mp != $mnt ) then
 #
+  # determines if test failed on this particular mount point
+  set test_fail = 0
   ../utils/rs_plfs_fuse_mount.sh $mnt serial
   set ret_val = $status
 #  echo "ret_val is $ret_val"
@@ -63,6 +68,7 @@ foreach mnt ( $mount_points )
     set need_to_unmount = 0
   else
     echo "Failure: Mount point $mnt is not mounted and could not be mounted by $USER"
+    set main_fail = 1
     continue
   endif
 #
@@ -79,6 +85,7 @@ foreach mnt ( $mount_points )
   if ( $? != 0 ) then
     echo "Failure: Error making directory $top with mkdir -p"
     set big_problem = "True"
+    set main_fail = 1
   else
     echo "Success"
     set big_problem = "False"
@@ -103,6 +110,7 @@ foreach mnt ( $mount_points )
     mkdir -p $dir_a
     if ( $? != 0 ) then
       echo "Failure: Error making directory $dir_a with mkdir -p"
+      set test_fail = 1
     else
       #
       # Create the file that we will verify exists.
@@ -112,12 +120,14 @@ foreach mnt ( $mount_points )
       touch $file_a
       if ( $? != 0 ) then
         echo "Failure: Error creating file $file_a with touch"
+        set test_fail = 1
       else
         echo "Success"
         set file_name = `ls $file_a`
 
         if ( $file_name != $file_a ) then
           echo "Failure: The file $file_a was not found."
+          set test_fail = 1
         else
           echo "Success: $file_a was found."
         endif
@@ -146,6 +156,7 @@ foreach mnt ( $mount_points )
     mkdir -p $dir_p
     if ( $? != 0 ) then
       echo "Failure: Error making directory $dir_p with mkdir -p"
+       set test_fail = 1
     else
       echo "Success"
       # Copy in /etc/passwd and make sure that succeeds.
@@ -153,6 +164,7 @@ foreach mnt ( $mount_points )
       cp /etc/passwd $dir_p
       if ( $? != 0 ) then
         echo "Failure: Error copying /etc/passwd to $dir_p."
+        set test_fail = 1
       else
         echo "Success"
         # Make sure /etc/passwd is in the dir_p.
@@ -160,12 +172,14 @@ foreach mnt ( $mount_points )
 
         if ( $file_name != "$dir_p/passwd" ) then
           echo "Failure: The file passwd was not found in $dir_p."
+          set test_fail = 1
         else
           # check that the files are the same
           set diff_passwd = `diff /etc/passwd $dir_p/passwd`
           if ( $diff_passwd != "" ) then
             echo "Failure: The file passwd was not copied in correctly because it is different than /etc/passwd."
             echo `diff /etc/passwd $dir_p/passwd`
+            set test_fail = 1
           else
             echo "/etc/passwd and $dir_p/passwd are identical"
             # Try to remove the directory without "-rf" and while a file is in it. We should
@@ -174,6 +188,7 @@ foreach mnt ( $mount_points )
             rmdir $dir_p
             if ( $? == 0 ) then
               echo "Failure: Removed the directory $dir_p when it had a file in it."
+              set test_fail = 1
             else
               echo "successfully failed to remove directory"
               # Now make sure the copy of /etc/passwd still matches /etc/passwd.
@@ -183,6 +198,7 @@ foreach mnt ( $mount_points )
               if ( $diff_passwd != "" ) then
                 echo "Failure: The copied passwd file is no longer identical to /etc/passwd."
                 echo `diff /etc/passwd $dir_p/passwd`
+                set test_fail = 1
               else
                 echo "$dir_p/passwd is still identical to /etc/passwd"
               endif
@@ -210,6 +226,7 @@ foreach mnt ( $mount_points )
     mkdir -p $top/$dir_e
     if ( $? != 0 ) then
       echo "Failure: Error making directory $top/$dir_e with mkdir -p"
+       set test_fail = 1
     else
       echo "Success"
       # Get a list of backends for this mount point.
@@ -217,6 +234,7 @@ foreach mnt ( $mount_points )
       # If the script fails, note that and return a non-zero value.
       if (( $? != 0 ) || ( mount_point_backends == "" )) then
         echo "Failure: Error finding the PLFS mount point backends with rs_plfs_config_query.py"
+        set test_fail = 1
       else
         # Got the mount points parsed from the plfsrc file.
         echo "PLFS mount point $mnt backend(s) is/are: $mount_point_backends"
@@ -227,6 +245,7 @@ foreach mnt ( $mount_points )
           echo "Checking to make sure that $dir_e exists in $backend_top_dir..."
           if ( ! -e $backend_top_dir/$dir_e ) then
             echo "Failure"
+            set test_fail = 1
           else
             echo "Success"
           endif
@@ -247,6 +266,13 @@ foreach mnt ( $mount_points )
 
     if ( $ret_val != 0 ) then
       echo "Failure: Mount point $mnt could not be unmounted by $USER"
+      set test_fail = 1
     endif
   endif # check on if we need to unmount
+  if ( $test_fail == 1 ) then
+     echo "AAAAA"
+     set main_fail = 1
+  endif 
 end # loop over mount points
+echo XX $main_fail 
+exit $main_fail
