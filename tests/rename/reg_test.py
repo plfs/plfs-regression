@@ -70,11 +70,16 @@ def main(argv=None):
         if len(mount_points) <= 0:
             raise plfsMntError("unable to get mount point.\n")
 
+        # overall_stat informs  the user that at least one test has failed over
+        # multiple mounts.
+        overall_stat = "PASSED"
+
         # Loop through all mount points
         for mount_point in mount_points: 
-            # Test status. This will be printed out at the end and will be used to
-            # determine if the test passed when check_results.py is called.
-            test_stat = "FAILED"
+            # test status is used to keep track of test success/failure on a
+            # particular mount point.  It is used to inform the user if
+            # at least one test failed over multiple mounts
+            test_stat = "PASSED"
             # Check for rs_mnt_append_path in experiment_management
             top_dir = tpa.append_path([mount_point])[0]
             # Define two targets
@@ -141,9 +146,9 @@ def main(argv=None):
                 line = f.readline()
                 if line != "":
                     print("Error: extra lines in " + str(file2))
+                    test_stat = "FAILED"
                 else:
                     print("No additional lines found in " + str(file2))
-                    test_stat = "PASSED"
                 f.close()
 
                 # Remove the file
@@ -151,6 +156,7 @@ def main(argv=None):
                 os.remove(file2)
             except (OSError, IOError), detail:
                 print("Problem in working with file: " + str(detail))
+                test_stat = "FAILED"
                 
         
             # Unmount the plfs mount point
@@ -166,11 +172,15 @@ def main(argv=None):
                     raise plfsMntError("Unable to unmount " + str(mount_point) + "\n")
                 else:
                     print ("Successfully unmounted " + str(mount_point))
+            if test_stat == "FAILED":
+              overall_stat = "FAILED"
+     
 
     except plfsMntError, detail:
         print("Problem dealing with plfs mounts: " + str(detail))
     else:
-        print("The test " + str(test_stat))
+#        print("The test " + str(test_stat))
+        print("The test " + str(overall_stat))
     finally:
         # Close up shop
         sys.stdout.flush()
