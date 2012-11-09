@@ -70,11 +70,15 @@ def main(argv=None):
         if len(mount_points) <= 0:
             raise plfsMntError("unable to get mount point.\n")
 
+        # overall_stat informs  the user that at least one test has failed over
+        # multiple mounts.
+        overall_stat = "PASSED"
+
         # Loop through all mount points
         for mount_point in mount_points:
             # Test status. This will be printed out at the end and will be used to
             # determine if the test passed when check_results.py is called.
-            test_stat = "FAILED"
+            test_stat = "PASSED"
             # Check for rs_mnt_append_path in experiment_management
             top_dir = tpa.append_path([mount_point])[0]
             # Define two targets
@@ -103,6 +107,7 @@ def main(argv=None):
                 print (str(mount_point) + " already mounted")
                 need_to_umount = False
             else:
+                test_stat = "FAILED"
                 raise plfsMntError("problem with mounting\nExiting.\n")
         
             sys.stdout.flush()
@@ -112,8 +117,8 @@ def main(argv=None):
             p = subprocess.Popen(['./truncate_open_file.bash ' + str(file1)
                 + ' ' + str(file2)], stdout=of, stderr=of, shell=True)
             p.communicate()
-            if p.returncode == 0:
-                test_stat = "PASSED"
+            if p.returncode != 0:
+                test_stat = "FAILED"
         
             # Unmount the plfs mount point
             if need_to_umount == True:
@@ -130,11 +135,13 @@ def main(argv=None):
                     raise plfsMntError("Unable to unmount " + str(mount_point) + "\n")
                 else:
                     print ("Successfully unmounted " + str(mount_point))
+            if test_stat == "FAILED":
+                overall_stat = "FAILED"
 
     except plfsMntError, detail:
         print("Problem dealing with plfs mounts: " + str(detail))
     else:
-        print("The test " + str(test_stat))
+        print("The test " + str(overall_stat))
     finally:
         # Close up shop
         sys.stdout.flush()
