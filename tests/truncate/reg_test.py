@@ -126,10 +126,13 @@ def main(argv=None):
         mount_points = pcq.get_mountpoints()
         if len(mount_points) <= 0:
             raise plfsMntError("unable to get mount point.\n")
+        # overall_stat informs  the user that at least one test has failed over
+        # multiple mounts.
+        overall_stat = "PASSED"
         # Loop through all mount points
         for mount_point in mount_points:
             # Test status
-            test_stat = "FAILED"
+            test_stat = "PASSED"
             p = subprocess.Popen([str(utils_dir) + '/rs_plfs_fuse_mount.sh '
                 + str(mount_point) + ' serial'], stdout=of, stderr=of, shell=True)
             p.communicate()
@@ -185,11 +188,12 @@ def main(argv=None):
                 # Remove the file
                 print("Removing " + str(file1))
                 os.remove(file1)
-                test_stat = "PASSED"
             except (OSError, IOError), detail:
                 print("Problem in working with file " + str(file1) + ": " + str(detail))
+                test_stat = "FAILED"
             except chkDataError, detail:
                 print("Data Verification Error: " + str(detail))
+                test_stat = "FAILED"
 
             # Unmount the plfs mount point
             if need_to_umount == True:
@@ -204,11 +208,13 @@ def main(argv=None):
                     raise plfsMntError("Unable to unmount " + str(mount_point) + "\n")
                 else:
                     print ("Successfully unmounted " + str(mount_point))
+            if test_stat == "FAILED":
+                overall_stat = "FAILED"
     except plfsMntError, detail:
         print("Problem dealing with plfs mounts: " + str(detail))
         test_stat = "FAILED"
     else:
-        print("The test " + str(test_stat))
+        print("The test " + str(overall_stat))
     finally:
         # Close up shop
         of.close()
