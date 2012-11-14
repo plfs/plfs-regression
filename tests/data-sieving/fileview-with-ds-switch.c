@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include "mpi.h"
 
-#define ROW_S 1024 
-#define COL_S 1024
+#define ROW_S 10 
+#define COL_S 10
 
 int rank, size;
 

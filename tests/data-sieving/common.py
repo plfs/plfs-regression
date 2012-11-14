@@ -24,7 +24,7 @@ em_p.add_exprmgmt_paths(basedir)
 # at least enough to cover two nodes.
 import expr_mgmt
 ppn = expr_mgmt.config_option_value("ppn")
-nprocs = 2 * int(ppn)
+nprocs = 4
 
 # Need the runcommand from experiment_management
 runcommand = expr_mgmt.config_option_value("runcommand")

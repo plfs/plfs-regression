@@ -19,4 +19,14 @@ Files:
   environment to put in lines into reg_test.sh that get a proper environment
   and mount through fuse.
 - reg_test.py calls experiment_management with input_test.py as input. This
-  submits reg_test.sh as a job.
+  submits reg_test.sh as a job. It will submit the job such that it runs with
+  either one or two processors per node.
+
+How the test works
+Fileview-with-ds-switch.c has to be run with exactly 4 processors. The reason
+for this is that the smallest number of equal m by m sized chunks a n by n
+matrix can be divided up in to is 4. The test uses a 10 by 10 array and each
+rank gets a 5 by 5 subarray to write to. Each process writes to the same file
+their portion of the array. With data-sieving turned on, it seems that some
+portions of the file are over-written by procs that shouldn't have written
+to that portion.

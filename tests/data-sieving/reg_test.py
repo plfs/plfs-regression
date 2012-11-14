@@ -158,9 +158,15 @@ def main(argv=None):
 
 
     # Run the script through experiment_management
+    # The test should be run with at most 2 processors per node since the job
+    # runs on only 4 total processors but we would like the test to cover at
+    # least 2 nodes.
+    ppn = common.expr_mgmt.config_option_value("ppn")
+    if int(ppn) > 2:
+        ppn = 2
     last_id = run_expr.main(['run_expr', str(common.curr_dir) + "/" + str(input_script),
         '--nprocs=' + str(common.nprocs), '--walltime=' + str(walltime), 
-        '--dispatch=msub'])
+        '--dispatch=msub', '--ppn=' + str(ppn)])
     return [last_id]
     return [0]
 
