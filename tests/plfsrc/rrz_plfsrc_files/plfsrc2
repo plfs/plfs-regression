@@ -57,6 +57,6 @@
 # [This means that for 1B cores, we will have about 30K files per directory.  We
 # might need to move to a 3 level hierarchy for exascale.]
 
-include /users/XXXX/plfsrc.ccstargate.threadpool_size.compute
-include /users/XXXX/plfsrc.ccstargate.scratch1.2
+include /tmp/tmp_plfsrc/plfsrc.ccstargate.threadpool_size.compute
+include /tmp/tmp_plfsrc/plfsrc.ccstargate.scratch1.1
 num_hostdirs 28
