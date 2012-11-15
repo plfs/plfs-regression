@@ -59,5 +59,5 @@
 
 num_hostdirs 27
 
-include /users/XXXX/plfsrc.ccstargate.scratch1.1
-include /users/XXXX/plfsrc.ccstargate.threadpool_size.compute
+include /tmp/tmp_plfsrc/plfsrc.ccstargate.scratch1.1
+include /tmp/tmp_plfsrc/plfsrc.ccstargate.threadpool_size.compute
