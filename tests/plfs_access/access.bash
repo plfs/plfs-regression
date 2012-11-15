@@ -56,6 +56,11 @@ else
 fi
 
 #
+# Keep track of errors for all mounts.  If one mount fails then test fails by returning a 1
+#
+mnt_ret_value=0
+
+#
 # Loop through all mount points
 #
 for mnt in $mount_points
@@ -120,7 +125,7 @@ do
      if [[ $? == 0 ]]; then
          return_value=0
      else
-         return_value=1
+         mnt_ret_value=1
      fi
   done
 #
@@ -130,7 +135,7 @@ do
   if [[ $? == 0 ]]; then
      return_value=0
   else
-     return_value=1
+     mnt_ret_value=1
   fi
   bad_dir="$target/nonexistent_dir"
 #
@@ -140,7 +145,7 @@ do
   if [[ $? == 0 ]]; then
      return_value=0
   else
-     return_value=1
+     mnt_ret_value=1
   fi
 #
 # Unmount if necessary
@@ -153,4 +158,8 @@ do
     fi 
   fi 
 done
-exit $return_value
+if [ $mnt_ret_value = 1 ]; then
+  exit $mnt_ret_value
+else
+  exit $return_value
+fi
