@@ -205,7 +205,7 @@ function check_env_vars {
         echo "MY_MPI_HOST env variable not set"
         env_var_problem="True"
     fi
-    if [ "$problem" == "True" ]; then
+    if [ "$env_var_problem" == "True" ]; then
         return 1
     else
         return 0
