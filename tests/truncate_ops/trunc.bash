@@ -37,6 +37,11 @@ else
 fi
 
 #
+# Keep track of errors for all mounts.  If one mount fails then test fails by returning a 1
+#
+mnt_ret_value=0
+
+#
 # Loop through all mount points
 #
     for mnt in $mount_points
@@ -69,7 +74,7 @@ fi
 #
           ./truncate $target/tmp.txt 
           if [ $? == 1 ]; then
-              return_value=1
+              mnt_ret_value=1
           fi 
 #
 # Unmount if necessary
@@ -83,4 +88,13 @@ fi
               fi 
           fi 
     done
-exit $return_value
+#
+# Check if any mountpoint had a failure
+#
+if [ $mnt_ret_value = 1 ]; then
+  exit $mnt_ret_value
+else
+  exit $return_value
+fi
+
+
