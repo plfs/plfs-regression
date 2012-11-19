@@ -2,19 +2,21 @@
 
 # Variable initialization
 
-# Create tmp direcotry for plfsrc files and plfs_check_config output
-mkdir -p /tmp/tmp_plfsrc/scratch1
+# Define temp directories for fuse mount and backends
 base_dir="/tmp/tmp_plfsrc"
-export PLFSRC=/tmp/tmp_plfsrc/.plfsrc
+mount_dir="$base_dir/scratch1"
+nn_mount_dir="$base_dir/scratch1_nn"
+n1_mount_dir="$base_dir/scratch1_n1"
+backend_dir="/tmp/backend"
+export PLFSRC=$base_dir/.plfsrc
+
 current_dir=`pwd`
 echo "Current directory=$current_dir"
-hostname=`echo $HOSTNAME | sed 's/-/ /' | awk '{print $1}'`
-echo "Hostname:  $hostname"
-machine_file_dir=$hostname"_plfsrc_files"
+machine_file_dir="plfsrc_files"
 echo "temp directory to hold plfsrc files = $base_dir"
 echo "plfsrc test files = $machine_file_dir"
 
-#
+#******************************************************************************
 # This function verifies that the output of plfs_check_config matches 
 # the expected output based on the plfsrc file set in the users
 # home space
@@ -103,8 +105,10 @@ function verify_plfsrc {
    fi
    return $return_val
 }
+#******************************************************************************
 
 
+#******************************************************************************
 #
 # The main function follows.  It is responsible for running tests that verify
 # plfsrc and plfs_check_config consistency.
@@ -124,39 +128,60 @@ function verify_plfsrc {
 # As of now this test will use a specific machine/cluster directory to 
 # specify plfsrc files that correspond to the specific scratch spaces for
 # that machine.
-if [  ! -d $machine_file_dir ]; then
-  echo "Error:  plfsrc files do not exits for this machine"
-  exit 1
-fi
+##if [  ! -d $machine_file_dir ]; then
+##  echo "Error:  plfsrc files do not exits for this machine"
+##  exit 1
+##fi
+
 #
-#Save currently loaded plfsrc files in a newly created temp directory 
+#  This section of code sets up the temp directories for mounts and
+#  backends.  It also modifies the general plfsrc files to use the tmp
+#  paths specified at the top of this file.
 #
-##if [ -d $base_dir ]; then
-##   echo "Error: directory exists"
-##   echo "Please remove tmp_dir_for_regression_plfsrc directory from: "
-##   echo "$base_dir"
-##   echo "then run again"
-##   exit 1;
-##else 
-##   echo "directory does not exist so need to create now"
-##   mkdir $base_dir
-##   if [ $? == 0 ]; then
-##      echo "Directory created"
-##      for i in `ls $base_dir/plfsrc* $base_dir/.plfsrc*`
-##      do
-##         echo "$i is going to be copied to $base_dir/tmp_dir_for_regression_plfsrc"
-##         cp $i $base_dir/.
-##      done
-##     
-##   else 
-##      echo "Error Directory cannot be created"
-##      exit 1;
-##   fi
-##fi  
+
+
+mkdir -p $mount_dir 
+for i in {1..30}
+do
+   mkdir -p $backend_dir/vol$i/.plfs_store
+done
+echo $mount_dir
+
+cp $machine_file_dir/plfsrc.threadpool_size.compute $base_dir/.
+
+cp $machine_file_dir/plfsrc.scratch1.1 tmp_file1
+sed -e "s%MOUNT%$mount_dir%" tmp_file1 > tmp_file2 
+sed -e "s%BACKEND%$backend_dir%g" tmp_file2 > plfsrc.scratch1.1
+mv plfsrc.scratch1.1 $base_dir/.
+
+cp $machine_file_dir/plfsrc.scratch1.2 tmp_file1
+sed -e "s%MOUNT%$mount_dir%" tmp_file1 > tmp_file2 
+sed -e "s%BACKEND%$backend_dir%g" tmp_file2 > plfsrc.scratch1.2
+mv plfsrc.scratch1.2 $base_dir/.
+
+
 #
-# Copy the current plfsrc files to a temp directory
+# Files plfsrc4-plfsrc7 do not use includes modify each file with tmp paths
 #
-cp ./$machine_file_dir/plfs* $base_dir/.
+for i in {1..7}
+do
+   cp $machine_file_dir/plfsrc$i tmp_file_$i
+   if [ $i -lt 4 ]; then
+     sed -e "s%INCLUDE%$base_dir%g" tmp_file_$i > plfsrc$i 
+     mv plfsrc$i $base_dir/.
+   elif [ $i -lt 6 ]; then
+     sed -e "s%MOUNT%$mount_dir%" tmp_file_$i > tmp_filea
+     sed -e "s%BACKEND%$backend_dir%g" tmp_filea > plfsrc$i 
+     mv plfsrc$i $base_dir/.
+   else 
+     sed -e "s%MOUNT_NN%$nn_mount_dir%" tmp_file_$i > tmp_filea
+     sed -e "s%MOUNT_N1%$n1_mount_dir%" tmp_filea > tmp_fileb
+     sed -e "s%BACKEND%$backend_dir%g" tmp_fileb > plfsrc$i 
+     mv plfsrc$i $base_dir/.
+   fi
+done
+
+#cp ./$machine_file_dir/plfs* $base_dir/.
 
 two_mounts=0
 #
@@ -177,7 +202,8 @@ cp $base_dir/plfsrc1 $base_dir/.plfsrc
 # Determine expected values/settings
 #
 thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
-mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+#mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+mount_baseline=$mount_dir
 hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc1 | grep -v \# | awk '{print $2}'`
 backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc.*1 | grep -v rpm | sed 's/[^,]//g' | wc -m`
 #
@@ -219,7 +245,8 @@ cp $base_dir/plfsrc2 $base_dir/.plfsrc
 # Determine expected values/settings
 #
 thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
-mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+#mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+mount_baseline=$mount_dir
 hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc2 | grep -v \# | awk '{print $2}'`
 backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc.*1 | grep -v rpm | sed 's/[^,]//g' | wc -m`
 #
@@ -256,7 +283,8 @@ cp $base_dir/plfsrc3 $base_dir/.plfsrc
 # Determine expected values/settings
 #
 thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
-mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+#mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+mount_baseline=$mount_dir
 hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc3 | grep -v \# | awk '{print $2}'`
 backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc.*1 | grep -v rpm | sed 's/[^,]//g' | wc -m`
 #
@@ -289,7 +317,8 @@ cp $base_dir/plfsrc4 $base_dir/.plfsrc
 # Determine expected values/settings
 #
 thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
-mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+#mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+mount_baseline=$mount_dir
 hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc3 | grep -v \# | awk '{print $2}'`
 backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc.*1 | grep -v rpm | sed 's/[^,]//g' | wc -m`
 #
@@ -329,12 +358,13 @@ echo ""
 #
 echo "**********************************************"
 echo "Starting test 5"
-mv $base_dir/plfsrc5 $base_dir/.plfsrc
+cp $base_dir/plfsrc5 $base_dir/.plfsrc
 #
 # Determine expected values/settings
 #
 thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
-mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+#mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+mount_baseline=$mount_dir
 hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc3 | grep -v \# | awk '{print $2}'`
 backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc.*1 | grep -v rpm | sed 's/[^,]//g' | wc -m`
 #
@@ -374,7 +404,7 @@ echo ""
 #
 echo "**********************************************"
 echo "Starting test 6"
-mv $base_dir/plfsrc6 $base_dir/.plfsrc
+cp $base_dir/plfsrc6 $base_dir/.plfsrc
 #
 # Determine expected values/settings
 #
@@ -383,8 +413,10 @@ hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc3 | grep -v \# | 
 backendcnt_baseline=10
 #mount1_baseline="/plfs/scratch1"
 #mount2_baseline="/plfs/scratch2"
-mount1_baseline=`grep mount ./$machine_file_dir/plfsrc6 | grep scratch1_n1 | grep -v rpm | grep -v \# | awk '{print $2}'`
-mount2_baseline=`grep mount ./$machine_file_dir/plfsrc6 | grep scratch1_nn | grep -v rpm | grep -v \# | awk '{print $2}'`
+#mount1_baseline=`grep mount ./$machine_file_dir/plfsrc6 | grep scratch1_n1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+mount1_baseline=$n1_mount_dir
+#mount2_baseline=`grep mount ./$machine_file_dir/plfsrc6 | grep scratch1_nn | grep -v rpm | grep -v \# | awk '{print $2}'`
+mount2_baseline=$nn_mount_dir
 
 plfs_check_config -mkdir > $base_dir/test1.out
 
@@ -491,8 +523,10 @@ echo ""
 echo "**********************************************"
 echo "Starting test 7"
 thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc7 | grep -v rpm | grep -v \# | awk '{print $2}'`
-mount1_baseline=`grep mount ./$machine_file_dir/plfsrc7 | grep scratch1_n1 | grep -v rpm | grep -v \# | awk '{print $2}'`
-mount2_baseline=`grep mount ./$machine_file_dir/plfsrc7 | grep scratch1_nn | grep -v rpm | grep -v \# | awk '{print $2}'`
+#mount1_baseline=`grep mount ./$machine_file_dir/plfsrc7 | grep scratch1_n1 | grep -v rpm | grep -v \# | awk '{print $2}'`
+#mount2_baseline=`grep mount ./$machine_file_dir/plfsrc7 | grep scratch1_nn | grep -v rpm | grep -v \# | awk '{print $2}'`
+mount1_baseline=$n1_mount_dir
+mount2_baseline=$nn_mount_dir
 two_mounts=1
 hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc7 | grep -v \# | awk '{print $2}'`
 backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc7 | grep -v rpm | grep -v \# | sed 's/[^,]//g' | wc -m`
@@ -518,25 +552,17 @@ fi
 #
 # Now check if directories truly exist 
 #
-dir_1=`grep xx ./$machine_file_dir/plfsrc7 | sed 's/,/ /g' | awk '{print $4}' | head -1`
+dir_1=`grep xx $base_dir/plfsrc7 | sed 's/,/ /g' | awk '{print $4}' | head -1`
 
 echo $dir_1
 if [ ! -d $dir_1 ]; then
   echo "Error:  $dir_1 was not created"
   return_status=1
-else
-# Remove directory created
-  dir_1_delete=`dirname $dir_1`
-  rm -rf $dir_1_delete
 fi
-dir_2=`grep xx ./$machine_file_dir/plfsrc7 | sed 's/,/ /g' | awk '{print $4}' | tail -1`
+dir_2=`grep xx $base_dir/plfsrc7 | sed 's/,/ /g' | awk '{print $4}' | tail -1`
 if [ ! -d $dir_2 ]; then
   echo "Error:  $dir_2 was not created"
   return_status=1
-else
-# Remove directory created
-  dir_2_delete=`dirname $dir_2`
-  rm -rf $dir_2_delete
 fi
 
 echo "Done with test 7"
@@ -547,6 +573,9 @@ echo ""
 unset PLFSRC
 
 echo "Removing tmp directory"
-rm -rf $base_dir
+#rm -rf $base_dir
+rm -f tmp_file*
 
 exit $return_status
+
+#******************************************************************************
