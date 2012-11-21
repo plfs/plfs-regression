@@ -35,12 +35,12 @@ else
   do
     mount_points=`$base_dir/tests/utils/rs_plfs_config_query.py -m -i -t $io_pattern`
     if [ $? == 0 ]; then
-        echo "io_pattern $mount_points"
-        echo "Running $base_dir/tests/utils/rs_plfs_fuse_mount.sh  $mount_points serial"
+        echo "io_pattern $io_pattern"
         need_to_umount="True"
 
         for mnt in $mount_points 
         do
+            echo "Running $base_dir/tests/utils/rs_plfs_fuse_mount.sh  $mnt serial"
            $base_dir/tests/utils/rs_plfs_fuse_mount.sh $mnt serial
            ret=$?
            if [  "$ret" == 0 ]; then
@@ -51,7 +51,7 @@ else
               need_to_umount="False"
            else
               echo "Something wrong with mounting."
-              exit 1
+              continue
            fi
 
            the_mp=`df | grep ${mnt} | awk '{print $6}'`
