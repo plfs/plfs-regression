@@ -270,9 +270,7 @@ foreach mnt ( $mount_points )
     endif
   endif # check on if we need to unmount
   if ( $test_fail == 1 ) then
-     echo "AAAAA"
      set main_fail = 1
   endif 
 end # loop over mount points
-echo XX $main_fail 
 exit $main_fail
