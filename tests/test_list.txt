@@ -34,3 +34,4 @@
 2 dir_permissions
 2 data-sieving
 2 plfsrc
+2 readdir_ops
