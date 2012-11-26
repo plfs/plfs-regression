@@ -59,7 +59,8 @@ mnt_ret_value=0
               need_to_unmount=0
           else
               echo "Failure: Mount point $mnt is not mounted and could not be mounted by $USER"
-              exit 1
+              mnt_ret_value=1
+              continue
           fi 
 
 #
@@ -84,7 +85,8 @@ mnt_ret_value=0
               ../utils/rs_plfs_fuse_umount.sh $mnt serial
               if [ $? != 0 ]; then
                   echo "Failure: Mount point $mnt could not be unmounted by $USER"
-                  exit 1
+                  mnt_ret_value=1
+                  continue
               fi 
           fi 
     done
