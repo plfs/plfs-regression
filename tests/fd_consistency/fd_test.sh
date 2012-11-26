@@ -12,26 +12,55 @@ cnt_max=10
 #
 user=${USER}
 
+# Function to end an iteration for a mount point. This function will perform
+# tasks that need to be done to make sure everything is cleared away for the
+# next iteration. This function can be called when an error is encountered or
+# when all tests have performed successfully for an iteration.
+#
+# Usage:
+# iteration_end TARGET COUNT COUNTMAX MOUNT
+#
+# Input:
+# - TARGET: the target directory that the plfs tarball is in. The function 
+#   will cd into this directory so that the tarball and directory can be
+#   removed.
+# - COUNT: which iteration is ending
+# - COUNTMAX: how many iterations are going to be run for a given mount point
+# - MOUNT: the mount point being worked on
+function iteration_end {
+    ie_target=$1
+    ie_cnt=$2
+    ie_cnt_max=$3
+    ie_mnt=$4
+    cd $ie_target
+    rm -f $ie_target/plfs.tar.gz
+    rm -rf $ie_target/plfs-2*
+    echo ""
+    echo "Completed interation $ie_cnt of $ie_cnt_max on $ie_mnt"
+}
+
+
 #plfs_tarball_path=`pwd`
 latest_tarball=`/bin/ls -ltr $plfs_tarball_path/*.gz | /usr/bin/tail -1 | /bin/awk '{print $9}'`
 
 if [ "$latest_tarball" == "" ]; then
-  echo "Error:  No Tarball Found" 
-else 
-  plfs_tarball=`/bin/basename "$latest_tarball"` 
-  #
-  # Check to make sure the script that will append experiment_managment's
-  # rs_mnt_append_path is available.
-  #
-  if [ ! -x "$base_dir/tests/utils/rs_exprmgmtrc_target_path_append.py" ]; then
+    echo "Error:  No Tarball Found"
+    exit 1
+fi
+plfs_tarball=`/bin/basename "$latest_tarball"` 
+#
+# Check to make sure the script that will append experiment_managment's
+# rs_mnt_append_path is available.
+#
+if [ ! -x "$base_dir/tests/utils/rs_exprmgmtrc_target_path_append.py" ]; then
     echo "Failure: $base_dir/tests/utils/rs_exprmgmtrc_target_path_append.py" 
     echo "is not executable and must be"
     exit 1
-  fi
-  source $base_dir/tests/utils/rs_env_init.sh
+fi
+source $base_dir/tests/utils/rs_env_init.sh
 
-  for io_pattern in "n-n" "n-1"
-  do
+for io_pattern in "n-n" "n-1"
+do
     mount_points=`$base_dir/tests/utils/rs_plfs_config_query.py -m -i -t $io_pattern`
     if [ $? == 0 ]; then
         echo "io_pattern $io_pattern"
@@ -60,6 +89,7 @@ else
            while [ $cnt -lt $cnt_max ]
            do
                let "cnt += 1"
+               echo ""
                echo "Test iteration $cnt on mount $mnt" 
                #setup to build plfs from tarball      
                echo "Copying $plfs_tarball_path/$plfs_tarball to $target"
@@ -69,7 +99,13 @@ else
 
                # untar and build plfs
                echo "Untarring plfs"
-               tar -xzf $plfs_tarball 
+               tar -xzf $plfs_tarball
+               ret=$?
+               if [[ $ret != 0 ]]; then
+                   echo "ERROR: unable to untar $plfs_tarball"
+                   iteration_end $target $cnt $cnt_max $mnt
+                   continue
+               fi
                echo "Done untarring" 
 
                # figure out plfs directory name
@@ -83,9 +119,21 @@ else
                make distclean
                echo "Running configure"
                ./configure
+               ret=$?
+               if [[ $ret != 0 ]]; then
+                   echo "ERROR: configure failed with exit value $ret"
+                   iteration_end $target $cnt $cnt_max $mnt
+                   continue
+               fi
 
                echo "Running make -j"
                make -j
+               ret=$?
+               if [[ $ret != 0 ]]; then
+                   echo "ERROR: make failed with exit value $ret"
+                   iteration_end $target $cnt $cnt_max $mnt
+                   continue
+               fi
     
                echo "Done making plfs"
 
@@ -101,7 +149,7 @@ else
                fi
 #               ./fuse/plfs 
 #               echo "Running plfs"
-               echo $mount_points
+#               echo $mount_points
 
                # get pid for fuse mount 
                pid=`ps aux | grep $USER | grep $mnt | grep -v grep | awk '{print $2}'`
@@ -130,24 +178,25 @@ else
                echo ".plfsdebug reports $open_files open files"
                if [ $open_files != 0 ]; then 
                  echo "ERROR open file count not 0"
-               fi 
-               echo ""
-               echo "Completed interation $cnt of $cnt_max on $mnt"
-               echo ""
-           done # end while loop
+               fi
+
+               # Clean up
+               iteration_end $target $cnt $cnt_max $mnt
+
+           done # end while loop over iterations
            echo "Removing plfs tarball and directory from $target"
 
-           rm -f $target/plfs.tar.gz
-           rm -rf $target/plfs-2*
+           # Get out of the mount point directory
            cd
+
+           # Unmount if need be
            if [ "$need_to_umount" == "True" ]; then
              echo "Running $base_dir/tests/utils/rs_plfs_fuse_umount.sh $mnt serial"
              $basedir/tests/utils/rs_plfs_fuse_umount.sh $mnt serial
            fi
            echo "Completed fd checks on type $io_pattern $mnt mount point"
-        done #end inner for loop  
+        done #end inner for loop over mount points
     else 
-       echo "ERROR $mount_points"
+        echo "ERROR $mount_points"
     fi # end if found mount points with query
-  done #for loop over n-n an n-1 mount points
-fi #else endif
+done #for loop over n-n an n-1 mount points
