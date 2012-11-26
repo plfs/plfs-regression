@@ -171,6 +171,8 @@ foreach mnt ( $mount_points )
       exit 1
     endif
   end
+  echo "Removing Directory $sub_dir"
+  rm -rf $sub_dir 
 #
 # Now unmount the mount point if it was mounted by us.
 #
@@ -181,7 +183,5 @@ foreach mnt ( $mount_points )
       exit 1
     endif
   endif
-  echo "Removing Directory $sub_dir"
-  rm -rf $sub_dir 
 end
 
