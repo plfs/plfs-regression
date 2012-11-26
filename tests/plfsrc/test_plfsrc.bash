@@ -3,11 +3,13 @@
 # Variable initialization
 
 # Define temp directories for fuse mount and backends
-base_dir="/tmp/tmp_plfsrc"
+user=`echo ${USER}`
+tmp_dir="/tmp/$user"
+base_dir="$tmp_dir/tmp_plfsrc"
 mount_dir="$base_dir/scratch1"
 nn_mount_dir="$base_dir/scratch1_nn"
 n1_mount_dir="$base_dir/scratch1_n1"
-backend_dir="/tmp/backend"
+backend_dir="$tmp_dir/backend"
 export PLFSRC=$base_dir/.plfsrc
 
 current_dir=`pwd`
@@ -573,8 +575,7 @@ echo ""
 unset PLFSRC
 
 echo "Removing tmp directory"
-rm -rf $base_dir
-rm -rf $backend_dir
+rm -rf $tmp_dir
 rm -f tmp_file*
 
 exit $return_status
