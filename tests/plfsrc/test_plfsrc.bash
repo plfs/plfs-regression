@@ -573,7 +573,8 @@ echo ""
 unset PLFSRC
 
 echo "Removing tmp directory"
-#rm -rf $base_dir
+rm -rf $base_dir
+rm -rf $backend_dir
 rm -f tmp_file*
 
 exit $return_status
