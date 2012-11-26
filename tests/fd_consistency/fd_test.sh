@@ -10,7 +10,6 @@ fd_prev_cnt=4
 #
 cnt_max=10
 #
-build_for_mnt=1
 user=${USER}
 
 #plfs_tarball_path=`pwd`
@@ -35,12 +34,12 @@ else
   do
     mount_points=`$base_dir/tests/utils/rs_plfs_config_query.py -m -i -t $io_pattern`
     if [ $? == 0 ]; then
-        echo "io_pattern $mount_points"
-        echo "Running $base_dir/tests/utils/rs_plfs_fuse_mount.sh  $mount_points serial"
+        echo "io_pattern $io_pattern"
         need_to_umount="True"
 
         for mnt in $mount_points 
         do
+            echo "Running $base_dir/tests/utils/rs_plfs_fuse_mount.sh  $mnt serial"
            $base_dir/tests/utils/rs_plfs_fuse_mount.sh $mnt serial
            ret=$?
            if [  "$ret" == 0 ]; then
@@ -51,24 +50,17 @@ else
               need_to_umount="False"
            else
               echo "Something wrong with mounting."
-              exit 1
+              continue
            fi
 
-           the_mp=`df | grep ${mnt} | awk '{print $6}'`
-           echo $the_mp
-           if [ $the_mp != $mnt ]; then
-             build_for_mnt=1
-           fi 
            target=`$base_dir/tests/utils/rs_exprmgmtrc_target_path_append.py $mnt`
 
            # loop cnt times building of plfs
            cnt=0
            while [ $cnt -lt $cnt_max ]
            do
-             let "cnt += 1"
-             echo "Test iteration $cnt on mount $mnt" 
-             if [ $build_for_mnt -eq 1 ]; then
-
+               let "cnt += 1"
+               echo "Test iteration $cnt on mount $mnt" 
                #setup to build plfs from tarball      
                echo "Copying $plfs_tarball_path/$plfs_tarball to $target"
                cp $plfs_tarball_path/$plfs_tarball $target/.
@@ -142,7 +134,6 @@ else
                echo ""
                echo "Completed interation $cnt of $cnt_max on $mnt"
                echo ""
-             fi
            done # end while loop
            echo "Removing plfs tarball and directory from $target"
 
