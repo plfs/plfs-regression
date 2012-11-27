@@ -99,7 +99,7 @@ def main(argv=None):
         f.write("        need_to_umount=\"False\"\n")
         f.write("    else\n")
         f.write("        echo \"Something wrong with mounting.\"\n")
-        f.write("        exit 1\n")
+        f.write("        continue\n")
         f.write("    fi\n")
         # Generate target for use by fs_test
         f.write('    top=`' + str(utils_dir) + 'rs_exprmgmtrc_target_path_append.py $mnt`\n')
