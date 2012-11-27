@@ -59,7 +59,7 @@ foreach mnt ( $mount_points )
     set need_to_unmount = 0
   else
     echo "Failure: Mount point $mnt is not mounted and could not be mounted by $USER"
-    exit 1
+    continue     
   endif
 #
 # Set the place where we will create a file and change ownership
@@ -76,7 +76,7 @@ foreach mnt ( $mount_points )
   mkdir -p $sub_dir
   if ( $? != 0 ) then
     echo "Failure: Error making directory $sub_dir with mkdir -p"
-    exit 1
+    goto unmount
   endif
 #
 # Get permissions for tmp directory just created
@@ -123,7 +123,7 @@ foreach mnt ( $mount_points )
 #
     if (( $? != 0 ) || ( mount_point_backends == "" )) then
       echo "Failure: Error finding the PLFS mount point backends with rs_plfs_config_query.py"
-      exit 1
+      goto unmount
     else
 #
 # Got the mount points parsed from the plfsrc file.
@@ -135,7 +135,7 @@ foreach mnt ( $mount_points )
 #
   else
     echo "Failure: The script, ../utils/rs_plfs_config_query.py, is not executable and must be"
-    exit 1
+    goto unmount
   endif
 #
 # Loop over each of the mount point backends defined in the plfsrc file.
@@ -150,7 +150,7 @@ foreach mnt ( $mount_points )
     echo "Checking to make sure that $tmp_dir exists in $backend_top_dir..."
     if ( ! -e $backend_top_dir/$tmp_dir ) then
       echo "Failure: The directory $tmp_dir does not exist on mount point $mnt's backend in $backend_top_dir, and should"
-      exit 1
+      goto unmount
     else 
       # Check permissions
       set be_listing = `ls -al $backend_top_dir | grep tmp | awk '{print $1}'`
@@ -158,6 +158,7 @@ foreach mnt ( $mount_points )
       if ( $be_listing != $post_perm ) then
         echo "Failure: Backend permissions do not match mount permissions" 
         set return_value = 1
+        goto unmount
       endif
       # Check group 
       set dir_group = `ls -lt $backend_top_dir | grep tmp | awk '{print $4}'`
@@ -165,22 +166,24 @@ foreach mnt ( $mount_points )
       if ( $dir_group != $ug ) then
         echo "Failure: Backend dir group doe not match fuse mount group" 
         set return_value = 1
+        goto unmount
       endif
     endif
-    if ( $return_value == 1 ) then
-      exit 1
-    endif
+#    if ( $return_value == 1 ) then
+#      exit 1
+#    endif
   end
   echo "Removing Directory $sub_dir"
   rm -rf $sub_dir 
 #
 # Now unmount the mount point if it was mounted by us.
 #
+  unmount:
   if ( $need_to_unmount == "1" ) then
     ../utils/rs_plfs_fuse_umount.sh $mnt serial
     if ( $? != 0 ) then
       echo "Failure: Mount point $mnt could not be unmounted by $USER"
-      exit 1
+      continue 
     endif
   endif
 end
