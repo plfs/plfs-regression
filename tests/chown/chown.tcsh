@@ -54,7 +54,7 @@ foreach mnt ( $mount_points )
     set need_to_unmount = 0
   else
     echo "Failure: Mount point $mnt is not mounted and could not be mounted by $USER"
-    exit 1
+    continue
   endif
 #
 #  endif
@@ -75,7 +75,7 @@ foreach mnt ( $mount_points )
   mkdir -p $top
   if ( $? != 0 ) then
     echo "Failure: Error making directory $top with mkdir -p"
-    exit 1
+    goto unmount
   endif
 #
 # Create the file on which ownership will be changed.
@@ -84,7 +84,7 @@ foreach mnt ( $mount_points )
   touch $file
   if ( $? != 0 ) then
     echo "Failure: Error creating file $file with touch"
-    exit 1
+    goto unmount
   endif
 #
 # Figure out to which group the file just created belongs.
@@ -111,7 +111,7 @@ foreach mnt ( $mount_points )
 
       if ( $new_group != $ug ) then
         echo "Failure: The new group is the same as the original group."
-        exit 1
+        goto unmount 
       endif
 
       echo "Success: Changed the group of file $file from $file_group to $new_group"
@@ -126,11 +126,12 @@ foreach mnt ( $mount_points )
 #
 # Now unmount the mount point if it was mounted by us.
 #
+  unmount:
   if ( $need_to_unmount == "1" ) then
     ../utils/rs_plfs_fuse_umount.sh $mnt serial
     if ( $? != 0 ) then
       echo "Failure: Mount point $mnt could not be unmounted by $USER"
-      exit 1
+      continue 
     endif
   endif
 end
