@@ -44,7 +44,7 @@ def check(output_file):
         else:
             return ["PASSED"]
     else:
-        return ["FAILED", output_file, "PLFS file not successfully truncated"]
+        return ["FAILED", output_file, "plfsrc file problem"]
 
 def parse_args(argv):
 
