@@ -14,3 +14,21 @@ Flow of the test:
   the read of fd_test.sh to reg_test.sh
 - reg_test.py calls experiment_management with input_test.py as input. This
   submits reg_test.sh as a job.
+
+Special Notes about this test:
+This test can be very demanding on a PLFS mount point. Many issues may be
+found by running it. However, many of these issues may not be PLFS-related.
+If a failure is found, please consult the following before reporting a problem
+with PLFS:
+- Configure and make both use temporary files that are placed in /tmp. If /tmp
+  fills up, both configure and make will fail with non-0 exit values. Error
+  text will be something like, "no space left on device." If configure or make
+  fails with this type of error, check /tmp. Also keep in mind that job
+  schedulers can be configured to clean up after a job is complete which means
+  /tmp may not look like it did during the job run once the job has finished.
+  This is especially important if mlog output is put in /tmp; the mlog file
+  may be erased when the job finishes.
+- If mlog is used with the DEBUG level of logging, the resulting mlog file
+  will be quite large. All of the file operations done by untarring,
+  configure, make and removing files will result in a lot of messages being
+  written to the mlog file.
