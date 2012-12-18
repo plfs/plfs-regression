@@ -1,14 +1,14 @@
-# Line format for a test:
-# TYPE DIR
-#
-# TYPE: the type of test it is
-#   0: Test is not to be run (or comment out the line with a #)
-#   1: Test is to be run not on a plfs mount point (runs on the filesystem)
-#   2: Test is to be run on a plfs mount point
-#   3: Test is to be run using ADIO
-#
-# DIR: The directory the test is located in (relative to this directory)
-
+### Line format for a test:
+### TYPE DIR
+###
+### TYPE: the type of test it is
+###   0: Test is not to be run (or comment out the line with a #)
+###   1: Test is to be run not on a plfs mount point (runs on the filesystem)
+###   2: Test is to be run on a plfs mount point
+###   3: Test is to be run using ADIO
+###
+### DIR: The directory the test is located in (relative to this directory)
+##
 2 write_read_no_error
 2 write_read_error
 2 posix_nto1_strided 
@@ -35,3 +35,4 @@
 2 data-sieving
 2 plfsrc
 2 readdir_ops
+3 dir_write
