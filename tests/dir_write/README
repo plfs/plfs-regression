@@ -1,0 +1,21 @@
+This test will use fs_test to try to write to a target that is a directory
+rather than a file.  fs_test/MPI should report an error when this is attempted.
+Hence, a test PASS is defined as fs_test reporting a write error.
+
+
+Files:
+- reg_test.py: entry point for the test. Creates reg_test.sh which will be
+  the actual program that will be run to do the steps in this test.
+- input_write.py: experiment_management input file to generate the mpi
+  command that will write out the fs_test target (non-plfs).
+- common.py: file containing shared variables and functions for use in
+  creating a consistent submittal of reg_test.sh.
+- input_script.py: experiment_management input file that will be used to run
+  reg_test.sh, the generated script.
+
+The test proceeds as follows:
+- reg_test.py creates reg_test.sh
+- reg_test.py calls experiment_management with input_write.py as input. The
+  output is put into reg_test.sh.
+- reg_test.py calls experiment_management with input_script.py as input
+  to submit reg_test.sh as a job.
