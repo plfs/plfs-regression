@@ -551,6 +551,16 @@ if [ ! -d "$log_dir" ]; then
     fi
     mkdir $log_dir
 fi
+
+# make sure the source directory exists
+if [ ! -d "$srcdir" ]; then
+    if [ -e "$srcdir" ]; then
+        echo "Error: $srcdir exists but not as a directory. Exiting." 1>&2
+        script_exit 1
+    fi
+    mkdir $srcdir
+fi
+
 # Specify all the different log files.
 plfs_build_log=${log_dir}/plfs_build.log
 mpi_build_log=${log_dir}/mpi_build.log
