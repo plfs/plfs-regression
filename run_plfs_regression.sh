@@ -602,6 +602,23 @@ if [ ! -d "$srcdir" ]; then
         script_exit 1
     fi
     mkdir $srcdir
+    if [[ $? != 0 ]]; then
+        echo "Error: unable to create $srcdir. Exiting." 1>&2
+        script_exit 1
+    fi
+fi
+
+# make sure the install directory exists
+if [ ! -d "$instdir" ]; then
+    if [ -e "$instdir" ]; then
+        echo "Error: $instdir exists but not as a directory. Exiting." 1>&2
+        script_exit 1
+    fi
+    mkdir $instdir
+    if [[ $? != 0 ]]; then
+        echo "Error: unable to create $instdir. Exiting." 1>&2
+        script_exit 1
+    fi
 fi
 
 # Specify all the different log files.
