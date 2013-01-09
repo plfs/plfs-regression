@@ -121,7 +121,8 @@ def main(argv=None):
         f.write("    fi\n")
         # Generate target for use by fs_test
         # In this test, the target is going to be a directory.  Running fs_test
-        # with a target set to a directory should result in an error 
+        # with a target set to a directory should result in an error.
+	# Therefore, a successful test is an error.
         f.write('    top=`' + str(utils_dir) + 'rs_exprmgmtrc_target_path_append.py $mnt`\n')
         f.write('    target=$top/' + str(filename) + '\n')
         f.write("    mkdir $target\n")
