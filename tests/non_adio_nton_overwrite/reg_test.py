@@ -132,7 +132,7 @@ def main(argv=None):
 
         # Deterimine if expected target file size correct
         f.write('            let \"file_size=16*size*1\"\n') 
-#        f.write('            target_file_size=`ls -al $path | awk \'{print $5}\'`\n')
+	f.write('            let file_size=' + str(tc.nprocs) + '*size*1\n')
         f.write('            target_file_size=`du -bs $path.* | awk \'{sum = sum + $1} END {print sum}\'`\n')
 
         f.write("            if [ \"$file_size\" != \"$target_file_size\" ]; then\n")
