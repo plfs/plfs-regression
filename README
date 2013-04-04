@@ -85,6 +85,9 @@ Dependencies:
   not pass these on the command line when invoking experiment_management. In
   addition, msub should be defined to include "-j oe" as many of the tests
   expect to look for only one output file.
+  Note: outdir should be a relative path for now. It is expected that this
+  directory will be placed in the test's directory, and absolute paths don't
+  guarantee this.
   Note about the check for experiment_management rc files:
   Like the check for plfs rc files, the check for experiment_management rc
   files is done after the build stage. If the build phase was successfull,
