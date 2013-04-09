@@ -18,11 +18,6 @@ basedir=/path/to/Regression
 # Recipients of the generated regression email
 addr="${USER}@lanl.gov"
 
-# Load the right set of autotools here. This config file is sourced rather
-# than run so commands like the following should work:
-# export PATH=/path/to/autotools/bin:$PATH
-# export LD_LIBRARY_PATH=/path/to/autotools/lib:$LD_LIBRARY_PATH
-
 ##---------------------------------------------------------------------------
 ## Variables for a particular regression run
 ##
