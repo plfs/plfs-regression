@@ -105,7 +105,7 @@ cmake . -DCMAKE_INSTALL_PREFIX:PATH=$instdir
 check_exit $? "cmake process"
 
 echo "Running make"
-make
+make VERBOSE=1
 check_exit $? "Make process"
 
 # Remove the old install directory
