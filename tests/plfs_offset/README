@@ -1,0 +1,11 @@
+This test is used to verify that the the plfs API correctly:
+ opens, writes with offsets, reads with offsets and closes a file.
+
+Files:
+- reg_test.py Handles top level management of the test including calling
+              offset.bash       
+- offset.c  C source code that gets compiled with plfs libs.  It performs 
+            file operations as described above
+- offset.bash Script that compiles offset.c and and executes offset binary
+              that performs various plfs file operations.
+- check_results.py Determines if the test has passed or failed
