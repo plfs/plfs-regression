@@ -79,3 +79,4 @@
 2 plfsrc
 2 readdir_ops
 3 dir_write
+2 plfs_offset
