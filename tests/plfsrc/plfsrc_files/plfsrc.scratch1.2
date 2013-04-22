@@ -1,5 +1,34 @@
-# these must be full paths, can be just a single one
-backends BACKEND/vol1/.plfs_store,BACKEND/vol2/.plfs_store,BACKEND/vol3/.plfs_store,BACKEND/vol4/.plfs_store,BACKEND/vol5/.plfs_store,BACKEND/vol6/.plfs_store,BACKEND/vol7/.plfs_store,BACKEND/vol8/.plfs_store,BACKEND/vol9/.plfs_store,BACKEND/vol10/.plfs_store,BACKEND/vol11/.plfs_store,BACKEND/vol12/.plfs_store,BACKEND/vol13/.plfs_store,BACKEND/vol14/.plfs_store,BACKEND/vol15/.plfs_store,BACKEND/vol16/.plfs_store,BACKEND/vol17/.plfs_store,BACKEND/vol18/.plfs_store,BACKEND/vol19/.plfs_store,BACKEND/vol20/.plfs_store,BACKEND/vol21/.plfs_store,BACKEND/vol22/.plfs_store,BACKEND/vol23/.plfs_store,BACKEND/vol24/.plfs_store,BACKEND/vol25/.plfs_store,BACKEND/vol26/.plfs_store,BACKEND/vol27/.plfs_store,BACKEND/vol28/.plfs_store,BACKEND/vol29/.plfs_store,BACKEND/vol30/.plfs_store
+  backends:
+    - location: BACKEND/vol1/.plfs_store
+    - location: BACKEND/vol2/.plfs_store
+    - location: BACKEND/vol3/.plfs_store
+    - location: BACKEND/vol4/.plfs_store
+    - location: BACKEND/vol5/.plfs_store
+    - location: BACKEND/vol6/.plfs_store
+    - location: BACKEND/vol7/.plfs_store
+    - location: BACKEND/vol8/.plfs_store
+    - location: BACKEND/vol9/.plfs_store
+    - location: BACKEND/vol10/.plfs_store
+    - location: BACKEND/vol11/.plfs_store
+    - location: BACKEND/vol12/.plfs_store
+    - location: BACKEND/vol13/.plfs_store
+    - location: BACKEND/vol14/.plfs_store
+    - location: BACKEND/vol15/.plfs_store
+    - location: BACKEND/vol16/.plfs_store
+    - location: BACKEND/vol17/.plfs_store
+    - location: BACKEND/vol18/.plfs_store
+    - location: BACKEND/vol19/.plfs_store
+    - location: BACKEND/vol20/.plfs_store
+    - location: BACKEND/vol21/.plfs_store
+    - location: BACKEND/vol22/.plfs_store
+    - location: BACKEND/vol23/.plfs_store
+    - location: BACKEND/vol24/.plfs_store
+    - location: BACKEND/vol25/.plfs_store
+    - location: BACKEND/vol26/.plfs_store
+    - location: BACKEND/vol27/.plfs_store
+    - location: BACKEND/vol28/.plfs_store
+    - location: BACKEND/vol29/.plfs_store
+    - location: BACKEND/vol30/.plfs_store
 
-# this must match where FUSE is mounted and the logical paths passed to ADIO
-mount_point MOUNT
+#since this is an "empty" node it should fail...the backends above will cause an exception
+- mount_point: MOUNT
