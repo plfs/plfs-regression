@@ -315,7 +315,7 @@ check_exit $? "Generating platform file for openmpi"
 
 # Run configure
 echo "Running configure script with --prefix=$openmpi_instdir"
-./configure --prefix=$openmpi_instdir --with-platform=./platform_file
+./configure --prefix=$openmpi_instdir --with-platform=./platform_file --disable-silent-rules
 check_exit $? "Configure process"
 
 # Run make

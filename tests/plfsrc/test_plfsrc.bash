@@ -203,11 +203,11 @@ cp $base_dir/plfsrc1 $base_dir/.plfsrc
 #
 # Determine expected values/settings
 #
-thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
+thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc1 | grep -v rpm | grep -v \# | awk '{print $2}'`
 #mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
 mount_baseline=$mount_dir
 hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc1 | grep -v \# | awk '{print $2}'`
-backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc.*1 | grep -v rpm | sed 's/[^,]//g' | wc -m`
+backendcnt_baseline=`grep location ./$machine_file_dir/plfsrc.*1 | wc -l`
 #
 # Run plfs check config and direct output to file for use by verify_plfsrc 
 # plfs_check_config creates mount point directory 
@@ -246,11 +246,11 @@ cp $base_dir/plfsrc2 $base_dir/.plfsrc
 #
 # Determine expected values/settings
 #
-thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
+thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc2 | grep -v rpm | grep -v \# | awk '{print $2}'`
 #mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
 mount_baseline=$mount_dir
 hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc2 | grep -v \# | awk '{print $2}'`
-backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc.*1 | grep -v rpm | sed 's/[^,]//g' | wc -m`
+backendcnt_baseline=`grep location ./$machine_file_dir/plfsrc.*1 | wc -l`
 #
 # Run plfs check config and direct output to file for use by verify_plfsrc 
 #
@@ -284,11 +284,11 @@ cp $base_dir/plfsrc3 $base_dir/.plfsrc
 #
 # Determine expected values/settings
 #
-thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
+thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc3 | grep -v rpm | grep -v \# | awk '{print $2}'`
 #mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
 mount_baseline=$mount_dir
 hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc3 | grep -v \# | awk '{print $2}'`
-backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc.*1 | grep -v rpm | sed 's/[^,]//g' | wc -m`
+backendcnt_baseline=`grep location ./$machine_file_dir/plfsrc.*2 | wc -l`
 #
 # Run plfs check config and direct output to file for use by verify_plfsrc 
 #
@@ -318,11 +318,11 @@ cp $base_dir/plfsrc4 $base_dir/.plfsrc
 #
 # Determine expected values/settings
 #
-thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
+thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc4 | grep -v rpm | grep -v \# | awk '{print $2}'`
 #mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
 mount_baseline=$mount_dir
-hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc3 | grep -v \# | awk '{print $2}'`
-backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc.*1 | grep -v rpm | sed 's/[^,]//g' | wc -m`
+hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc4 | grep -v \# | awk '{print $2}'`
+backendcnt_baseline=`grep location ./$machine_file_dir/plfsrc.*1 | wc -l`
 #
 # Run plfs check config and direct output to file for use by verify_plfsrc 
 #
@@ -364,11 +364,11 @@ cp $base_dir/plfsrc5 $base_dir/.plfsrc
 #
 # Determine expected values/settings
 #
-thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
+thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc5 | grep -v rpm | grep -v \# | awk '{print $2}'`
 #mount_baseline=`grep mount ./$machine_file_dir/plfsrc.*1 | grep -v rpm | grep -v \# | awk '{print $2}'`
 mount_baseline=$mount_dir
-hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc3 | grep -v \# | awk '{print $2}'`
-backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc.*1 | grep -v rpm | sed 's/[^,]//g' | wc -m`
+hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc5 | grep -v \# | awk '{print $2}'`
+backendcnt_baseline=`grep location ./$machine_file_dir/plfsrc.*1 | wc -l`
 #
 # Run plfs check config and direct output to file for use by verify_plfsrc 
 #
@@ -410,8 +410,8 @@ cp $base_dir/plfsrc6 $base_dir/.plfsrc
 #
 # Determine expected values/settings
 #
-thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc.* | grep -v rpm | grep -v \# | awk '{print $2}'`
-hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc3 | grep -v \# | awk '{print $2}'`
+thrdpool_baseline=`grep threadpool ./$machine_file_dir/plfsrc6 | grep -v rpm | grep -v \# | awk '{print $2}'`
+hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc6 | grep -v \# | awk '{print $2}'`
 backendcnt_baseline=10
 #mount1_baseline="/plfs/scratch1"
 #mount2_baseline="/plfs/scratch2"
@@ -531,7 +531,7 @@ mount1_baseline=$n1_mount_dir
 mount2_baseline=$nn_mount_dir
 two_mounts=1
 hostdirs_baseline=`grep num_hostdirs ./$machine_file_dir/plfsrc7 | grep -v \# | awk '{print $2}'`
-backendcnt_baseline=`grep backend ./$machine_file_dir/plfsrc7 | grep -v rpm | grep -v \# | sed 's/[^,]//g' | wc -m`
+backendcnt_baseline=`grep location ./$machine_file_dir/plfsrc7 | wc -l`
 
 cp $base_dir/plfsrc7 $base_dir/.plfsrc 
 
