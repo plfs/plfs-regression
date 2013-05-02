@@ -77,7 +77,6 @@ function iteration_end {
     ie_mnt=$4
     cd $ie_target
     rm -f $ie_target/plfs.tar.gz
-    rm -rf $ie_target/plfs-2*
     echo ""
     echo "Completed interation $ie_cnt of $ie_cnt_max on $ie_mnt"
 }
@@ -140,9 +139,13 @@ do
 
                cd $target
 
-               # untar and build plfs
-               echo "Untarring plfs"
-               tar -xzf $plfs_tarball
+               # untar and build plfs into new dir each iteration
+               echo "Untarring plfs into test_dir$cnt"
+               # this dir shouldn't exist, remove just in case for consistency
+               rm -r test_dir$cnt 2>/dev/null
+               mkdir test_dir$cnt
+               cd test_dir$cnt
+               tar --strip-components=1 --use-compress-program=pigz -xf ../$plfs_tarball
                ret=$?
                if [[ $ret != 0 ]]; then
                    echo "ERROR: unable to untar $plfs_tarball"
@@ -150,16 +153,10 @@ do
                    continue
                fi
                echo "Done untarring" 
-
-               # figure out plfs directory name
-               plfs_dir=`/bin/ls -al | grep drw | grep plfs | awk '{print $9}'`
-               echo $plfs_dir
-               echo "Changing directory to $plfs_dir" 
-               cd $plfs_dir
-     
+              
                # make plfs
                echo "make distclean"
-               make distclean
+               make distclean # NOP unless we exited improperly at some point
                echo "Running configure"
                ./configure
                ret=$?
@@ -169,8 +166,8 @@ do
                    continue
                fi
 
-               echo "Running make -j"
-               make -j
+               echo "Running make CFLAGS+='-pipe' CXXFLAGS+='-pipe' -j"
+               make CFLAGS+='-pipe' CXXFLAGS+='-pipe' -j
                ret=$?
                if [[ $ret != 0 ]]; then
                    echo "ERROR: make failed with exit value $ret"
@@ -181,18 +178,20 @@ do
                echo "Done making plfs"
 
                # and run plfs
-        
                echo "Attempting to run newly compiled plfs"
-#               plfs_ret=`/users/atorrez/Testing/regression/inst/plfs/sbin/plfs 2>&1`
                plfs_ret=`./fuse/plfs 2>&1`
-               if [ "$plfs_ret" != "fuse: missing mountpoint parameter" ]; then
-                 echo "ERROR Attempting to run plfs did not produce desired results"
-               else 
-                 echo "Successfully ran plfs"
+               # check for a few expected failures
+               case $plfs_ret in
+                 *"fuse: missing mountpoint parameter"*) plfs_success=1;;
+                 *"Parse error in "*) plfs_success=1;;
+                 *"Mount failed: Invalid argument"*) plfs_success=1;;
+                 *) plfs_success=0;; # none of the above matched
+               esac
+               if [[ $plfs_success == 1 ]]; then
+                 echo "Successfully started plfs"
+               else
+                 echo "ERROR Attempting to run plfs did not produce expected results"
                fi
-#               ./fuse/plfs 
-#               echo "Running plfs"
-#               echo $mount_points
 
                # get pid for fuse mount 
                pid=`ps aux | grep $USER | grep $mnt | grep -v grep | awk '{print $2}'`
@@ -223,11 +222,31 @@ do
                  echo "ERROR open file count not 0"
                fi
 
-               # Clean up
+               # Clean up files and directory
+               echo "Removing files in test_dir$cnt"
+               success=$(for i in *
+               do
+                   rm -r $i || echo failed &
+               done
+               wait) # doing this in parallel for more stress
+               if [ -z "$success" ]
+               then
+                   echo "File removal complete"
+               else
+                   echo "ERROR: some files unable to be deleted"
+               fi
+               echo "Removing test_dir$cnt"
+               cd ..
+               rm -r test_dir$cnt
+               ret=$?
+               if [[ $ret != 0 ]]; then
+                   echo "ERROR: rm test_dir$cnt failed with exit value $ret"
+               else
+                   echo "Successfully removed test_dir$cnt"
+               fi
                iteration_end $target $cnt $cnt_max $mnt
 
            done # end while loop over iterations
-           echo "Removing plfs tarball and directory from $target"
 
            # Get out of the mount point directory
            cd
