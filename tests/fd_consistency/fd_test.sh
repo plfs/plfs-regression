@@ -188,7 +188,7 @@ do
                  *) plfs_success=0;; # none of the above matched
                esac
                if [[ $plfs_success == 1 ]]; then
-                 echo "Successfully started plfs"
+                 echo "Successfully ran plfs"
                else
                  echo "ERROR Attempting to run plfs did not produce expected results"
                fi
