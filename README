@@ -34,8 +34,11 @@ Dependencies:
     regression suite will build PLFS.
   - MPI (for running parallel tests): can be either in the form of a source
     tarball or an already patched for PLFS MPI installation. If the tarball is
-    given, MPI will be built. NOTE: at this time, only Open MPI tarballs are
-    supported.
+    given, MPI will be built.
+    NOTE: if MPI is to be built, make sure the correct version of autotools
+    (m4, autoconf, automake, libtool) are already in your PATH and
+    LD_LIBRARY_PATH. Otherwise, the building of MPI may fail.
+    NOTE: at this time, only Open MPI tarballs are supported.
   - fs_test (for running specific IO patterns and many tests use it): can be
     in the form of source or an already compiled version. It is available in
     the fs-test project (https://github.com/fs-test). If source is given,
@@ -107,10 +110,6 @@ Dependencies:
   programs. For example, set it to mpicc (generic mpi implementation) or cc
   (cray implementation).
 - If email capabilities are needed/wanted, /bin/mail needs to be available.
-- If the PLFS source is a checkout from the PLFS repository, then the proper
-  version of autotools for running PLFS's autogen.sh script are necessary. 
-  Either those programs should already be in a user's default path or how to
-  find them should be specified in the config file.
 - If Open MPI is to be built by the regression suite, a platform file must
   be used when compiling Open MPI to make it aware of the locations of the
   PLFS library. A sample platform file is provided as
@@ -203,13 +202,9 @@ Files and directories in the regression suite:
   This script is to make sure check_tests.py finishes at some point and sends
   a report.
 - plfs_build.sh: build plfs and install it into the installation directory (given
-  in config file). It will make sure the correct version of the autotools can be
-  used. If they are not found, it exits and the regression suite will exit.
+  in config file).
 - openmpi_build.sh: build openmpi and install it. This script does not check
-  for the correct version of autotools (at this time). Since plfs_build.sh runs
-  first and it checks for the correct version of autotools, it is assumed that
-  if plfs_build.sh completed successfully, then it is ok for openmpi_build.sh
-  to assume that the correct version of the autotools is in use.
+  for the correct version of autotools. Open MPI's autogen.sh checks for this.
 - fs_test_build.sh: builds fs_test source.
 - src_cp.sh: copy source from one location into anther. This script can be used
   to copy any set of code into the regression environment (plfs, fs_test, etc).

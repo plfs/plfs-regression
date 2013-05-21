@@ -673,10 +673,10 @@ if [ "$build" == "True" ]; then
             plfs_ok="FAIL"
         fi
         # Check for plfs source
-        if [ -e "$plfs_src_dir/mpi_adio/scripts/make_plfs_patch" ]; then
+        if [ -e "$plfs_src_dir/mpi_adio/scripts/make_ad_plfs_patch" ]; then
             echo "Found plfs source in $plfs_src_dir" >> $plfs_build_log
         else
-            echo "$plfs_src_dir does not contain mpi_adio/scripts/make_plfs_patch. It does not appear that $plfs_src_dir contains plfs source files." >> $plfs_build_log
+            echo "$plfs_src_dir does not contain mpi_adio/scripts/make_ad_plfs_patch. It does not appear that $plfs_src_dir contains plfs source files." >> $plfs_build_log
             plfs_stat="plfs source not found"
             plfs_ok="FAIL"
         fi

@@ -91,33 +91,21 @@ fi
 cd ${srcdir}
 
 # Build the trunk source
-# See if we need to run autogen.sh
-if [ -e configure ]; then
-    echo "configure script already present; will not attempt to run autogen.sh"
-else
-    # Need to run autogen.sh.
-    echo "Running autogen.sh"
-    ./autogen.sh
-    check_exit $? "Autogen.sh process"
-fi
 
 # See if we need to clean out a previous compilation attempt. We want to start
 # over completely from the configure step.
 if [ -e Makefile ]; then
-    echo "Compilation seems to have been attempted in the plfs source directory already. Running 'make distclean'."
-    make distclean
+    echo "Compilation seems to have been attempted in the plfs source directory already. Running 'make clean'."
+    make clean
 fi
 
-echo "Running configure script"
-if [ $instdir == "" ]; then
-  ./configure --disable-silent-rules
-else
-  ./configure --prefix=$instdir --disable-silent-rules
-fi
-check_exit $? "Configure process"
+echo "Running cmake"
+cmake . -DCMAKE_INSTALL_PREFIX:PATH=$instdir
+
+check_exit $? "cmake process"
 
 echo "Running make"
-make
+make VERBOSE=1
 check_exit $? "Make process"
 
 # Remove the old install directory
