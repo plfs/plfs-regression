@@ -117,7 +117,9 @@ def check(output_file):
         ok2 = "Errors and warnings written to \(-errout\): stderr"
         ok3 = "^Data written to target file.*write_read_no_error"
         ok4 = "^Using.*write_read_no_error.out as target"
-        ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3) + "|" + str(ok4)
+        ok5 = "^OMPI_ARGV.*write_read_no_error.out"
+        ok6 = "^OMPI_MCA.*write_read_no_error"
+        ok = str(ok1) + "|" + str(ok2) + "|" + str(ok3) + "|" + str(ok4) + "|" + str(ok5) + "|" + str(ok6)
         st2 = os.system('cat ' + str(output_file) + ' | egrep -v "' 
                 + str(ok) + '" | egrep -qi ' + str(bad))
         if st2 == 0:
