@@ -80,12 +80,11 @@ def parse_args(argv, num_required, num_test_types):
     parser.add_option_group(group)
     group = OptionGroup(parser, "Optional")
     group.add_option("-t", "--types", dest="types", help="Specify which "
-                      "types of tests to run. The types are 1 (underlying "
-                      "filesystem only; no plfs used), 2 (use plfs mount "
-                      "point that is mounted through fuse), 3 (use "
-                      "ADIO/patched mpi), and 4 (use plfs API). LIST can be "
-                      "a comma-separated list of any of these digits:1 or 1,2 "
-                      "or 1,2,4. Default is %default.", metavar="LIST")
+                      "types of tests to run. The types are 1 (fuse serial "
+                      "tests), 2 (fuse parallel tests), and 3 (plfs adio "
+                      "tests). LIST can be a comma-separated list of any of "
+                      "these digits:1 or 1,2 or 1,3. Default is %default.",
+                      metavar="LIST")
     group.add_option("-b", "--basedir", dest="basedir", help="Specify the base "
                       "regression directory to be DIR. Only necessary when "
                       "this script is run as part of a cron job.", 
@@ -304,7 +303,7 @@ def main(argv=None):
     if argv == None:
         argv = sys.argv[1:]
     required_args = 0
-    num_test_types = 4
+    num_test_types = 3
     options, args, types_table = parse_args(argv=argv,
         num_required=required_args, num_test_types=num_test_types)
     global reg_base_dir

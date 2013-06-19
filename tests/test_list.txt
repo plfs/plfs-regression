@@ -44,11 +44,11 @@
 ### Line format for a test:
 ### TYPE DIR
 ###
-### TYPE: the type of test it is
-###   0: Test is not to be run (or comment out the line with a #)
-###   1: Test is to be run not on a plfs mount point (runs on the filesystem)
-###   2: Test is to be run on a plfs mount point
-###   3: Test is to be run using ADIO
+### TYPE: the type of test it is; what resources are required to run the test
+###   1: fuse serial tests; requires fuse and plfs
+###   2: fuse parallel tests; requires fuse, plfs, and a working MPI
+###      implementation
+###   3: PLFS ADIO tests: requires plfs and a patched MPI implementation
 ###
 ### DIR: The directory the test is located in (relative to this directory)
 ##
@@ -57,26 +57,26 @@
 2 posix_nto1_strided 
 3 cp_plfs_read
 3 adio_write_read
-2 rename
-2 chown
-2 truncate
-2 mkdir_ops
+1 rename
+1 chown
+1 truncate
+1 mkdir_ops
 3 adio_optimization
-2 truncate_open_file
+1 truncate_open_file
 3 adio_nto1_strided
 3 adio_nton
 2 posix_nton
-2 fd_consistency
-2 plfs_access
+1 fd_consistency
+1 plfs_access
 2 non_adio_nto1_overwrite
 2 non_adio_nton_overwrite
 3 adio_nto1_overwrite
 3 adio_nton_overwrite
-2 noncontig_short
-2 truncate_ops
-2 dir_permissions
-2 data-sieving
+1 noncontig_short
+1 truncate_ops
+1 dir_permissions
+3 data-sieving
 2 plfsrc
-2 readdir_ops
-3 dir_write
-2 plfs_offset
+1 readdir_ops
+2 dir_write
+1 plfs_offset
