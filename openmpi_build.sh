@@ -320,7 +320,7 @@ check_exit $? "Configure process"
 
 # Run make
 echo "Running make"
-make -j 3
+make -j 32
 check_exit $? "Make process"
 
 # Run make install
