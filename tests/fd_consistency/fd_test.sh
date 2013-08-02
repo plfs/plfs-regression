@@ -49,9 +49,11 @@
 fd_prev_cnt=4
 #cnt=0
 #
-# Number of times to build plfs (loop count)
-#
+# Number of times to loop the consistency test
 cnt_max=10
+#
+# number of times to build PLFS in each iteration of the test
+mk_max=10
 #
 user=${USER}
 
@@ -72,13 +74,15 @@ user=${USER}
 # - MOUNT: the mount point being worked on
 function iteration_end {
     ie_target=$1
-    ie_cnt=$2
-    ie_cnt_max=$3
-    ie_mnt=$4
+    ie_mk=$2
+    ie_mk_max=$3
+    ie_cnt=$4
+    ie_cnt_max=$5
+    ie_mnt=$6
     cd $ie_target
     rm -f $ie_target/plfs.tar.gz
     echo ""
-    echo "Completed interation $ie_cnt of $ie_cnt_max on $ie_mnt"
+    echo "Completed make interation $ie_mk of $ie_mk_max on iteration $ie_cnt of $ie_cnt_max on $ie_mnt"
 }
 
 
@@ -128,9 +132,11 @@ do
 
            # loop cnt times building of plfs
            cnt=0
+           makes=0
            while [ $cnt -lt $cnt_max ]
            do
                let "cnt += 1"
+               let "makes = 0"
                echo ""
                echo "Test iteration $cnt on mount $mnt" 
                #setup to build plfs from tarball      
@@ -149,8 +155,8 @@ do
                ret=$?
                if [[ $ret != 0 ]]; then
                    echo "ERROR: unable to untar $plfs_tarball"
-                   iteration_end $target $cnt $cnt_max $mnt
-                   continue
+                   iteration_end $target $makes $mk_max $cnt $cnt_max $mnt
+                   break #continue
                fi
                echo "Done untarring" 
               
@@ -158,69 +164,83 @@ do
                echo "make distclean"
                make distclean # NOP unless we exited improperly at some point
                echo "Running configure"
-               ./configure
+               ./configure --silent
                ret=$?
                if [[ $ret != 0 ]]; then
                    echo "ERROR: configure failed with exit value $ret"
-                   iteration_end $target $cnt $cnt_max $mnt
-                   continue
+                   iteration_end $target $makes $mk_max $cnt $cnt_max $mnt
+                   break #continue
                fi
 
-               echo "Running make CFLAGS+='-pipe' CXXFLAGS+='-pipe' -j"
-               make CFLAGS+='-pipe' CXXFLAGS+='-pipe' -j
-               ret=$?
-               if [[ $ret != 0 ]]; then
-                   echo "ERROR: make failed with exit value $ret"
-                   iteration_end $target $cnt $cnt_max $mnt
-                   continue
-               fi
+               while [ $makes -lt $mk_max ]
+               do
+                   let "makes += 1"
+                   echo "Build iteration $makes of $mk_max in test iteration $cnt"
+                   echo "Running make CFLAGS+='-pipe' CXXFLAGS+='-pipe' -j"
+                   make CFLAGS+='-pipe' CXXFLAGS+='-pipe' -j V=0
+                   ret=$?
+                   if [[ $ret != 0 ]]; then
+                       echo "ERROR: make failed with exit value $ret"
+                       iteration_end $target $makes $mk_max $cnt $cnt_max $mnt
+                       break #continue
+                   fi
     
-               echo "Done making plfs"
+                   echo "Done making plfs"
 
-               # and run plfs
-               echo "Attempting to run newly compiled plfs"
-               plfs_ret=`./fuse/plfs 2>&1`
-               # check for a few expected failures
-               case $plfs_ret in
-                 *"fuse: missing mountpoint parameter"*) plfs_success=1;;
-                 *"Parse error in "*) plfs_success=1;;
-                 *"Mount failed: Invalid argument"*) plfs_success=1;;
-                 *) plfs_success=0;; # none of the above matched
-               esac
-               if [[ $plfs_success == 1 ]]; then
-                 echo "Successfully ran plfs"
-               else
-                 echo "ERROR Attempting to run plfs did not produce expected results"
-               fi
+                   # and run plfs
+                   echo "Attempting to run newly compiled plfs"
+                   plfs_ret=`./fuse/plfs 2>&1`
+                   # check for a few expected failures
+                   case $plfs_ret in
+                     *"fuse: missing mountpoint parameter"*) plfs_success=1;;
+                     *"Parse error in "*) plfs_success=1;;
+                     *"Mount failed: Invalid argument"*) plfs_success=1;;
+                     *) plfs_success=0;; # none of the above matched
+                   esac
+                   if [[ $plfs_success == 1 ]]; then
+                     echo "Successfully ran plfs"
+                   else
+                     echo "ERROR Attempting to run plfs did not produce expected results"
+                     iteration_end $target $makes $mk_max $cnt $cnt_max $mnt
+                     break #continue
+                   fi
 
-               # get pid for fuse mount 
-               pid=`ps aux | grep $USER | grep $mnt | grep -v grep | awk '{print $2}'`
-               echo "PID for fuse mount is $pid"
+                   # get pid for fuse mount 
+                   pid=`ps aux | grep $USER | grep $mnt | grep -v grep | awk '{print $2}'`
+                   echo "PID for fuse mount is $pid"
 
-               # get number of file descriptors for fuse mount
-               # and maks sure number has not changed since the last build
-               proc_cnt=`ls /proc/$pid/fd | wc -l`
+                   # get number of file descriptors for fuse mount
+                   # and maks sure number has not changed since the last build
+                   proc_cnt=`ls /proc/$pid/fd | wc -l`
 
-               # get initialize process count on 1st iteration
-               if [ $cnt==1 ]; then
-                 fd_prev_cnt=$proc_cnt
-               fi
+                   # get initialize process count on 1st iteration
+                   if [ $cnt==1 ]; then
+                     fd_prev_cnt=$proc_cnt
+                   fi
 
-               if [ $proc_cnt != $fd_prev_cnt ]; then
-                 echo "ERROR file_desciptor count mismatch current proc_cnt=$proc_cnt"
-                 echo "ERROR process count = $proc_cnt previous count = $fd_prev_cnt"
-               else 
-                 echo "File descriptor count = $proc_cnt"
-               fi 
-               fd_prev_cnt=$proc_cnt
+                   if [ $proc_cnt != $fd_prev_cnt ]; then
+                     echo "ERROR file_desciptor count mismatch current proc_cnt=$proc_cnt"
+                     echo "ERROR process count = $proc_cnt previous count = $fd_prev_cnt"
+                     iteration_end $target $makes $mk_max $cnt $cnt_max $mnt
+                     break #continue
+                   else 
+                     echo "File descriptor count = $proc_cnt"
+                   fi 
+                   fd_prev_cnt=$proc_cnt
 
-               # look at OpenFiles from plfsdebug and make sure count has not grown
-               cat $mnt/.plfsdebug > /users/$user/tmp_plfsdebug 
-               open_files=`strings /users/$user/tmp_plfsdebug | grep OpenFiles | awk '{print $1}'`
-               echo ".plfsdebug reports $open_files open files"
-               if [ $open_files != 0 ]; then 
-                 echo "ERROR open file count not 0"
-               fi
+                   # look at OpenFiles from plfsdebug and make sure count has not grown
+                   cat $mnt/.plfsdebug > /users/$user/tmp_plfsdebug 
+                   open_files=`strings /users/$user/tmp_plfsdebug | grep OpenFiles | awk '{print $1}'`
+                   echo ".plfsdebug reports $open_files open files"
+                   if [ $open_files != 0 ]; then 
+                     echo "ERROR open file count not 0"
+                     iteration_end $target $makes $mk_max $cnt $cnt_max $mnt
+                     break #continue
+                   fi
+
+                   echo "running make clean"
+                   make clean V=0
+               done
 
                # Clean up files and directory
                echo "Removing files in test_dir$cnt"
@@ -234,6 +254,8 @@ do
                    echo "File removal complete"
                else
                    echo "ERROR: some files unable to be deleted"
+                   iteration_end $target $makes $mk_max $cnt $cnt_max $mnt
+                   break #continue
                fi
                echo "Removing test_dir$cnt"
                cd ..
@@ -241,10 +263,12 @@ do
                ret=$?
                if [[ $ret != 0 ]]; then
                    echo "ERROR: rm test_dir$cnt failed with exit value $ret"
+                   iteration_end $target $makes $mk_max $cnt $cnt_max $mnt
+                   break #continue
                else
                    echo "Successfully removed test_dir$cnt"
                fi
-               iteration_end $target $cnt $cnt_max $mnt
+               iteration_end $target $makes $mk_max $cnt $cnt_max $mnt
 
            done # end while loop over iterations
 
