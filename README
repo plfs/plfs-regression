@@ -282,3 +282,29 @@ Issues/To do:
   better yet, to not remove it at all from check_tests.py and have
   submit_tests.py rewrite it each regression instance. Will this bring about
   confusion about what regression instance spawned the file?
+
+- This regression suite doesn't run on the Cray XE6 machines (possibly any
+  Cray). There are two reasons for this:
+  1) The regression suite relies on a ssh approach when mounting the needed
+     PLFS mount points; ssh to the Cray compute nodes is not possible at this
+     time. All interaction with the compute nodes has to happen through aprun.
+  2) Given that we have to use aprun to interact with the compute nodes, it
+     would be nice if we could mount PLFS using aprun. However, when aprun
+     exits, all user-generated processes are killed which includes the PLFS
+     daemon. This brings about the situation where fuse thinks PLFS is still
+     running but it really isn't. In order to make the mount point usable
+     again, it has to be unmounted through aprun. Basically, anything that has
+     to be done to a PLFS mount point that the regression suite mounts has to
+     be done within a single aprun command.
+  Given the above reasons, there are no plans to implement the regression
+  suite on the Cray machines. In order to do this, tests would have to be
+  completely rewritten to remove all parallel run commands (aprun, mpirun,
+  etc.) from the scripts that get submitted and that script would be run
+  via a single parallel run command. Given that a lot of the generated
+  scripts are in a shell language and shells have no concept of MPI, it
+  would be impossible to implement some tests in this fashion unless a
+  different language is used. For example, write_read_error relies on a single
+  rank running a program that will change a single byte in a PLFS file. If the
+  generated script were run on all nodes, every rank would try to modify the
+  file since the generated script is in bash. The only way to solve this would
+  be to change the language of the generated script to one that is MPI-aware.
