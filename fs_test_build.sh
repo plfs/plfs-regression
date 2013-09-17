@@ -80,8 +80,14 @@ function check_exit {
 }
 
 # Grab the linking flags that we need
-export MPI_LD=$RS_PLFS_LDFLAGS
-export MPI_INC=$RS_PLFS_CFLAGS
+flags=`tests/utils/rs_plfs_buildflags_get.py`
+if [[ $? != 0 ]]; then
+    exit 1
+fi
+rs_plfs_cflags=`echo "$flags" | head -n 1`
+rs_plfs_ldflags=`echo "$flags" | tail -n 1`
+export MPI_LD=${rs_plfs_ldflags}
+export MPI_INC=${rs_plfs_cflags}
 
 # Echo the values of the needed environment variables
 echo "The following are the values of the needed environment variables:"
