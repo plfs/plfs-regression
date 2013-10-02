@@ -11,7 +11,7 @@ function run_plfs_access {
         echo "Correct plfs_access return value"
         return 0
      else
-        echo "Error plfs_access invalid return value"
+        echo "Error plfs_access invalid return value: $?"
         exit 1
      fi
 }
@@ -146,7 +146,7 @@ do
   if [[ $? == 0 ]]; then
      return_value=0
   else
-     mnt_ret_value=1
+     mnt_ret_value=$?
   fi
 #
 # Unmount if necessary

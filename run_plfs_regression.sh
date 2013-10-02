@@ -222,10 +222,10 @@ function script_exit {
 
 # Function that will set up environment variables for building against PLFS.
 #
-# No input and no output, but after calling the function, RS_PLFS_LDFLAGS and
-# RS_PLFS_CFLAGS environment variables will be set for linking and compiling
-# against PLFS. RS_PLFS_LDFLAGS will contain the necessary linking flags;
-# RS_PLFS_CFLAGS will contain the necessary compling flags.
+# No input and no output, but after calling the function, AD_PLFS_LDFLAGS and
+# AD_PLFS_CFLAGS environment variables will be set for linking and compiling
+# against PLFS. AD_PLFS_LDFLAGS will contain the necessary linking flags;
+# AD_PLFS_CFLAGS will contain the necessary compling flags.
 function setup_rs_plfs_flags {
     # Grab the flags needed for building against PLFS
     flags=`tests/utils/rs_plfs_buildflags_get.py`
@@ -234,8 +234,8 @@ function setup_rs_plfs_flags {
     fi
     rs_plfs_cflags=`echo "$flags" | head -n 1`
     rs_plfs_ldflags=`echo "$flags" | tail -n 1`
-    export RS_PLFS_LDFLAGS=$rs_plfs_ldflags
-    export RS_PLFS_CFLAGS=$rs_plfs_cflags
+    export AD_PLFS_LDFLAGS=$rs_plfs_ldflags
+    export AD_PLFS_CFLAGS=$rs_plfs_cflags
 }
 
 function check_env_vars {

@@ -25,7 +25,7 @@ int main(int argc, char **argv){
       printf("ERROR:  No path specified\n");
       return 1;
   }
-  printf("plfs access %s: %d\n",path, plfs_access(path, R_OK));
+  printf("plfs access %s: %d\n",path, -1*plfs_error_to_errno(plfs_access(path, R_OK)));
 //  printf("plfs access %s: %d\n","/var/tmp", plfs_access("/var/tmp", R_OK));
 //  printf("plfs access %s: %d\n","/var", plfs_access("/var", R_OK));
 //  printf("plfs access %s: %d\n","/var/tmp", plfs_access("/var/tmp", R_OK));
