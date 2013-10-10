@@ -99,14 +99,26 @@ if [ -e Makefile ]; then
     make clean
 fi
 
-echo "Running cmake"
+echo "Running Debug build to check for warnings"
 cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=$instdir .
 
-check_exit $? "cmake process"
+check_exit $? "cmake Debug build"
+
+echo "Building Debug mode"
+make -j
+check_exit $? "Make Debug process"
+
+echo "Removing Debug files"
+make clean
+
+echo "Running Release build for bug testing"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=$instdir .
+
+check_exit $? "cmake Release build"
 
 echo "Running make"
 make -j
-check_exit $? "Make process"
+check_exit $? "Make Release process"
 
 # Remove the old install directory
 if [ -d $instdir ]; then
