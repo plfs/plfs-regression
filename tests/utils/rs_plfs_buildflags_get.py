@@ -81,9 +81,8 @@ def get_rs_plfs_buildflags(reg_dir):
     rs_plfs_lib_dir = (str(reg_dir) + "/inst/plfs/lib")
     rs_plfs_inc_dir = (str(reg_dir) + "/inst/plfs/include")
     
-    rs_plfs_ldflags = ("-L" + str(rs_plfs_lib_dir) + " -Wl,-rpath="
-        + str(rs_plfs_lib_dir) + " -Wl,--whole-archive -lplfs -lpthread"
-        + " -Wl,--no-whole-archive")
+    rs_plfs_ldflags = ("-L" + str(rs_plfs_lib_dir) + " -Wl,-rpath -Wl,"
+        + str(rs_plfs_lib_dir) + " -Wl,--enable-new-dtags -lplfs -lpthread")
     rs_plfs_cflags = ("-I" + str(rs_plfs_inc_dir) + " -DHAS_PLFS")
     return [rs_plfs_cflags, rs_plfs_ldflags]
 

@@ -308,8 +308,10 @@ check_exit $? "Autogen.sh process"
 # Get the platform file from the plfs source directory, substituting the right
 # paths for the regression environment.
 echo "Generating platform file for openmpi compilation"
-catline="cat ${platform_file} > ./platform_file"
-eval $catline
+#catline="cat ${platform_file} > ./platform_file"
+sedline="sed 's|REPLACE_PLFS_LDFLAGS|${AD_PLFS_LDFLAGS}|g;s|REPLACE_PLFS_CFLAGS|${AD_PLFS_CFLAGS}|g' \
+    ${platform_file} > ./platform_file"
+eval $sedline
 check_exit $? "Generating platform file for openmpi"
 
 # Run configure
