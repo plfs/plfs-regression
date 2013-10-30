@@ -1,7 +1,7 @@
 # Ufs has to be present in the --with-file-system parameter;
 # otherwise parallel programs seem to have trouble with files.
 #
-with_io_romio_flags=--with-file-system=ufs+nfs+plfs
+with_io_romio_flags="--with-file-system=ufs+nfs+plfs --disable-silent-rules"
 LDFLAGS="REPLACE_PLFS_LDFLAGS"
 CFLAGS="REPLACE_PLFS_CFLAGS"
 CXXFLAGS="REPLACE_PLFS_CFLAGS"
