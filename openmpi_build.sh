@@ -222,6 +222,15 @@ function find_patchfile {
     return 0
 }
 
+# Figure out the PLFS build flags that we need to use when building Open MPI
+flags=`tests/utils/rs_plfs_buildflags_get.py`
+if [[ $? != 0 ]]; then
+    echo "Problem getting PLFS build flags"
+    exit 1
+fi
+rs_plfs_cflags=`echo "$flags" | head -n 1`
+rs_plfs_ldflags=`echo "$flags" | tail -n 1`
+    
 # Go to the plfs source directory
 echo "Entering $plfs_srcdir/mpi_adio"
 if [ ! -d "$plfs_srcdir/mpi_adio" ]; then
@@ -309,7 +318,7 @@ check_exit $? "Autogen.sh process"
 # paths for the regression environment.
 echo "Generating platform file for openmpi compilation"
 #catline="cat ${platform_file} > ./platform_file"
-sedline="sed 's|REPLACE_PLFS_LDFLAGS|${AD_PLFS_LDFLAGS}|g;s|REPLACE_PLFS_CFLAGS|${AD_PLFS_CFLAGS}|g' \
+sedline="sed 's|REPLACE_PLFS_LDFLAGS|${rs_plfs_ldflags}|g;s|REPLACE_PLFS_CFLAGS|${rs_plfs_cflags}|g' \
     ${platform_file} > ./platform_file"
 eval $sedline
 check_exit $? "Generating platform file for openmpi"

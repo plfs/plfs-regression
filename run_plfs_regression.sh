@@ -220,24 +220,6 @@ function script_exit {
     exit $1
 }
 
-# Function that will set up environment variables for building against PLFS.
-#
-# No input and no output, but after calling the function, AD_PLFS_LDFLAGS and
-# AD_PLFS_CFLAGS environment variables will be set for linking and compiling
-# against PLFS. AD_PLFS_LDFLAGS will contain the necessary linking flags;
-# AD_PLFS_CFLAGS will contain the necessary compling flags.
-function setup_rs_plfs_flags {
-    # Grab the flags needed for building against PLFS
-    flags=`tests/utils/rs_plfs_buildflags_get.py`
-    if [[ $? != 0 ]]; then
-        return 1
-    fi
-    rs_plfs_cflags=`echo "$flags" | head -n 1`
-    rs_plfs_ldflags=`echo "$flags" | tail -n 1`
-    export AD_PLFS_LDFLAGS=$rs_plfs_ldflags
-    export AD_PLFS_CFLAGS=$rs_plfs_cflags
-}
-
 function check_env_vars {
     env_var_problem="False"
     if [ -z "$MPI_CC" ]; then
@@ -773,15 +755,6 @@ if [ "$build" == "True" ]; then
         plfs_ok="FAIL"
     fi
 
-    # Get the necessary flags for building against PLFS. This will set
-    # RS_PLFS_LDFLAGS and RS_PLFS_CFLAGS
-    setup_rs_plfs_flags
-    if [[ $? != 0 ]]; then
-        echo "Error setting PLFS build flags" >> $plfs_build_log
-        plfs_stat="problem setting PLFS build flags"
-        plfs_ok="FAIL"
-    fi
-
     echo $plfs_stat
     if [ "$plfs_ok" == "FAIL" ]; then
         script_exit 1
@@ -1021,15 +994,6 @@ else
     fs_test_ok="PASS"
     expr_mgmt_stat="skipped due to configuration"
     expr_mgmt_ok="PASS"
-
-    # call the function that will set up the necessary flags for building
-    # against plfs. This will set RS_PLFS_LDFLAGS and RS_PLFS_CFLAGS
-    setup_rs_plfs_flags
-    if [[ $? != 0 ]]; then
-        plfs_stat="Error setting PLFS build flags"
-        plfs_ok="FAIL"
-        script_exit 1
-    fi
 
     # Call the helper script that will set up the environment to use the
     # regression suite's binaries and libraries.
