@@ -309,10 +309,23 @@ check_exit $? "Using ${plfs_srcdir}/${PATCH_FILE}"
 patch -p1 < ${ad_plfs_patch_file}
 check_exit $? "Using ${ad_plfs_patch_file}"
 
-# Run autogen.sh
-echo "Running ./autogen.sh"
-./autogen.sh
-check_exit $? "Autogen.sh process"
+# Run autogen
+# There's actually two autogen scripts: autogen.sh and autogen.pl. The perl
+# version is newer and replaced autogen.sh, but autogen.sh as a link to
+# autogen.pl was created to keep some backwards compatibility. In the release
+# tarballs, the link becomes an actual file so autogen.sh is an exact copy of
+# autogen.pl Someday, autogen.sh will be removed altogether. So, we have to
+# deal with three scenarios: only autogen.sh available (<=1.6 series); both
+# autogen.sh and autogen.pl available (1.7 and 1.8 series); and only
+# autogen.pl available (future).
+if [ -x ./autogen.sh ]; then
+    echo "Running ./autogen.sh"
+    ./autogen.sh
+else
+    echo "Running ./autogen.pl"
+    ./autogen.pl
+fi
+check_exit $? "Autogen process"
 
 # Get the platform file from the plfs source directory, substituting the right
 # paths for the regression environment.
