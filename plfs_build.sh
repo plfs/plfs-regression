@@ -100,7 +100,7 @@ if [ -e Makefile ]; then
 fi
 
 echo "Running Debug build to check for warnings"
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=$instdir .
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=$instdir -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE .
 
 check_exit $? "cmake Debug build"
 
@@ -112,7 +112,7 @@ echo "Removing Debug files"
 make clean
 
 echo "Running Release build for bug testing"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=$instdir .
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX:PATH=$instdir -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE .
 
 check_exit $? "cmake Release build"
 
