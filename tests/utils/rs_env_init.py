@@ -83,6 +83,5 @@ def add_plfs_paths(dir=None):
                 os.environ["LD_LIBRARY_PATH"])
     except KeyError:
         #LD_LIBRARYY_PATH is not in the dictionary of env variables yet.
-        os.environ["LD_LIBRARY_PATH"] = (mpi_inst_lib + ":" +
-            os.environ["LD_LIBRARY_PATH"])
+        os.environ["LD_LIBRARY_PATH"] = (mpi_inst_lib)
 
