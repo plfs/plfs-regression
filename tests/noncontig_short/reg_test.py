@@ -181,6 +181,12 @@ def main(argv=None):
     return [0]
 
 if __name__ == "__main__":
+    # If reg_test.py is being called directly, make sure the regression suite's
+    # PLFS and MPI are in the appropriate environment variables. This should
+    # work because test_common was already loaded.
+    import rs_env_init
+    rs_env_init.add_plfs_paths(common.basedir)
+
     result = main()
     if result[-1] > 0:
         sys.exit(0)
